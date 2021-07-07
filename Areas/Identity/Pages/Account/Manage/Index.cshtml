@@ -4,26 +4,97 @@
     ViewData["Title"] = "Profile";
     ViewData["ActivePage"] = ManageNavPages.Index;
 }
+@using BlazorBugTracker.Service
+@using BlazorBugTracker.Services
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<CustomUser> SignInManager
+@inject UserManager<CustomUser> UserManager
+@inject IImageService imageService
+@inject ICustomRoleService roleService
+@using BlazorBugTracker.Data.Enums
+@{
+    var user = await UserManager.GetUserAsync(User);
+    var roles = await roleService.ListUserRoleAsync(user);
+}
 
-<h4>@ViewData["Title"]</h4>
 <partial name="_StatusMessage" model="Model.StatusMessage" />
 <div class="row">
     <div class="col-md-6">
-        <form id="profile-form" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Username"></label>
-                <input asp-for="Username" class="form-control" disabled />
+        <div class="card card-primary card-outline">
+            <div class="card-body box-profile">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <form id="profile-form" method="post" enctype="multipart/form-data">
+                    <div class="text-center">
+                        <img class="profile-user-img img-fluid img-circle" style="width:30%;"
+                             src="@imageService.DecodeFileAvatar(Model.Input.ImageData,Model.Input.ContentType)"
+                             alt="User profile picture">
+                    </div>
+                    <h3 class="profile-username text-center">@(user.FullName)</h3>
+                    @foreach (var role in roles.ToList())
+                    {
+
+                        <p class="text-muted text-center">@role</p>
+
+                    }
+
+                    @if (Model.Input.ImageData != null && Model.Input.ContentType != null)
+                    {
+                        <input type="hidden" name="imageData" value="@Convert.ToBase64String(Model.Input.ImageData)" class="form-control" />
+                        <input type="hidden" name="contentType" value="@Model.Input.ContentType" class="form-control" />
+                    }
+
+                    <div class="form-group">
+                        <label asp-for="Input.ImageData" class="control-label"></label>
+                        <input type="file" name="image" />
+                        <span asp-validation-for="Input.ImageData" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Input.FirstName"></label>
+                        <input asp-for="Input.FirstName" value="@Model.Input.FirstName" class="form-control" />
+                        <span asp-validation-for="Input.FirstName" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Input.LastName"></label>
+                        <input asp-for="Input.LastName" value="@Model.Input.LastName" class="form-control" />
+                        <span asp-validation-for="Input.LastName" class="text-danger"></span>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label asp-for="Username"></label>
+                        <input asp-for="Username" class="form-control" disabled />
+                    </div>
+                    @if (await UserManager.IsInRoleAsync(user, Roles.Admin.ToString()))
+                    {
+                        <div class="form-group">
+                            <label asp-for="Input.CompanyId" class="control-label"></label>
+                            <select asp-for="Input.CompanyId" class="form-control" asp-items="@ViewBag.CompanyId"></select>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="form-group">
+                            <label asp-for="Input.CompanyId" class="control-label"></label>
+                            <select asp-for="Input.CompanyId" class="form-control" disabled asp-items="@ViewBag.CompanyId"></select>
+                        </div>
+                    }
+
+                    <div class="form-group">
+                        <label asp-for="Input.PhoneNumber"></label>
+                        <input asp-for="Input.PhoneNumber" class="form-control" />
+                        <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+                    </div>
+                    <button id="update-profile-button" type="submit" class="btn btn-primary">Save</button>
+                </form>
+
+
             </div>
-            <div class="form-group">
-                <label asp-for="Input.PhoneNumber"></label>
-                <input asp-for="Input.PhoneNumber" class="form-control" />
-                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
-            </div>
-            <button id="update-profile-button" type="submit" class="btn btn-primary">Save</button>
-        </form>
+            <!-- /.card-body -->
+        </div>
+        <!-- /.card -->
     </div>
 </div>
+
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

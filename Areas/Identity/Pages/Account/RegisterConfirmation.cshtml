@@ -2,21 +2,52 @@
 @model RegisterConfirmationModel
 @{
     ViewData["Title"] = "Register confirmation";
+    ViewData["background"] = "/img/4kpic4.jpg";
 }
 
-<h1>@ViewData["Title"]</h1>
-@{
-    if (@Model.DisplayConfirmAccountLink)
-    {
-<p>
-    This app does not currently have a real email sender registered, see <a href="https://aka.ms/aspaccountconf">these docs</a> for how to configure a real email sender.
-    Normally this would be emailed: <a id="confirm-link" href="@Model.EmailConfirmationUrl">Click here to confirm your account</a>
-</p>
-    }
-    else
-    {
-<p>
-        Please check your email to confirm your account.
-</p>
-    }
-}
+<div class="firefly"></div><div class="firefly"></div><div class="firefly"></div><div class="firefly"></div><div class="firefly"></div><div class="firefly"></div><div class="firefly"></div><div class="firefly"></div><div class="firefly"></div><div class="firefly"></div><div class="firefly"></div><div class="firefly"></div>
+
+<div class="center" style="position: fixed;">
+    <div class="sky-container">
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+    </div>
+</div>
+<div class="container" style="opacity: 0.9;padding-top:15%;">
+    <div class="row">
+        <div class="col text-center">
+            <h1>@ViewData["Title"]</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col"></div>
+        <div class="col-4 text-center">
+            @{
+                if (@Model.DisplayConfirmAccountLink)
+                {
+                    <p>
+                        This app does not currently have a real email sender registered, see <a href="https://aka.ms/aspaccountconf">these docs</a> for how to configure a real email sender.
+                        Normally this would be emailed: <a id="confirm-link" href="@Model.EmailConfirmationUrl">Click here to confirm your account</a>
+                    </p>
+                }
+                else
+                {
+                    <h3>
+                        Please check your email to confirm your account.
+                    </h3>
+                }
+            }
+        </div>
+        <div class="col"></div>
+    </div>
+    <br />
+    <div class="row" style="opacity: 0.8;">
+        <div class="col text-center">
+            <a class="btn btn-secondary" asp-controller="Home" asp-action="Index"><span class="iconify d-none d-sm-inline-block" data-icon="ant-design:home-filled" data-inline="true"></span> Go To Home Page</a>
+        </div>
+    </div>
+</div>
+
