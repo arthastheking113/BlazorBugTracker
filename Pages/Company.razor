@@ -1,7 +1,176 @@
 ﻿@page "/company"
+@inject IJSRuntime JSRuntime
 
-<h3>Company</h3>
+<section class="content">
+    <div class="card">
+        <div class="card-header bg-dark">
+            Company
+        </div>
+        <br />
+        <div class="row">
+            <div class="col-4">
+                <form asp-controller="Companies" asp-action="Create" method="post">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Add a New Company</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label class="control-label">Company Name</label>
+                                <input name="Name" class="form-control" required />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Description</label>
+                                <textarea name="Description" class="form-control" rows="4" required></textarea>
+                            </div>
+
+                            <a asp-controller="Projects" asp-action="Index" class="btn btn-secondary">Cancel</a>
+                            <input type="submit" value="Add new Company" class="btn btn-success float-left mr-2">
+
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+                    <!-- /.card -->
+                </form>
+            </div>
+
+
+            <div class="col-8">
+                <!-- Default box -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">All Company</h3>
+                        <div class="card-tools">
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control" placeholder="Search Projects" id="searchCompany">
+                                <div class="input-group-append">
+                                    <div class="btn btn-primary">
+                                        <i class="fas fa-search"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-striped projects table-hover" id="viewCompany">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        Name
+                                    </th>
+                                    <th>
+                                        Description
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                                <tr>
+                                    <td>
+                                        Name1
+                                    </td>
+                                    <td>
+                                        Description1
+                                    </td>
+                                    <td class="project-actions text-right">
+                                        <!-- Button trigger modal -->
+                                        <button type="button" class="btn btn-info btn-sm mb-1" data-toggle="modal" data-target="#exampleModal2-1">
+                                            <i class="fas fa-pencil-alt"></i> Edit
+                                        </button>
+
+                                        <!-- Modal -->
+                                        <div class="modal fade" id="exampleModal2-1" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel2-1" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-body p-0">
+                                                        <form asp-action="Edit" method="post">
+                                                            <div class="card card-primary  mb-0">
+                                                                <div class="card-header">
+                                                                    <h3 class="card-title">Edit Company</h3>
+                                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                        <span aria-hidden="true">&times;</span>
+                                                                    </button>
+                                                                </div>
+                                                                <div class="card-body text-left">
+                                                                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                                                                    <input type="hidden" name="Id" value="1" />
+                                                                    <div class="form-group">
+                                                                        <label class="control-label"></label>
+                                                                        <input name="Name" value="dasdsa" class="form-control" />
+                                                                    </div>
+                                                                    <div class="form-group">
+                                                                        <label class="control-label"></label>
+                                                                        <input name="Description" value="dsadasdasd" class="form-control" />
+                                                                    </div>
+
+                                                                    <div class="form-group">
+                                                                        <input type="submit" value="Save" class="btn btn-success float-left mr-2">
+                                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                                    </div>
+
+                                                                </div>
+                                                                <!-- /.card-body -->
+                                                            </div>
+                                                            <!-- /.card -->
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+
+                                        <!-- Button trigger modal -->
+                                        <button type="button" class="btn btn-danger btn-sm mb-1" data-toggle="modal" data-target="#exampleModal-2">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+
+                                        <!-- Modal -->
+                                        <div class="modal fade" id="exampleModal-2" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel-2" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="exampleModalLabel-2">Delete Company</h5>
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <p class="text-danger text-left">Are you sure you want to delete company 2 ?</p>
+                                                        <form asp-action="Delete" method="post">
+                                                            <input type="hidden" name="Id" value="2" />
+                                                            <input type="submit" value="Yes, I want to Delete" class="btn btn-danger mr-2">
+                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">No, I don't</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+                <!-- /.card -->
+            </div>
+        </div>
+    </div>
+</section>
+<!-- /.content -->
+
+
 
 @code {
-
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("enableTable", null);
+        }
+    }
 }

@@ -89,29 +89,31 @@ function display_ct() {
 
 
 
+function enableTable() {
+    $(function () {
+        oTable = $("#example1,#homeTable,#notificationTable,#viewTicket,#viewProject,#viewCompany,#tickethistory,#useroverview,#viewUserRole").DataTable({
+            "responsive": true,
+            "autoWidth": false,
+            "paging": true,
+            "searching": true,
+        });
+        $('#example2').DataTable({
+            "paging": true,
+            "lengthChange": false,
+            "searching": false,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true,
+        });
 
- $(function () {
-     oTable = $("#example1,#homeTable,#notificationTable,#viewTicket,#viewProject,#viewCompany,#tickethistory,#useroverview,#viewUserRole").DataTable({
-      "responsive": true,
-      "autoWidth": false,
-        "paging": true,
-         "searching": true,    
-    });
-    $('#example2').DataTable({
-      "paging": true,
-      "lengthChange": false,
-      "searching": false,
-      "ordering": true,
-      "info": true,
-      "autoWidth": false,
-      "responsive": true,
-    });
 
-  
-  });
-$('#myInputTextField,#myInputHomeField,#inputNotification,#searchTicket,#searchProject,#searchCompany,#searchTicketHistory,#searchUser,#searchUserRole').keyup(function () {
-    oTable.search($(this).val()).draw();
-});
+    });
+    $('#myInputTextField,#myInputHomeField,#inputNotification,#searchTicket,#searchProject,#searchCompany,#searchTicketHistory,#searchUser,#searchUserRole').keyup(function () {
+        oTable.search($(this).val()).draw();
+    });
+}
+
 
 
 $('#contact,#Message').summernote({
