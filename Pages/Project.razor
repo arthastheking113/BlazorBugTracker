@@ -1,8 +1,276 @@
 ﻿@page "/project"
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Http
+@using Microsoft.EntityFrameworkCore 
+@using BlazorBugTracker.Services
+@inject ICustomRoleService _roleService  
+@inject IHttpContextAccessor _httpContextAccessor
+@inject UserManager<CustomUser> _userManager 
+@using BlazorBugTracker.Data
+@inject ApplicationDbContext _context 
+<!-- Main content -->
+<section class="content">
+    <div class="card">
+        <div class="card-header bg-dark">
+            Project
+        </div>
+        <div class="row">
+            <div class="col-4">
+                <form asp-controller="Projects" asp-action="Create" method="post">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Create New Project</h3>
+                        </div>
+                        <div class="card-body">
+                            @if (IsInRoleAdmin || IsProjectManager)
+                            {
+                                <div class="form-group">
+                                    <label class="control-label">Project Name</label>
+                                    <input name="Name" class="form-control" required />
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label">Description</label>
+                                    <textarea name="Description" class="form-control" rows="4" required></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="control-label">Upload Image</label>
+                                    <input type="file" name="image" />
+                                </div>
+                                <a asp-controller="Projects" asp-action="Index" class="btn btn-secondary">Cancel</a>
+
+                                <input type="submit" value="Create new Project" class="btn btn-success float-left mr-2">
+                            }
+                            else
+                            {
+                                <div class="form-group">
+                                    <label class="control-label">Project Name</label>
+                                    <input name="Name" class="form-control" disabled />
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label">Description</label>
+                                    <textarea name="Description" class="form-control" rows="4" disabled></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="control-label">Upload Image</label>
+                                    <input type="file" name="image" disabled />
+                                </div>
 
 
-<h3>Project</h3>
+                                <input type="submit" disabled value="Create new Project" class="btn btn-success float-left mr-2">
+                            }
+
+
+
+
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+                    <!-- /.card -->
+                </form>
+            </div>
+
+
+            <div class="col-8">
+                <div class="table-responsive">
+                    <!-- Default box -->
+                    <div class="card">
+
+                        <div class="card-header">
+                            <h3 class="card-title">All Projects</h3>
+                            <div class="card-tools">
+                                <div class="input-group input-group-sm">
+                                    <input type="text" class="form-control" placeholder="Search Projects" id="searchProject">
+                                    <div class="input-group-append">
+                                        <div class="btn btn-primary">
+                                            <i class="fas fa-search"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover" id="viewProject">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                Name
+                                            </th>
+                                            <th>
+                                                Description
+                                            </th>
+                                            <th>
+                                                Created
+                                            </th>
+                                            <th>
+                                                Company
+                                            </th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in ItemList)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    @item.Name
+                                                </td>
+                                                <td>
+                                                    @item.Description
+                                                </td>
+                                                <td>
+                                                    @item.Created.ToString("dddd, dd MMMM yyyy")
+                                                </td>
+                                                <td>
+                                                    @item.Company.Name
+                                                </td>
+
+                                                <td class="project-actions text-right">
+                                                    <a class="btn btn-primary btn-sm mb-1" asp-action="Details" asp-route-id="@item.Id"><i class="fas fa-folder"></i> View</a>
+                                                    @if (IsInRoleAdmin || IsProjectManager)
+                                                    {
+                                                        <!-- Button trigger modal -->
+                                                        <button type="button" class="btn btn-info btn-sm mb-1" data-toggle="modal" data-target="#exampleModal2-@item.Id">
+                                                            <i class="fas fa-pencil-alt"></i> Edit
+                                                        </button>
+
+                                                        <!-- Modal -->
+                                                        <div class="modal fade" id="exampleModal2-@item.Id" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel2-@item.Id" aria-hidden="true">
+                                                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-body p-0">
+                                                                        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                                                                            <div class="card card-primary mb-0">
+                                                                                <div class="card-header">
+                                                                                    <h3 class="card-title">Edit Project</h3>
+                                                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                                        <span aria-hidden="true">&times;</span>
+                                                                                    </button>
+                                                                                </div>
+
+                                                                                <div class="card-body text-left">
+
+                                                                                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                                                                                    <input type="hidden" name="Id" value="@item.Id" />
+                                                                                    <div class="form-group">
+                                                                                        <label class="control-label">Upload Image</label>
+                                                                                        <input type="file" name="image" />
+                                                                                    </div>
+                                                                                    <div class="form-group">
+                                                                                        <label class="control-label">Name</label>
+                                                                                        <input name="Name" value="@item.Name" class="form-control" />
+                                                                                    </div>
+                                                                                    <div class="form-group">
+                                                                                        <label class="control-label">Description</label>
+                                                                                        <textarea name="Description" class="form-control" rows="4">@item.Description</textarea>
+                                                                                    </div>
+                                                                                    <input type="hidden" name="Created" value="@item.Created" class="form-control" />
+                                                                                    @if (item.ImageData != null && item.ContentType != null)
+                                                                                    {
+                                                                                        <input type="hidden" name="imageData" value="@Convert.ToBase64String(item.ImageData)" class="form-control" />
+                                                                                        <input type="hidden" name="contentType" value="@item.ContentType" class="form-control" />
+                                                                                    }
+
+                                                                                    @if (IsInRoleAdmin)
+                                                                                    {
+                                                                                        <div class="form-group">
+                                                                                            <label class="control-label">Company</label>
+                                                                                            <select name="CompanyId" class="form-control" asp-items="ViewBag.CompanyId"></select>
+                                                                                        </div>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <input type="hidden" name="CompanyId" value="@item.CompanyId" class="form-control">
+
+                                                                                    }
+
+
+                                                                                    <div class="form-group">
+                                                                                        <input type="submit" value="Save" class="btn btn-success float-left mr-2">
+                                                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                                                    </div>
+
+                                                                                </div>
+                                                                                <!-- /.card-body -->
+                                                                            </div>
+                                                                            <!-- /.card -->
+                                                                        </form>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+
+
+                                                        <!-- Button trigger modal -->
+                                                        <button type="button" class="btn btn-danger btn-sm mb-1" data-toggle="modal" data-target="#exampleModal-@item.Id">
+                                                            <i class="fas fa-trash"></i> Delete
+                                                        </button>
+
+                                                        <!-- Modal -->
+                                                        <div class="modal fade" id="exampleModal-@item.Id" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel-@item.Id" aria-hidden="true">
+                                                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title" id="exampleModalLabel-@item.Id">Delete Project</h5>
+                                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                            <span aria-hidden="true">&times;</span>
+                                                                        </button>
+                                                                    </div>
+                                                                    <div class="modal-body">
+                                                                        <p class="text-danger text-left">Are you sure you want to delete project @item.Name ?</p>
+                                                                        <form asp-action="Delete" method="post">
+                                                                            <input type="hidden" name="Id" value="@item.Id" />
+                                                                            <div class="form-group">
+                                                                                <input type="submit" value="Yes, I want to Delete" class="btn btn-danger mr-2">
+                                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">No, I don't</button>
+                                                                            </div>
+                                                                        </form>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    }
+
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+                    <!-- /.card -->
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+<!-- /.content -->
 
 @code {
+    public Models.CustomUser user = new();
+    public bool IsInRoleAdmin;
+    public bool IsProjectManager;
+    public List<Models.Project> ItemList = new();
 
+    protected override async Task OnInitializedAsync()
+    {
+        await GetData();
+    }
+
+
+    public async Task GetData()
+    {
+        ItemList = _context.Project.Include(p => p.Company).Include(p =>p.Attachments).Include(p => p.CustomUsers).ToList();
+        var currrentUser = _httpContextAccessor.HttpContext.User;
+        user = await _userManager.GetUserAsync(currrentUser);
+        IsInRoleAdmin = await _roleService.IsUserInRoleAsync(user, Roles.Admin.ToString());
+        IsProjectManager = await _roleService.IsUserInRoleAsync(user, Roles.ProjectManager.ToString());
+    }
 }

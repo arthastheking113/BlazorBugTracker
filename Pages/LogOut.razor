@@ -1,0 +1,17 @@
+﻿@page "/logout"
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<CustomUser> _userManager
+@inject SignInManager<CustomUser> _signInManager
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await Logout();
+    }
+
+    public async Task Logout()
+    {
+        await _signInManager.SignOutAsync();
+        NavigationManager.NavigateTo("/manage/account/login");
+    }
+}

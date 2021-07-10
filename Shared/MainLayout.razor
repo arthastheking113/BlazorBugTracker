@@ -1,5 +1,10 @@
 ﻿@inherits LayoutComponentBase
-
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<CustomUser> _userManager
+@inject SignInManager<CustomUser> _signInManager
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor _httpContextAccessor 
 <header>
     <nav class="main-header navbar navbar-expand navbar-white navbar-light">
         <!-- Left navbar links -->
@@ -8,10 +13,10 @@
                 <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" style="color:black;font-size: 14px;font-weight: 800;letter-spacing: 1px;text-transform: uppercase;border-radius: 0;font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;" asp-area="" asp-controller="Home" asp-action="Index"><span class="iconify d-none d-sm-inline-block" data-icon="ant-design:home-filled" data-inline="true"></span> Home</a>
+                <a class="nav-link" style="color:black;font-size: 14px;font-weight: 800;letter-spacing: 1px;text-transform: uppercase;border-radius: 0;font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;" href="/"><span class="iconify d-none d-sm-inline-block" data-icon="ant-design:home-filled" data-inline="true"></span> Home</a>
             </li>
             <li class="nav-item d-none d-sm-inline-block">
-                <a class="nav-link" style="color:black;font-size: 14px;font-weight: 800;letter-spacing: 1px;text-transform: uppercase;border-radius: 0;font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;" href="https://github.com/arthastheking113/BugTracker" target="_blank"><span class="iconify" data-icon="akar-icons:github-fill" data-inline="true"></span> Github</a>
+                <a class="nav-link" style="color:black;font-size: 14px;font-weight: 800;letter-spacing: 1px;text-transform: uppercase;border-radius: 0;font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;" href="https://github.com/arthastheking113/BlazorBugTracker" target="_blank"><span class="iconify" data-icon="akar-icons:github-fill" data-inline="true"></span> Github</a>
             </li>
             <li class="nav-item d-none d-sm-inline-block">
                 <a class="nav-link" style="color:black;font-size: 14px;font-weight: 800;letter-spacing: 1px;text-transform: uppercase;border-radius: 0;font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;" href="https://www.linkedin.com/in/duy-lan-le-445262163/" target="_blank"><span class="iconify" data-icon="akar-icons:linkedin-fill" data-inline="true"></span> Linkedin</a>
@@ -20,7 +25,7 @@
                 <a class="nav-link" style="color:black;font-size: 14px;font-weight: 800;letter-spacing: 1px;text-transform: uppercase;border-radius: 0;font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;" href="https://duylanle-portfolio.netlify.app/" target="_blank"><span class="iconify" data-icon="dashicons:open-folder" data-inline="true"></span> My Portfolio</a>
             </li>
             <li class="nav-item d-none d-sm-inline-block">
-                <a class="nav-link" style="color:black;font-size: 14px;font-weight: 800;letter-spacing: 1px;text-transform: uppercase;border-radius: 0;font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;" asp-area="" asp-controller="Home" asp-action="Contact"><span class="iconify" data-icon="bx:bxs-phone-call" data-inline="true"></span> Contact</a>
+                <a class="nav-link" style="color:black;font-size: 14px;font-weight: 800;letter-spacing: 1px;text-transform: uppercase;border-radius: 0;font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;" href="/contact"><span class="iconify" data-icon="bx:bxs-phone-call" data-inline="true"></span> Contact</a>
             </li>
 
         </ul>
@@ -140,7 +145,7 @@
                     <form id="logoutbutton" asp-area="Identity" asp-page="/Account/Logout">
                         @*<button type="submit" style="color:#c2c7d0" class="nav-link btn btn-link">Logout</button>*@
                     </form>
-                    <a class="nav-link" href="javascript:document.getElementById('logoutbutton').submit()">
+                    <a class="nav-link" target="_self" href="/logout">
                         <i class="nav-icon fas fa-sign-out-alt"></i>
                         <p>Logout</p>
                     </a>
@@ -156,20 +161,20 @@
                 with font-awesome or any other icon font library -->
 
                 <li class="nav-item">
-                    <a asp-controller="Home" asp-action="Index" class="nav-link">
+                    <a href="/" class="nav-link">
                         <i class="nav-icon fas fa-tachometer-alt"></i>
                         <p>Dashboard</p>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a asp-controller="Inboxes" asp-action="Index" class="nav-link">
+                    <a href="/inbox" class="nav-link">
                         <i class="nav-icon fas fa-comments"></i>
                         <p>Inbox</p>
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a asp-controller="Companies" asp-action="Index" class="nav-link">
+                    <a href="/company" class="nav-link">
                         <i class="nav-icon fas fa-building"></i>
                         <p>
                             Company
@@ -177,7 +182,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a asp-controller="Projects" asp-action="Index" class="nav-link">
+                    <a href="/project" class="nav-link">
                         <i class="nav-icon fas fa-tasks"></i>
                         <p>
                             Project
@@ -185,7 +190,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a asp-controller="Tickets" asp-action="Index" class="nav-link">
+                    <a href="/ticket" class="nav-link">
                         <i class="nav-icon fas fa-ticket-alt"></i>
                         <p>
                             Ticket
@@ -194,7 +199,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a asp-controller="Home" asp-action="ManageRole" class="nav-link">
+                    <a href="/manage/role" class="nav-link">
                         <i class="nav-icon fas fa-people-arrows"></i>
                         <p>
                             Role's Management
@@ -203,7 +208,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a asp-controller="Projects" asp-action="ManagerUserProject" class="nav-link">
+                    <a href="/manager/project" class="nav-link">
                         <i class="nav-icon fas fa-user-edit"></i>
                         <p>
                             Project User Management
@@ -221,25 +226,25 @@
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a asp-controller="TicketTypes" asp-action="Index" class="nav-link">
+                            <a href="manage/ticket/type" class="nav-link">
                                 <i class="fas fa-filter"></i>
                                 <p>Ticket Type</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a asp-controller="Priorities" asp-action="Index" class="nav-link">
+                            <a href="manage/ticket/priority" class="nav-link">
                                 <i class="fas fa-sort-alpha-down"></i>
                                 <p>Ticket Priority</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a asp-controller="Status" asp-action="Index" class="nav-link">
+                            <a href="manage/ticket/status" class="nav-link">
                                 <i class="fas fa-battery-three-quarters"></i>
                                 <p>Ticket Status</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a asp-controller="Home" asp-action="UserOverview" class="nav-link">
+                            <a href="manage/user" class="nav-link">
                                 <i class="fas fa-users"></i>
                                 <p>User Overview</p>
                             </a>
@@ -269,3 +274,20 @@
     </div>
 </footer>
 <a href="#" class="back-to-top"><i class="fa fa-chevron-up"></i></a>
+
+@code{      
+    protected override void OnInitialized()
+    {
+        if (!_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+        {
+            try
+            {
+                NavigationManager.NavigateTo("/Identity/Account/Login", true);
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+    }
+}
