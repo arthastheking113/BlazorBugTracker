@@ -4,6 +4,8 @@ using BlazorBugTracker.Models;
 using BlazorBugTracker.Service;
 using BlazorBugTracker.Services;
 using BlazorBugTracker.Utilities;
+using Majorsoft.Blazor.Components.Common.JsInterop;
+using Majorsoft.Blazor.Components.CssEvents;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -79,6 +81,8 @@ namespace BlazorBugTracker
             services.AddScoped<NotificationService>();
             services.AddScoped<TooltipService>();
             services.AddScoped<ContextMenuService>();
+            services.AddCssEvents();
+            services.AddJsInteropExtensions();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

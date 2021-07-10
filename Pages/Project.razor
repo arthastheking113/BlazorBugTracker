@@ -8,6 +8,7 @@
 @inject UserManager<CustomUser> _userManager 
 @using BlazorBugTracker.Data
 @inject ApplicationDbContext _context 
+@inject IJSRuntime JSRuntime
 <!-- Main content -->
 <section class="content">
     <div class="card">
@@ -272,5 +273,13 @@
         user = await _userManager.GetUserAsync(currrentUser);
         IsInRoleAdmin = await _roleService.IsUserInRoleAsync(user, Roles.Admin.ToString());
         IsProjectManager = await _roleService.IsUserInRoleAsync(user, Roles.ProjectManager.ToString());
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("enableTable", null);
+        }
     }
 }
