@@ -1,13 +1,12 @@
-﻿@page "/manage/ticket/status"
+﻿@page "/manage/ticket/priority"
 @using BlazorBugTracker.Data
 @inject ApplicationDbContext _context
 @inject IJSRuntime JSRuntime
-
 <div class="row">
     <div class="col">
         <div class="card">
             <div class="card-header bg-dark">
-                <h3 class="card-title">Ticket Status</h3>
+                <h3 class="card-title">Ticket Priority</h3>
             </div>
             <div class="card-body">
                 <a class="btn btn-outline-success" @onclick="OpenCreateDialog">Create New</a>
@@ -190,8 +189,8 @@
     private ModalDialog _editDialog;
     private ModalDialog _deleteDialog;
 
-    public Models.Status newItem = new();
-    public Models.Status currentItem = new();
+    public Models.Priority newItem = new();
+    public Models.Priority currentItem = new();
 
     private async Task OpenCreateDialog()
     {
@@ -275,7 +274,7 @@
     }
 
 
-    public List<Models.Status> ItemList = new();
+    public List<Models.Priority> ItemList = new();
 
     protected override void OnInitialized()
     {
@@ -284,6 +283,6 @@
 
     public void GetData()
     {
-        ItemList = _context.Status.ToList();
+        ItemList = _context.Priority.ToList();
     }
 }

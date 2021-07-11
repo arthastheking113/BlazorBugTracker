@@ -1,8 +1,288 @@
 ﻿@page "/manage/ticket/type"
+@using BlazorBugTracker.Data
+@inject ApplicationDbContext _context
+@inject IJSRuntime JSRuntime 
+<div class="row">
+    <div class="col">
+        <div class="card">
+            <div class="card-header bg-dark">
+                <h3 class="card-title">Ticket Types</h3>
+            </div>
+            <div class="card-body">
+                <a class="btn btn-outline-success" @onclick="OpenCreateDialog">Create New</a>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>
+                                Name
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in ItemList)
+                        {
+                            var id = item.Id;
+                            <tr>
+                                <td>
+                                    @item.Name
+                                </td>
+                                <td>
+                                    <a class="btn btn-outline-primary" @onclick="() => OpenEditDialog(id)">Edit</a>
+                                    <a class="btn btn-outline-danger" @onclick="() => OpenDeleteDialog(id)">Delete</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<ModalDialog @ref="_createDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>Create New</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col">
+                    <EditForm Model="newItem" OnValidSubmit="Add">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="row">
+                            <div class="col">
+                                <div style="margin-top:5%">Name</div>
+                                <input class="form-control" @bind="newItem.Name" />
+                            </div>
+                        </div>
+                        <br />
+                        <div class="row">
+                            <div class="col">
+                                <button type="submit" class="btn btn-success btn-block">Create</button>
+                            </div>
+                        </div>
+                    </EditForm>
+                    <hr />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelCreateDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
+
+<ModalDialog @ref="_editDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>Edit</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col">
+                    <EditForm Model="currentItem" OnValidSubmit="Edit">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="row">
+                            <div class="col">
+                                <div style="margin-top:5%">Name</div>
+                                <input class="form-control" @bind="currentItem.Name" />
+                            </div>
+                        </div>
+                        <br />
+                        <div class="row">
+                            <div class="col">
+                                <button type="submit" class="btn btn-primary btn-block">Accept Changes</button>
+                            </div>
+                        </div>
+                    </EditForm>
+                    <hr />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelEditDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
 
 
-<h3>ManageTicketType</h3>
+<ModalDialog @ref="_deleteDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>Delete</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col">
+                    <EditForm Model="currentItem" OnValidSubmit="Delete">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="row">
+                            <div class="col">
+                                <div style="margin-top:5%">Name</div>
+                                <input class="form-control" readonly @bind="currentItem.Name" />
+                            </div>
+                        </div>
+                        <br />
+                        <div class="row">
+                            <div class="col">
+                                <button type="submit" class="btn btn-danger btn-block">Delete</button>
+                            </div>
+                        </div>
+                    </EditForm>
+                    <hr />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelDeleteDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
+
+
+
+
 
 @code {
 
+    //Fully customized dialog
+    private double _overlayOpacity = 0.3;
+    private double _modalMinHeight = 100;
+    private double _modalMinWitdth = 100;
+    private bool _modalAnimate = true;
+    private bool _modalCloseOnClick = true;
+    private bool _modalCloseOnEsc = true;
+    private bool _modalFocus = true;
+    private bool _modalCentered = true;
+    private bool _modalShowClose = true;
+
+
+    private ModalDialog _createDialog;
+    private ModalDialog _editDialog;
+    private ModalDialog _deleteDialog;
+
+    public Models.TicketType newItem = new();
+    public Models.TicketType currentItem = new();
+
+    private async Task OpenCreateDialog()
+    {
+        await _createDialog.Open();
+    }
+    private async Task CancelCreateDialog()
+    {
+        await _createDialog.Close();
+    }
+    private async Task OpenEditDialog(int id)
+    {
+        currentItem = ItemList.FirstOrDefault(i => i.Id == id);
+        await _editDialog.Open();
+    }
+    private async Task CancelEditDialog()
+    {
+        currentItem = new();
+        await _editDialog.Close();
+    }
+    private async Task OpenDeleteDialog(int id)
+    {
+        currentItem = ItemList.FirstOrDefault(i => i.Id == id);
+        await _deleteDialog.Open();
+    }
+    private async Task CancelDeleteDialog()
+    {
+        currentItem = new();
+        await _deleteDialog.Close();
+    }
+
+    public async Task Add()
+    {
+        try
+        {
+            _context.Add(newItem);
+            _context.SaveChanges();
+            CancelEditDialog();
+            GetData();
+            await JSRuntime.InvokeVoidAsync("success", null);
+
+        }
+        catch(Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+
+        }
+    }
+    public async Task Edit()
+    {
+        try
+        {
+            _context.Update(currentItem);
+            _context.SaveChanges();
+            GetData();
+            CancelEditDialog();
+            await JSRuntime.InvokeVoidAsync("success", null);
+
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+
+        }
+    }
+    public async Task Delete()
+    {
+        try
+        {
+            _context.Remove(currentItem);
+            _context.SaveChanges();
+            GetData();
+            CancelDeleteDialog();
+            await JSRuntime.InvokeVoidAsync("success", null);
+
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+
+        }
+    }
+
+
+    public List<Models.TicketType> ItemList = new();
+
+    protected override void OnInitialized()
+    {
+        GetData();
+    }
+
+    public void GetData()
+    {
+        ItemList = _context.TicketType.ToList();
+    }
 }

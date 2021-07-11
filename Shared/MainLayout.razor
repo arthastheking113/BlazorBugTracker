@@ -4,7 +4,8 @@
 @inject UserManager<CustomUser> _userManager
 @inject SignInManager<CustomUser> _signInManager
 @using Microsoft.AspNetCore.Http
-@inject IHttpContextAccessor _httpContextAccessor 
+@inject IHttpContextAccessor _httpContextAccessor
+@inject IImageService _imageService
 <header>
     <nav class="main-header navbar navbar-expand navbar-white navbar-light">
         <!-- Left navbar links -->
@@ -131,20 +132,18 @@
         <div class="user-panel mt-3 pb-3 d-flex">
 
             <div class="image">
-                <img src="img/avatar.png" class="img-circle elevation-2" alt="User Image" />
+                <img src="@_imageService.DecodeFileAvatar(user.ImageData,user.ContentType)" class="img-circle elevation-2" alt="User Image" />
             </div>
             <div class="info">
 
-                <a asp-area="Identity" asp-page="/Account/Manage/Index" class="d-block">Lan</a>
+                <a href="/Identity/Account/Manage" target="_self" class="d-block">@user.FullName</a>
 
             </div>
         </div>
         <nav>
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false" style="border-bottom:1px solid #4f5962;">
                 <li class="nav-item">
-                    <form id="logoutbutton" asp-area="Identity" asp-page="/Account/Logout">
-                        @*<button type="submit" style="color:#c2c7d0" class="nav-link btn btn-link">Logout</button>*@
-                    </form>
+
                     <a class="nav-link" target="_parent" href="/logout">
                         <i class="nav-icon fas fa-sign-out-alt"></i>
                         <p>Logout</p>
@@ -203,21 +202,19 @@
                         <i class="nav-icon fas fa-people-arrows"></i>
                         <p>
                             Role's Management
-
                         </p>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="/manager/project" class="nav-link">
+                    <a href="/manage/project/user" class="nav-link">
                         <i class="nav-icon fas fa-user-edit"></i>
                         <p>
                             Project User Management
-
                         </p>
                     </a>
                 </li>
                 <li class="nav-item has-treeview">
-                    <a href="#" class="nav-link">
+                    <a style="cursor:pointer" class="nav-link">
                         <i class="nav-icon fas fa-toolbox"></i>
                         <p>
                             Admin Tool
@@ -275,8 +272,12 @@
 </footer>
 <a href="#" class="back-to-top"><i class="fa fa-chevron-up"></i></a>
 
-@code{      
-    protected override void OnInitialized()
+@code{
+
+    public Models.CustomUser user = new();
+
+
+    protected override async Task OnInitializedAsync()
     {
         if (!_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
         {
@@ -288,6 +289,11 @@
             {
 
             }
+        }
+        else
+        {
+            var currrentUser = _httpContextAccessor.HttpContext.User;
+            user = await _userManager.GetUserAsync(currrentUser);
         }
     }
 }

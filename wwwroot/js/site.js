@@ -87,6 +87,25 @@ function display_ct() {
     display_c();  
 }
 
+function success() {
+    Swal.fire({
+        position: 'center',
+        icon: 'success',
+        title: 'Yay, Success',
+        showConfirmButton: false,
+        timer: 1200
+    })
+}
+function error() {
+    Swal.fire({
+        position: 'center',
+        icon: 'error',
+        title: 'Opp, Something is wrong',
+        showConfirmButton: false,
+        timer: 1200
+    })
+}
+
 
 
 function enableTable() {
