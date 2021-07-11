@@ -13,11 +13,13 @@ namespace BlazorBugTracker.Models
 
         [StringLength(50, ErrorMessage = "The {0} must be at least {2} and at max {1} character long.", MinimumLength = 2)]
         [Display(Name = "First Name")]
+        [Required]
         public string FirstName { get; set; }
 
     
         [StringLength(50, ErrorMessage = "The {0} must be at least {2} and at max {1} character long.", MinimumLength = 2)]
         [Display(Name = "Last Name")]
+        [Required]
         public string LastName { get; set; }
 
         [Display(Name = "Change Avatar")]
@@ -26,6 +28,16 @@ namespace BlazorBugTracker.Models
 
         [NotMapped]
         public string FullName { get { return $"{FirstName} {LastName}"; } }
+        [NotMapped]
+        [DataType(DataType.Password)]
+        public string NewPassword { get; set; }
+        [NotMapped]
+        [DataType(DataType.Password)]
+        public string NewConfirmPassword { get; set; }
+
+        [NotMapped]
+        public string Role { get; set; }
+
 
         public int CompanyId { get; set; }
         public virtual Company Company { get; set; }

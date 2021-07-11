@@ -36,6 +36,17 @@ namespace BlazorBugTracker.Services
             return await _userManager.GetRolesAsync(user);
         }
 
+        public async Task<string> ReturnUserRole(CustomUser user)
+        {
+            var role = await _userManager.GetRolesAsync(user);
+            var returnRole = "";
+            if (role.Count != 0)
+            {
+                returnRole = role.ToList().First().ToString();
+            }
+            return returnRole;
+        }
+
         public IEnumerable<IdentityRole> NonDemoRoles()
         {
             var roles = _dbContext.Roles;

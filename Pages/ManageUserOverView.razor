@@ -1,7 +1,503 @@
-﻿@page "/manage/user" 
+﻿@page "/manage/user"
+@using BlazorBugTracker.Service
+@inject IImageService _imageService
+@using BlazorBugTracker.Data
+@inject ApplicationDbContext _context  
+@inject IJSRuntime JSRuntime 
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<CustomUser> _userManager  
+@inject ICustomRoleService _roleService 
+<div class="row">
+    <div class="col">
+        <div class="card">
+            <div class="card-header bg-dark">
+                <h3 class="card-title">User Overview</h3>
+                <div class="card-tools">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" placeholder="Search Users" id="searchUser">
+                        <div class="input-group-append">
+                            <div class="btn btn-primary">
+                                <i class="fas fa-search"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <a class="btn btn-outline-success" @onclick="OpenCreateDialog">Create New User</a>
+                <table id="useroverview" class="table table-striped table-hover">
 
-<h3>ManageUserOverView</h3>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>
+                                Full Name
+                            </th>
+                            <th>
+                                Email
+                            </th>
+                            <th>
+                                Phone Number
+                            </th>
+                            <th>
+                                Role
+                            </th>
+                            <th>
+                                Company
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in ItemList)
+                        {
+                            var id = user.Id;
+                            <tr>
+                                <td>
+                                    <img class="d-flex mr-3 rounded-circle" style="width:5%" src="@(_imageService.DecodeFileAvatar(user.ImageData, user.ContentType))" />
+                                </td>
+                                <td>
+                                    @user.FullName
+                                </td>
+                                <td>
+                                    @user.Email
+                                </td>
+                                <td>
+                                    @user.PhoneNumber
+                                </td>
+                                <td>
+                                    @user.Role
+                                </td>
+                                <td>
+                                    @if (user.Company != null)
+                                    {
+                                        @(user.Company.Name)
+                                    }
+                                    else
+                                    {
+                                        <p>None</p>
+                                    }
+
+                                </td>
+                                <td>
+                                    <a class="btn btn-outline-primary" @onclick="() => OpenEditDialog(id)">Edit</a>
+                                    <a class="btn btn-outline-danger" @onclick="() => OpenDeleteDialog(id)">Delete</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<ModalDialog @ref="_createDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>Create New</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col">
+                    <EditForm Model="newItem" OnValidSubmit="Add">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        @if (errors is not null)
+                        {
+                            foreach (var item in errors)
+                            {
+                                <p class="text-danger">@item</p>
+                            }
+                        }
+                        <div class="row">
+                            <div class="col">
+                                <div style="margin-top:5%">First Name</div>
+                                <input class="form-control" @bind="newItem.FirstName" />
+                            </div>
+                            <div class="col">
+                                <div style="margin-top:5%">Last Name</div>
+                                <input class="form-control" @bind="newItem.LastName" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div style="margin-top:5%">Email</div>
+                                <input class="form-control" @bind="newItem.Email" />
+                            </div>
+                            <div class="col">
+                                <div style="margin-top:5%">Phone Number</div>
+                                <input class="form-control" @bind="newItem.PhoneNumber" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div style="margin-top:5%">Password</div>
+                                <input class="form-control" required min="6" max="50" @bind="newItem.NewPassword" />
+                            </div>
+                            <div class="col">
+                                <div style="margin-top:5%">Confirm Password</div>
+                                <input class="form-control" required min="6" max="50" @bind="newItem.NewConfirmPassword" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div style="margin-top:5%">Company</div>
+                                <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="newItem.CompanyId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%"
+                                                Placeholder="Select Company..." Data=@CompanyList TextProperty="Name" ValueProperty="Id" />
+
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div style="margin-top:5%">Role</div>
+                                <RadzenDropDown AllowClear="true" TValue="string" @bind-Value="newItem.Role" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%"
+                                                Placeholder="Select Role..." Data=@RoleList TextProperty="Name" ValueProperty="Name" Change=@(args => OnChange(args)) />
+
+                            </div>
+                        </div>
+                        <br />
+                        <div class="row">
+                            <div class="col">
+                                <button type="submit" class="btn btn-success btn-block">Create</button>
+                            </div>
+                        </div>
+                    </EditForm>
+                    <hr />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelCreateDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
+
+<ModalDialog @ref="_editDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>Edit</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col">
+                    <EditForm Model="currentItem" OnValidSubmit="Edit">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="row">
+                            <div class="col">
+                                <div style="margin-top:5%">First Name</div>
+                                <input class="form-control" @bind="currentItem.FirstName" />
+                            </div>
+                            <div class="col">
+                                <div style="margin-top:5%">Last Name</div>
+                                <input class="form-control" @bind="currentItem.LastName" />
+                            </div>
+                            <div class="col">
+                                <div style="margin-top:5%">Phone Number</div>
+                                <input class="form-control" @bind="currentItem.PhoneNumber" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div style="margin-top:5%">Email</div>
+                                <input class="form-control" @bind="currentItem.Email" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div style="margin-top:5%">Company</div>
+                                <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="currentItem.CompanyId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%"
+                                                Placeholder="Select Company..." Data=@CompanyList TextProperty="Name" ValueProperty="Id" Change=@(args => OnChange(args)) />
+
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div style="margin-top:5%">Role</div>
+                                <RadzenDropDown AllowClear="true" TValue="string" @bind-Value="currentItem.Role" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%"
+                                                Placeholder="Select Role..." Data=@RoleList TextProperty="Name" ValueProperty="Name" Change=@(args => OnChange(args)) />
+
+                            </div>
+                        </div>
+                        <br />
+                        <div class="row">
+                            <div class="col">
+                                <button type="submit" class="btn btn-primary btn-block">Accept Changes</button>
+                            </div>
+                        </div>
+                    </EditForm>
+                    <hr />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelEditDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
+
+
+<ModalDialog @ref="_deleteDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>Delete</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col">
+                    <EditForm Model="currentItem" OnValidSubmit="Delete">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="row">
+                            <div class="col">
+                                <div style="margin-top:5%">First Name</div>
+                                <input class="form-control" readonly @bind="currentItem.FirstName" />
+                            </div>
+                            <div class="col">
+                                <div style="margin-top:5%">Last Name</div>
+                                <input class="form-control" readonly @bind="currentItem.LastName" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div style="margin-top:5%">Email</div>
+                                <input class="form-control" readonly @bind="currentItem.Email" />
+                            </div>
+                            <div class="col">
+                                <div style="margin-top:5%">Phone Number</div>
+                                <input class="form-control" @bind="currentItem.PhoneNumber" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div style="margin-top:5%">Company</div>
+                                <input class="form-control" readonly @bind="currentItem.Company.Name" />
+                            </div>
+                        </div>
+                        <br />
+                        <div class="row">
+                            <div class="col">
+                                <button type="submit" class="btn btn-danger btn-block">Delete</button>
+                            </div>
+                        </div>
+                    </EditForm>
+                    <hr />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelDeleteDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
+
+
+
 
 @code {
 
+    //Fully customized dialog
+    private double _overlayOpacity = 0.3;
+    private double _modalMinHeight = 100;
+    private double _modalMinWitdth = 100;
+    private bool _modalAnimate = true;
+    private bool _modalCloseOnClick = true;
+    private bool _modalCloseOnEsc = true;
+    private bool _modalFocus = true;
+    private bool _modalCentered = true;
+    private bool _modalShowClose = true;
+
+
+    private ModalDialog _createDialog;
+    private ModalDialog _editDialog;
+    private ModalDialog _deleteDialog;
+
+    public Models.CustomUser newItem = new();
+    public Models.CustomUser currentItem = new();
+
+    private async Task OpenCreateDialog()
+    {
+        errors = null;
+        await _createDialog.Open();
+    }
+    private async Task CancelCreateDialog()
+    {
+        errors = null;
+        await _createDialog.Close();
+    }
+    private async Task OpenEditDialog(string id)
+    {
+        currentItem = ItemList.FirstOrDefault(i => i.Id == id);
+        await _editDialog.Open();
+    }
+    private async Task CancelEditDialog()
+    {
+        currentItem = new();
+        await _editDialog.Close();
+    }
+    private async Task OpenDeleteDialog(string id)
+    {
+        currentItem = ItemList.FirstOrDefault(i => i.Id == id);
+        currentItem.Role = (await _roleService.ListUserRoleAsync(currentItem)).ToList().First().ToString();
+        await _deleteDialog.Open();
+    }
+    private async Task CancelDeleteDialog()
+    {
+        currentItem = new();
+        await _deleteDialog.Close();
+    }
+
+    public async Task Add()
+    {
+        try
+        {
+            if (String.IsNullOrEmpty(newItem.Role) || String.IsNullOrWhiteSpace(newItem.Role))
+            {
+                await JSRuntime.InvokeVoidAsync("errorMissingRole", null);
+            }
+            else
+            {
+                if (newItem.NewPassword != newItem.NewConfirmPassword)
+                {
+                    newItem.EmailConfirmed = true;
+                    var result = await _userManager.CreateAsync(newItem, newItem.NewPassword);
+                    if (result.Succeeded)
+                    {
+
+                        await _roleService.AddUserToRoleAsync(newItem, newItem.Role);
+
+                        CancelEditDialog();
+                        await GetData();
+                        await JSRuntime.InvokeVoidAsync("success", null);
+                    }
+                    else
+                    {
+                        errors = result.Errors;
+                        await JSRuntime.InvokeVoidAsync("error", null);
+                    }
+
+                }
+                else
+                {
+                    await JSRuntime.InvokeVoidAsync("errorPasswordNotMatch", null);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+
+        }
+    }
+    public async Task Edit()
+    {
+        try
+        {
+            if (!String.IsNullOrEmpty(currentItem.Role) || !String.IsNullOrWhiteSpace(currentItem.Role))
+            {
+                var roles = await _roleService.ListUserRoleAsync(currentItem);
+                foreach (var item in roles)
+                {
+                    await _roleService.RemoveUserFromRoleAsync(currentItem, item);
+                }
+                await _roleService.AddUserToRoleAsync(currentItem, currentItem.Role);
+            }
+            await _userManager.UpdateAsync(currentItem);
+            await GetData();
+            CancelEditDialog();
+            await JSRuntime.InvokeVoidAsync("success", null);
+
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+
+        }
+    }
+    public async Task Delete()
+    {
+        try
+        {
+            await _userManager.DeleteAsync(currentItem);
+
+            await GetData();
+            CancelDeleteDialog();
+            await JSRuntime.InvokeVoidAsync("success", null);
+
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+
+        }
+    }
+
+
+    public List<Models.CustomUser> ItemList = new();
+    public List<Models.Company> CompanyList = new();
+    public IEnumerable<IdentityError> errors = null;
+    public List<IdentityRole> RoleList = new();
+    public List<string> userRoleList = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetData();
+    }
+
+    public async Task GetData()
+    {
+        try
+        {
+            ItemList = _context.Users.Include(i => i.Company).ToList();
+            foreach (var item in ItemList)
+            {
+                item.Role = await _roleService.ReturnUserRole(item);
+            }
+            CompanyList = _context.Company.ToList();
+            RoleList = _context.Roles.ToList();
+        }
+        catch(Exception ex)
+        {
+
+        }
+
+    }
+    void OnChange(object value)
+    {
+        var str = value is IEnumerable<object> ? string.Join(", ", (IEnumerable<object>)value) : value;
+
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("enableTable", null);
+        }
+    }
 }
