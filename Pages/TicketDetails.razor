@@ -1,0 +1,612 @@
+﻿@page "/ticket/details/{TicketId}"
+@using BlazorBugTracker.Data
+@inject ApplicationDbContext _context
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<CustomUser> _userManager
+@inject SignInManager<CustomUser> _signInManager
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor _httpContextAccessor
+@using Microsoft.EntityFrameworkCore
+@using BlazorBugTracker.Services
+@inject ICustomRoleService _roleService
+@inject CustomFileService _customFileService 
+@inject IImageService _imageService
+<div class="row">
+
+    <div class="col-5">
+        <div class="card">
+            <div class="card-header bg-dark">
+                Ticket #@currentTicket.Id - Details
+            </div>
+
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-2">
+                        Id
+                    </dt>
+                    <dd class="col-sm-10">
+                        #@currentTicket.Id
+                    </dd>
+                    <dt class="col-sm-2">
+                        Name
+                    </dt>
+                    <dd class="col-sm-10">
+                        @currentTicket.Name
+                    </dd>
+                    <dt class="col-sm-2">
+                        Description
+                    </dt>
+                    <dd class="col-sm-10">
+                        @currentTicket.Description
+                    </dd>
+                    <dt class="col-sm-2">
+                        Created
+                    </dt>
+                    <dd class="col-sm-10">
+                        @currentTicket.Created.ToString("dddd dd MMMM yyyy hh:mm tt")
+                    </dd>
+                    <dt class="col-sm-2">
+                        Updated
+                    </dt>
+                    <dd class="col-sm-10">
+                        @currentTicket.Updated.ToString("dddd dd MMMM yyyy hh:mm tt")
+                    </dd>
+                    <dt class="col-sm-2">
+                        Developer
+                    </dt>
+                    <dd class="col-sm-10">
+                        @currentTicket.Developer.FullName
+                    </dd>
+                    <dt class="col-sm-2">
+                        Ownner
+                    </dt>
+                    <dd class="col-sm-10">
+                        @currentTicket.Ownner.FullName
+                    </dd>
+                    <dt class="col-sm-2">
+                        Project
+                    </dt>
+                    <dd class="col-sm-10">
+                        @currentTicket.Project.Name
+                    </dd>
+                    <dt class="col-sm-2">
+                        Status
+                    </dt>
+                    <dd class="col-sm-10">
+                        @currentTicket.Status.Name
+                    </dd>
+                    <dt class="col-sm-2">
+                        Priority
+                    </dt>
+                    <dd class="col-sm-10">
+                        @currentTicket.Priority.Name
+                    </dd>
+                    <dt class="col-sm-2">
+                        TicketType
+                    </dt>
+                    <dd class="col-sm-10">
+                        @currentTicket.TicketType.Name
+                    </dd>
+                </dl>
+                <div class="row">
+                    <div class="col">
+
+                        <!-- Button trigger modal -->
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+                            Edit
+                        </button>
+
+                        <!-- Modal -->
+                        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-body p-0">
+                                        <form asp-action="Edit" method="post">
+                                            <div class="card card-primary mb-0">
+                                                <div class="card-header">
+                                                    <h3 class="card-title">Edit Ticket</h3>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div asp-validation-summary="currentTicketOnly" class="text-danger"></div>
+                                                    <input type="hidden" asp-for="Id" />
+                                                    <div class="form-group">
+                                                        <label asp-for="Name" class="control-label"></label>
+                                                        <input asp-for="Name" class="form-control" />
+                                                        <span asp-validation-for="Name" class="text-danger"></span>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label asp-for="Description" class="control-label"></label>
+                                                        <input asp-for="Description" class="form-control" />
+                                                        <span asp-validation-for="Description" class="text-danger"></span>
+                                                    </div>
+
+                                                    <input type="hidden" asp-for="Created" class="form-control" />
+
+                                                    @if (IsInRoleAdmin || IsProjectManager)
+                                                    {
+                                                        <div class="form-group form-check">
+                                                            <label class="form-check-label">
+                                                                <input class="form-check-input" asp-for="IsAssigned" /> @currentTicket.IsAssigned
+                                                            </label>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label asp-for="DeveloperId" class="control-label"></label>
+                                                            <select asp-for="DeveloperId" class="form-control" asp-items="ViewBag.DeveloperId"></select>
+                                                            <span asp-validation-for="DeveloperId" class="text-danger"></span>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label asp-for="ProjectId" class="control-label"></label>
+                                                            <select asp-for="ProjectId" class="form-control" asp-items="ViewBag.ProjectId"></select>
+                                                            <span asp-validation-for="ProjectId" class="text-danger"></span>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label asp-for="TicketTypeId" class="control-label"></label>
+                                                            <select asp-for="TicketTypeId" class="form-control" asp-items="ViewBag.TicketTypeId"></select>
+                                                            <span asp-validation-for="TicketTypeId" class="text-danger"></span>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label asp-for="PriorityId" class="control-label"></label>
+                                                            <select asp-for="PriorityId" class="form-control" asp-items="ViewBag.PriorityId"></select>
+                                                            <span asp-validation-for="PriorityId" class="text-danger"></span>
+                                                        </div>
+                                                    }
+                                                    else if (IsSubmitter)
+                                                    {
+                                                        <div class="form-group form-check">
+                                                            <label class="form-check-label">
+                                                                <input class="form-check-input" disabled asp-for="IsAssigned" /> @currentTicket.IsAssigned
+                                                            </label>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label asp-for="DeveloperId" class="control-label"></label>
+                                                            <select asp-for="DeveloperId" class="form-control" asp-items="ViewBag.DeveloperId" disabled></select>
+                                                            <span asp-validation-for="DeveloperId" class="text-danger"></span>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label asp-for="ProjectId" class="control-label"></label>
+                                                            <select asp-for="ProjectId" class="form-control" asp-items="ViewBag.ProjectId" disabled></select>
+                                                            <span asp-validation-for="ProjectId" class="text-danger"></span>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label asp-for="TicketTypeId" class="control-label"></label>
+                                                            <select asp-for="TicketTypeId" class="form-control" asp-items="ViewBag.TicketTypeId"></select>
+                                                            <span asp-validation-for="TicketTypeId" class="text-danger"></span>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label asp-for="PriorityId" class="control-label"></label>
+                                                            <select asp-for="PriorityId" class="form-control" asp-items="ViewBag.PriorityId"></select>
+                                                            <span asp-validation-for="PriorityId" class="text-danger"></span>
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="form-group form-check">
+                                                            <label class="form-check-label">
+                                                                <input class="form-check-input" disabled asp-for="IsAssigned" /> @currentTicket.IsAssigned
+                                                            </label>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label asp-for="DeveloperId" class="control-label"></label>
+                                                            <select asp-for="DeveloperId" class="form-control" asp-items="ViewBag.DeveloperId" disabled></select>
+                                                            <span asp-validation-for="DeveloperId" class="text-danger"></span>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label asp-for="ProjectId" class="control-label"></label>
+                                                            <select asp-for="ProjectId" class="form-control" asp-items="ViewBag.ProjectId" disabled></select>
+                                                            <span asp-validation-for="ProjectId" class="text-danger"></span>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label asp-for="TicketTypeId" class="control-label"></label>
+                                                            <select asp-for="TicketTypeId" class="form-control" asp-items="ViewBag.TicketTypeId" disabled></select>
+                                                            <span asp-validation-for="TicketTypeId" class="text-danger"></span>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label asp-for="PriorityId" class="control-label"></label>
+                                                            <select asp-for="PriorityId" class="form-control" asp-items="ViewBag.PriorityId" disabled></select>
+                                                            <span asp-validation-for="PriorityId" class="text-danger"></span>
+                                                        </div>
+                                                    }
+
+
+                                                    <input type="hidden" asp-for="OwnnerId" class="form-control" />
+
+
+                                                    <div class="form-group">
+                                                        <label asp-for="StatusId" class="control-label"></label>
+                                                        <select asp-for="StatusId" class="form-control" asp-items="ViewBag.StatusId"></select>
+                                                        <span asp-validation-for="StatusId" class="text-danger"></span>
+                                                    </div>
+
+
+
+                                                    <div class="form-group">
+                                                        <input type="submit" value="Save" class="btn btn-success float-left mr-2">
+                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                    </div>
+
+                                                </div>
+                                                <!-- /.card-body -->
+                                            </div>
+                                            <!-- /.card -->
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @if (IsInRoleAdmin || IsProjectManager)
+                        {
+
+                            <!-- Button trigger modal -->
+                            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleModal2">
+                                Delete
+                            </button>
+
+                            <!-- Modal -->
+                            <div class="modal fade" id="exampleModal2" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel2" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-body p-0">
+                                            <div class="card card-primary mb-0">
+                                                <div class="card-header">
+                                                    <h3 class="card-title">Are you sure you want to delete this Ticket ?</h3>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="card-body">
+                                                    <dl class="row">
+                                                        <dt class="col-sm-2">
+                                                            Name
+                                                        </dt>
+                                                        <dd class="col-sm-10">
+                                                            @currentTicket.Name
+                                                        </dd>
+                                                        <dt class="col-sm-2">
+                                                            Description
+                                                        </dt>
+                                                        <dd class="col-sm-10">
+                                                            @currentTicket.Description
+                                                        </dd>
+                                                        <dt class="col-sm-2">
+                                                            Created
+                                                        </dt>
+                                                        <dd class="col-sm-10">
+                                                            @currentTicket.Created
+                                                        </dd>
+                                                        <dt class="col-sm-2">
+                                                            Updated
+                                                        </dt>
+                                                        <dd class="col-sm-10">
+                                                            @currentTicket.Created.ToString("dddd, dd MMMM yyyy")
+                                                        </dd>
+                                                        <dt class="col-sm-2">
+                                                            Developer
+                                                        </dt>
+                                                        <dd class="col-sm-10">
+                                                            @currentTicket.Developer.FullName
+                                                        </dd>
+                                                        <dt class="col-sm-2">
+                                                            Ownner
+                                                        </dt>
+                                                        <dd class="col-sm-10">
+                                                            @currentTicket.Ownner.FullName
+                                                        </dd>
+                                                        <dt class="col-sm-2">
+                                                            Project
+                                                        </dt>
+                                                        <dd class="col-sm-10">
+                                                            @currentTicket.Project.Name
+                                                        </dd>
+                                                        <dt class="col-sm-2">
+                                                            Status
+                                                        </dt>
+                                                        <dd class="col-sm-10">
+                                                            @currentTicket.Status.Name
+                                                        </dd>
+                                                        <dt class="col-sm-2">
+                                                            Priority
+                                                        </dt>
+                                                        <dd class="col-sm-10">
+                                                            @currentTicket.Priority.Name
+                                                        </dd>
+                                                        <dt class="col-sm-2">
+                                                            TicketType
+                                                        </dt>
+                                                        <dd class="col-sm-10">
+                                                            @currentTicket.TicketType.Name
+                                                        </dd>
+                                                    </dl>
+                                                    <form asp-action="Delete" method="post">
+                                                        <input type="hidden" asp-for="Id" />
+                                                        <input type="submit" value="Delete" class="btn btn-danger" />
+                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                    </form>
+                                                </div>
+                                                <!-- /.card-body -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <a class="btn btn-secondary" asp-action="Index">Back to List</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="card">
+            <div class="card-header bg-dark">
+                <h3 class="card-title"> Attach File (@(currentTicket.Attachments.Count))</h3>
+            </div>
+            <div class="card-body">
+                <div class="row ">
+                    <form asp-action="Create" asp-controller="TicketAttachments" enctype="multipart/form-data" method="post">
+                        <div asp-validation-summary="currentTicketOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="@currentTicket.Id" name="TicketId">
+                        <div class="media-body ml-3 ">
+                            <label>Description<input name="Description" type="text" class="form-control" required placeholder="Add Description..."></label>
+                            <label class="btn btn-outline-secondary btn-sm">
+                                Upload File
+                                <input asp-for="@currentTicket.Attachments.FirstOrDefault().FormFile" type="file" required />
+                            </label>
+                        </div>
+                        <div class="row">
+                            <div class="col text-center">
+                                <button type="submit" class="btn btn-outline-secondary md-btn-flat">Upload</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+
+                    <div class="col">
+                        <div class="row clearfix">
+                            @foreach (var item in currentTicket.Attachments)
+                            {
+                                <div class="col-sm-2">
+                                    <div class="card">
+                                        <div class="file">
+                                            <a asp-controller="TicketAttachments" asp-action="Details" asp-route-id="@item.Id">
+                                                <div class="hover">
+                                                    <form asp-controller="TicketAttachments" asp-action="Details" asp-route-id="@item.Id">
+                                                        <button type="submit" class="btn btn-icon btn-danger">
+                                                            <i class="fa fa-trash"></i>
+                                                        </button>
+                                                    </form>
+
+                                                </div>
+                                                <div class="icon">
+                                                    <img src="@_customFileService.GetFileIcon(item.FileName)" style="height:60px;width:60px" />
+                                                </div>
+                                                <div class="file-name">
+                                                    <p class="m-b-5 text-muted">@System.IO.Path.GetFileNameWithoutExtension(item.FileName)</p>
+                                                    <small>Size: @_customFileService.FormatFileSize(item.FileData.Length) <span class="date text-muted">@item.Created.ToString("dd MMMM yyyy - hh:mm tt")</span></small>
+                                                </div>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+    </div>
+
+    <div class="col">
+
+   
+        <div class="card">
+            <div class="card-header bg-dark">
+                <h3 class="card-title">Ticket Histories (@(currentTicket.TicketHistories.Count))</h3>
+                <div class="card-tools">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" placeholder="Search Histories" id="searchTicketHistory">
+                        <div class="input-group-append">
+                            <div class="btn btn-primary">
+                                <i class="fas fa-search"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table" id="tickethistory">
+                    <thead>
+                        <tr>
+                            <th>
+                                Created
+                            </th>
+                            <th>
+                                Property
+                            </th>
+                            <th>
+                                Old Value
+                            </th>
+                            <th>
+                                New Value
+                            </th>
+                            <th>
+                                User
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in currentTicket.TicketHistories)
+                        {
+                            <tr>
+                                <td>
+                                    @item.Created.ToString("dddd dd MMMM yyyy hh:mm tt")
+                                </td>
+                                <td>
+                                    @item.Property
+                                </td>
+                                <td>
+                                    @item.OldValue
+                                </td>
+                                <td>
+                                    @item.NewValue
+                                </td>
+                                <td>
+                                    @item.CustomUser.FullName
+                                </td>
+
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header bg-dark">
+                        Comments (@currentTicket.Comments)
+                    </div>
+                    <div class="card-body">
+                        <form asp-controller="Comments" asp-action="Create" method="post">
+                            <input type="hidden" name="TicketId" value="@currentTicket.Id" />
+                            <input type="hidden" name="CustomUserId"  />
+                            <div class="form-group">
+                                <textarea id="Content" name="Content" class="form-control" rows="4" required></textarea>
+                            </div>
+
+                            <input type="submit" value="Comment" class="btn btn-secondary" />
+                        </form>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col">
+                                @foreach (var comment in currentTicket.Comments)
+                                {
+                                    var timeSpan = currentTime.Subtract(comment.Created);
+                                    var eslapseSecond = timeSpan.Seconds;
+                                    var eslapseMinute = timeSpan.Minutes;
+                                    var eslapseHours = timeSpan.Hours;
+                                    var eslapseDate = timeSpan.Days;
+                                    string commentdate;
+                                    if (eslapseDate >= 1)
+                                    {
+                                        commentdate = eslapseDate.ToString() + " Days Ago";
+
+                                    }
+                                    else if (eslapseHours >= 1)
+                                    {
+                                        commentdate = eslapseHours.ToString() + " Hours Ago";
+                                    }
+                                    else if (eslapseMinute >= 1)
+                                    {
+                                        commentdate = eslapseMinute.ToString() + " Minutes Ago";
+                                    }
+                                    else
+                                    {
+                                        commentdate = eslapseSecond.ToString() + " Seconds Ago";
+                                    }
+                                    <div class="media mb-4" style="border-bottom:2px solid rgb(28, 213, 219)">
+                                        <img class="d-flex mr-3 rounded-circle" style="width:5%" src="@_imageService.DecodeFileAvatar(user.ImageData,user.ContentType)" alt="">
+                                        <div class="media-body">
+                                            <div class="row">
+                                                <div class="col text-left">
+                                                    <h5 class="mt-0">@comment.CustomUser.FullName</h5>
+                                                </div>
+                                                @if (IsInRoleAdmin || IsProjectManager)
+                                                {
+                                                    <div class="col text-right">
+                                                        <a class="btn btn-secondary" asp-controller="PostComments" asp-action="Edit" asp-route-id="@comment.Id">Edit</a>
+                                                        <a class="btn btn-secondary" asp-controller="PostComments" asp-action="Delete" asp-route-id="@comment.Id">Delete</a>
+                                                    </div>
+                                                }
+
+                                            </div>
+
+                                            <div class="row" style="margin:0px;padding:0px;margin-bottom:15px">
+                                                <div class="col text-left" style="padding:0px 0px">
+                                                    @comment.Content
+                                                </div>
+                                                <div class="col text-right">
+                                                    <p style="margin:0px;padding:0px;">@commentdate</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                }
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+
+</div>
+
+@code {
+    [Parameter]
+    public int TicketId { get; set; }
+    public Models.CustomUser user = new();
+    public Models.Ticket currentTicket = new();
+    public bool IsInRoleAdmin;
+    public bool IsDeveloper;
+    public bool IsSubmitter;
+    public bool IsProjectManager;
+    public bool IsNewUser;
+    public DateTime currentTime;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetData();
+    }
+
+
+
+    public async Task GetData()
+    {
+        currentTicket = _context.Ticket
+            .Include(t => t.Ownner)
+            .Include(t => t.Priority)
+            .Include(t => t.Project)
+            .Include(t => t.Status)
+            .Include(t => t.TicketHistories)
+            .Include(t => t.TicketType)
+            .Include(t => t.Attachments)
+            .Include(t => t.Developer)
+            .Include(t => t.Comments).FirstOrDefault(t => t.Id == TicketId);
+        var currrentUser = _httpContextAccessor.HttpContext.User;
+        user = await _userManager.GetUserAsync(currrentUser);
+        IsInRoleAdmin = await _roleService.IsUserInRoleAsync(user, Roles.Admin.ToString());
+        IsDeveloper = await _roleService.IsUserInRoleAsync(user, Roles.Developer.ToString());
+        IsNewUser = await _roleService.IsUserInRoleAsync(user, Roles.NewUser.ToString());
+        IsSubmitter = await _roleService.IsUserInRoleAsync(user, Roles.Submitter.ToString());
+        IsProjectManager = await _roleService.IsUserInRoleAsync(user, Roles.ProjectManager.ToString());
+
+        currentTime = DateTime.Now;
+    }
+
+}
