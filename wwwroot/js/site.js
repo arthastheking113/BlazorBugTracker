@@ -69,10 +69,7 @@
 })(jQuery);
 
 
-function display_c() {
-    var refresh = 1000; // Refresh rate in milli seconds
-    mytime = setTimeout('display_ct()', refresh)
-}
+
 
 function display_ct() {
     document.getElementById('gsc-i-id1').placeholder = 'Search...';

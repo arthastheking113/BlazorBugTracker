@@ -1,14 +1,15 @@
 ﻿@page "/project"
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Http
-@using Microsoft.EntityFrameworkCore 
+@using Microsoft.EntityFrameworkCore
 @using BlazorBugTracker.Services
-@inject ICustomRoleService _roleService  
+@inject ICustomRoleService _roleService
 @inject IHttpContextAccessor _httpContextAccessor
-@inject UserManager<CustomUser> _userManager 
+@inject UserManager<CustomUser> _userManager
 @using BlazorBugTracker.Data
-@inject ApplicationDbContext _context 
+@inject ApplicationDbContext _context
 @inject IJSRuntime JSRuntime
+@inject ISessionStorageService sessionStorage
 <!-- Main content -->
 <section class="content">
     <div class="card">
@@ -129,7 +130,7 @@
                                                 </td>
 
                                                 <td class="project-actions text-right">
-                                                    <a class="btn btn-primary btn-sm mb-1" asp-action="Details" asp-route-id="@item.Id"><i class="fas fa-folder"></i> View</a>
+                                                    <a class="btn btn-primary btn-sm mb-1" href="/project/details/@item.Id"><i class="fas fa-folder"></i> View</a>
                                                     @if (IsInRoleAdmin || IsProjectManager)
                                                     {
                                                         <!-- Button trigger modal -->
@@ -257,7 +258,10 @@
 @code {
     public Models.CustomUser user = new();
     public bool IsInRoleAdmin;
+    public bool IsDeveloper;
+    public bool IsSubmitter;
     public bool IsProjectManager;
+    public bool IsNewUser;
     public List<Models.Project> ItemList = new();
 
     protected override async Task OnInitializedAsync()
@@ -268,15 +272,23 @@
 
     public async Task GetData()
     {
-        ItemList = _context.Project.Include(p => p.Company).Include(p =>p.Attachments).Include(p => p.CustomUsers).ToList();
-        var currrentUser = _httpContextAccessor.HttpContext.User;
-        user = await _userManager.GetUserAsync(currrentUser);
-        IsInRoleAdmin = await _roleService.IsUserInRoleAsync(user, Roles.Admin.ToString());
-        IsProjectManager = await _roleService.IsUserInRoleAsync(user, Roles.ProjectManager.ToString());
+        ItemList = _context.Project.Include(p => p.Company).Include(p => p.Attachments).Include(p => p.CustomUsers).ToList();
+        user = await sessionStorage.GetItemAsync<CustomUser>("user");
+        IsInRoleAdmin = await sessionStorage.GetItemAsync<bool>("IsInRoleAdmin");
+        IsDeveloper = await sessionStorage.GetItemAsync<bool>("IsDeveloper");
+        IsNewUser = await sessionStorage.GetItemAsync<bool>("IsNewUser");
+        IsSubmitter = await sessionStorage.GetItemAsync<bool>("IsSubmitter");
+        IsProjectManager = await sessionStorage.GetItemAsync<bool>("IsProjectManager");
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        user = await sessionStorage.GetItemAsync<CustomUser>("user");
+        IsInRoleAdmin = await sessionStorage.GetItemAsync<bool>("IsInRoleAdmin");
+        IsDeveloper = await sessionStorage.GetItemAsync<bool>("IsDeveloper");
+        IsNewUser = await sessionStorage.GetItemAsync<bool>("IsNewUser");
+        IsSubmitter = await sessionStorage.GetItemAsync<bool>("IsSubmitter");
+        IsProjectManager = await sessionStorage.GetItemAsync<bool>("IsProjectManager");
         if (firstRender)
         {
             await JSRuntime.InvokeVoidAsync("enableTable", null);

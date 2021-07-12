@@ -6,6 +6,8 @@
 @using Microsoft.AspNetCore.Http
 @inject IHttpContextAccessor _httpContextAccessor
 @inject IImageService _imageService
+@inject ISessionStorageService sessionStorage
+@inject ICustomRoleService _roleService
 <header>
     <nav class="main-header navbar navbar-expand navbar-white navbar-light">
         <!-- Left navbar links -->
@@ -112,7 +114,9 @@
         </ul>
         <ul class="navbar-nav ml-auto mr-auto">
             <li class="nav-item dropdown">
-                <p id='ct' class="nav-item d-none d-sm-inline-block" style="padding:0;margin:0;color:black;font-size: 14px;font-weight: 800;letter-spacing: 1px;text-transform: uppercase;border-radius: 0;font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;"></p>
+                <p  class="nav-item d-none d-sm-inline-block" style="padding:0;margin:0;color:black;font-size: 14px;font-weight: 800;letter-spacing: 1px;text-transform: uppercase;border-radius: 0;font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                    @time
+                </p>
             </li>
         </ul>
     </nav>
@@ -275,7 +279,12 @@
 @code{
 
     public Models.CustomUser user = new();
-
+    public bool IsInRoleAdmin;
+    public bool IsDeveloper;
+    public bool IsSubmitter;
+    public bool IsProjectManager;
+    public bool IsNewUser;
+    public string time;
 
     protected override async Task OnInitializedAsync()
     {
@@ -294,6 +303,37 @@
         {
             var currrentUser = _httpContextAccessor.HttpContext.User;
             user = await _userManager.GetUserAsync(currrentUser);
+            IsInRoleAdmin = await _roleService.IsUserInRoleAsync(user, Roles.Admin.ToString());
+            IsDeveloper = await _roleService.IsUserInRoleAsync(user, Roles.Developer.ToString());
+            IsNewUser = await _roleService.IsUserInRoleAsync(user, Roles.NewUser.ToString());
+            IsSubmitter = await _roleService.IsUserInRoleAsync(user, Roles.Submitter.ToString());
+            IsProjectManager = await _roleService.IsUserInRoleAsync(user, Roles.ProjectManager.ToString());
+
+
         }
+
+        GetTime();
+
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await sessionStorage.SetItemAsync("user", user);
+        await sessionStorage.SetItemAsync("IsInRoleAdmin", IsInRoleAdmin);
+        await sessionStorage.SetItemAsync("IsDeveloper", IsDeveloper);
+        await sessionStorage.SetItemAsync("IsNewUser", IsNewUser);
+        await sessionStorage.SetItemAsync("IsSubmitter", IsSubmitter);
+        await sessionStorage.SetItemAsync("IsProjectManager", IsProjectManager);
+
+        while (true)
+        {
+            await Task.Delay(1000);
+            GetTime();
+            StateHasChanged();
+        }
+    }
+    public void GetTime()
+    {
+        time = DateTime.Now.ToString("dddd, dd MMMM yyyy - HH:mm:ss");
     }
 }

@@ -77,7 +77,7 @@ namespace BlazorBugTracker.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null, string demoEmail = null)
         {
-            returnUrl ??= Url.Content("~/");
+            returnUrl =  "/";
             if (!string.IsNullOrWhiteSpace(demoEmail))
 
             {

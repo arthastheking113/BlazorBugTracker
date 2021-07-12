@@ -16,6 +16,7 @@
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Http
 @inject IHttpContextAccessor _httpContextAccessor
+@inject ISessionStorageService sessionStorage
 
 <section class="content">
 
@@ -71,7 +72,7 @@
 
                                             <div class="form-group">
                                                 <label name="DeveloperId" class="control-label">Developer</label>
-                                                <select name="DeveloperId" class="form-control" required ></select>
+                                                <select name="DeveloperId" class="form-control" required></select>
                                             </div>
                                         }
 
@@ -528,19 +529,21 @@
             .Include(p => p.CustomUsers)
             .Include(p => p.Tickets)
             .FirstOrDefault(p => p.Id == ProjectId);
-        var currrentUser = _httpContextAccessor.HttpContext.User;
-        user = await _userManager.GetUserAsync(currrentUser);
-        IsInRoleAdmin = await _roleService.IsUserInRoleAsync(user, Roles.Admin.ToString());
-        IsDeveloper = await _roleService.IsUserInRoleAsync(user, Roles.Developer.ToString());
-        IsNewUser = await _roleService.IsUserInRoleAsync(user, Roles.NewUser.ToString());
-        IsSubmitter = await _roleService.IsUserInRoleAsync(user, Roles.Submitter.ToString());
-        IsProjectManager = await _roleService.IsUserInRoleAsync(user, Roles.ProjectManager.ToString());
+
 
         currentTime = DateTime.Now;
         projectManager = await _projectService.ProjectManagerOnProjectAsync(currentProject.Id);
         developerOnProject = (await _projectService.DeveloperOnProjectAsync(currentProject.Id)).ToList();
         submitterOnProject = (await _projectService.SubmitterOnProjectAsync(currentProject.Id)).ToList();
     }
-
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        user = await sessionStorage.GetItemAsync<CustomUser>("user");
+        IsInRoleAdmin = await sessionStorage.GetItemAsync<bool>("IsInRoleAdmin");
+        IsDeveloper = await sessionStorage.GetItemAsync<bool>("IsDeveloper");
+        IsNewUser = await sessionStorage.GetItemAsync<bool>("IsNewUser");
+        IsSubmitter = await sessionStorage.GetItemAsync<bool>("IsSubmitter");
+        IsProjectManager = await sessionStorage.GetItemAsync<bool>("IsProjectManager");
+    }
 
 }

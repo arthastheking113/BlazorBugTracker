@@ -363,7 +363,6 @@
     private async Task OpenDeleteDialog(string id)
     {
         currentItem = ItemList.FirstOrDefault(i => i.Id == id);
-        currentItem.Role = (await _roleService.ListUserRoleAsync(currentItem)).ToList().First().ToString();
         await _deleteDialog.Open();
     }
     private async Task CancelDeleteDialog()
@@ -483,7 +482,7 @@
         }
         catch(Exception ex)
         {
-
+            await JSRuntime.InvokeVoidAsync("error", null);
         }
 
     }

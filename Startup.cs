@@ -4,6 +4,7 @@ using BlazorBugTracker.Models;
 using BlazorBugTracker.Service;
 using BlazorBugTracker.Services;
 using BlazorBugTracker.Utilities;
+using Blazored.SessionStorage;
 using Majorsoft.Blazor.Components.Common.JsInterop;
 using Majorsoft.Blazor.Components.CssEvents;
 using Microsoft.AspNetCore.Builder;
@@ -72,6 +73,7 @@ namespace BlazorBugTracker
 
 
             services.AddScoped<ICustomHistoryService, CustomHistoryService>();
+            services.AddScoped<BlazorBugTracker.Pages.Ticket>();
 
             services.AddScoped<ICustomFileService, CustomFileService>();
             services.AddScoped<ICustomNotificationService, CustomNotificationService>();
@@ -83,6 +85,7 @@ namespace BlazorBugTracker
             services.AddScoped<ContextMenuService>();
             services.AddCssEvents();
             services.AddJsInteropExtensions();
+            services.AddBlazoredSessionStorage();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
