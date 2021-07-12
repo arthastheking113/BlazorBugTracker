@@ -3,6 +3,8 @@
 @using Microsoft.AspNetCore.Http
 @using Microsoft.EntityFrameworkCore
 @using BlazorBugTracker.Services
+@using Microsoft.AspNetCore.Identity.UI.Services
+@inject IEmailSender _emailSender  
 @inject ICustomRoleService _roleService
 @inject ICustomProjectService _projectService
 @inject IHttpContextAccessor _httpContextAccessor
@@ -11,6 +13,7 @@
 @inject ApplicationDbContext _context
 @inject IJSRuntime JSRuntime
 @inject ISessionStorageService sessionStorage
+@inject ICustomHistoryService _customHistoryService 
 
 @if (ItemList is null)
 {
@@ -681,8 +684,125 @@ else
     {
         try
         {
+            newItem.OwnnerId = user.Id;
+            newItem.Created = DateTime.Now;
+            newItem.Updated = newItem.Created;
+            if (IsDeveloper || IsSubmitter)
+            {
+                newItem.TicketTypeId = _context.TicketType.FirstOrDefault(t => t.Name == "UnAssign").Id;
+                newItem.PriorityId = _context.Priority.FirstOrDefault(t => t.Name == "UnAssign").Id;
+                newItem.StatusId = _context.Status.FirstOrDefault(t => t.Name == "UnAssign").Id;
+            }
+
             _context.Add(newItem);
             _context.SaveChanges();
+
+
+            var currentClosedStatusId = _context.Status.FirstOrDefault(t => t.Name == "Closed").Id;
+            var projectName = _context.Project.FirstOrDefault(p => p.Id == newItem.ProjectId).Name;
+            if (newItem.IsAssigned == true && newItem.StatusId != currentClosedStatusId)
+            {
+                Models.Notification notification = new Models.Notification
+                {
+                    Name = "New Ticket Assign",
+                    TicketId = newItem.Id,
+                    Description = "You have a new ticket.",
+                    Created = DateTime.Now,
+                    SenderId = newItem.OwnnerId,
+                    RecipientId = newItem.DeveloperId
+                };
+                _context.Notification.Add(notification);
+                _context.SaveChanges();
+
+
+                string devEmail = (_context.Users.FirstOrDefault(u => u.Id == newItem.DeveloperId)).Email;
+                string subject = "New Ticket Assignment";
+                string message = $"You have been Assigned a new ticket {newItem.Name} about {newItem.Description} for project: {projectName}";
+
+                await _emailSender.SendEmailAsync(devEmail, subject, message);
+
+            }
+            //access project name
+
+
+            //create notifocation for project manager on project through system notification and email
+            //notification when current user is submitter
+            if (IsSubmitter)
+            {
+                //notification for project manager on project
+                Models.Notification notification = new Models.Notification
+                {
+                    Name = "New Ticket is Created by Submitter",
+                    TicketId = newItem.Id,
+                    Description = $"New Ticket #{newItem.Id} is Created by Submitter in {projectName} and Waiting for being Assigned",
+                    Created = DateTime.Now,
+                    SenderId = newItem.OwnnerId,
+                    RecipientId = (await _projectService.ProjectManagerOnProjectAsync(newItem.ProjectId)).Id
+                };
+                _context.Notification.Add(notification);
+                _context.SaveChanges();
+
+                //email to project manager about the notification
+                string PMEmail = (await _projectService.ProjectManagerOnProjectAsync(newItem.ProjectId)).Email;
+                string subject = "New Ticket Has Been Created by Submitter";
+                string message = $"A new ticket {newItem.Name} has been created by Submitter {user.FullName} about {newItem.Description} for project: {projectName}, and waiting approval from you.";
+
+                await _emailSender.SendEmailAsync(PMEmail, subject, message);
+
+                //notification to current user
+                Models.Notification notification2 = new Models.Notification
+                {
+                    Name = "You just Create a New Ticket",
+                    TicketId = newItem.Id,
+                    Description = $"You just create a new ticket #{newItem.Id} in project {projectName} and waiting for being Assigned",
+                    Created = DateTime.Now,
+                    SenderId = (await _projectService.ProjectManagerOnProjectAsync(newItem.ProjectId)).Id,
+                    RecipientId = newItem.OwnnerId
+                };
+                _context.Notification.Add(notification2);
+                _context.SaveChanges();
+
+            }
+            //create notifocation for project manager on project through system notification and email
+            //notification when current user is developer
+            else if (IsDeveloper)
+            {
+                //send notication to project manager on project
+                Models.Notification notification = new Models.Notification
+                {
+                    Name = "New Ticket is Created by Developer",
+                    TicketId = newItem.Id,
+                    Description = $"New Ticket #{newItem.Id} is Created by Developer in {projectName} and Waiting for being Approve",
+                    Created = DateTime.Now,
+                    SenderId = newItem.OwnnerId,
+                    RecipientId = (await _projectService.ProjectManagerOnProjectAsync(newItem.ProjectId)).Id
+                };
+                _context.Notification.Add(notification);
+                _context.SaveChanges();
+
+
+                string PMEmail = (await _projectService.ProjectManagerOnProjectAsync(newItem.ProjectId)).Email;
+                string subject = "New Ticket Has Been Created by Developer";
+                string message = $"A new ticket {newItem.Name} has been created by Developer {user.FullName} about {newItem.Description} for project: {projectName}, and waiting approval from you.";
+
+                await _emailSender.SendEmailAsync(PMEmail, subject, message);
+
+                Models.Notification notification2 = new Models.Notification
+                {
+                    Name = "You just Create a New Ticket",
+                    TicketId = newItem.Id,
+                    Description = $"You just create a new ticket #{newItem.Id} in project {projectName} and waiting for being Assigned",
+                    Created = DateTime.Now,
+                    SenderId = (await _projectService.ProjectManagerOnProjectAsync(newItem.ProjectId)).Id,
+                    RecipientId = newItem.OwnnerId
+                };
+                _context.Notification.Add(notification2);
+                _context.SaveChanges();
+            }
+
+
+
+
             CancelCreateDialog();
             await GetData();
             await JSRuntime.InvokeVoidAsync("success", null);
@@ -699,6 +819,8 @@ else
         {
             _context.Update(currentItem);
             _context.SaveChanges();
+
+
             await GetData();
             CancelEditDialog();
             await JSRuntime.InvokeVoidAsync("success", null);
@@ -714,8 +836,29 @@ else
     {
         try
         {
+            var ticketId = currentItem.Id;
+            Models.Ticket oldTicket = await _context.Ticket
+            .Include(t => t.TicketType)
+            .Include(t => t.Status)
+            .Include(t => t.Priority)
+            .Include(t => t.Developer)
+            .AsNoTracking().FirstOrDefaultAsync(t => t.Id == ticketId);
+            currentItem.Updated = DateTime.Now;
+
             _context.Update(currentItem);
             _context.SaveChanges();
+
+            var userId = user.Id;
+            Models.Ticket newTicket = await _context.Ticket
+            .Include(t => t.TicketType)
+            .Include(t => t.Status)
+            .Include(t => t.Priority)
+            .Include(t => t.Developer)
+            .AsNoTracking().FirstOrDefaultAsync(t => t.Id == ticketId);
+            await _customHistoryService.AddHistoryAsync(oldTicket, newTicket, userId);
+
+
+
             await GetData();
             CancelDeleteDialog();
             await JSRuntime.InvokeVoidAsync("success", null);

@@ -110,20 +110,26 @@ else
                         <div class="col">
 
                             <!-- Button trigger modal -->
-                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+                            <button type="button" class="btn btn-primary">
                                 Edit
                             </button>
 
 
+                            @if (IsInRoleAdmin || IsProjectManager)
+                            {
 
-                            <!-- Button trigger modal -->
-                            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleModal2">
-                                Delete
-                            </button>
+                                <!-- Button trigger modal -->
+                                <button type="button" class="btn btn-danger btn-sm mb-1">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
 
 
 
-                            <a class="btn btn-secondary" asp-action="Index">Back to List</a>
+                            }
+
+
+
+                            <a class="btn btn-secondary" href="/ticket">Back to List</a>
                         </div>
                     </div>
                 </div>
