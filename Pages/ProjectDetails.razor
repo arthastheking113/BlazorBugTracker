@@ -300,7 +300,7 @@
                                     {
                                         break;
                                     }
-                                    @if (ticket.DeveloperId != null)
+                                    if (ticket.DeveloperId != null)
                                     {
                                         byte[] imageData = ticket.Developer.ImageData;
                                         string imageType = ticket.Developer.ContentType;
@@ -463,10 +463,8 @@
                         </form>
                     </div>
                     <div class="row clearfix">
-                        @{
-                            var ticketAttachment = _context.ProjectAttachment.Where(t => t.ProjectId == currentProject.Id).ToList();
-                        }
-                        @foreach (var item in ticketAttachment)
+
+                        @foreach (var item in currentProject.Attachments)
                         {
                             <div class="col-2">
                                 <div class="card">

@@ -817,8 +817,25 @@ else
     {
         try
         {
+            var ticketId = currentItem.Id;
+            Models.Ticket oldTicket = await _context.Ticket
+                .Include(t => t.TicketType)
+                .Include(t => t.Status)
+                .Include(t => t.Priority)
+                .Include(t => t.Developer)
+                .AsNoTracking().FirstOrDefaultAsync(t => t.Id == ticketId);
+            currentItem.Updated = DateTime.Now;
             _context.Update(currentItem);
             _context.SaveChanges();
+
+            var userId = user.Id;
+            Models.Ticket newTicket = await _context.Ticket
+                .Include(t => t.TicketType)
+                .Include(t => t.Status)
+                .Include(t => t.Priority)
+                .Include(t => t.Developer)
+                .AsNoTracking().FirstOrDefaultAsync(t => t.Id == ticketId);
+            await _customHistoryService.AddHistoryAsync(oldTicket, newTicket, userId);
 
 
             await GetData();
@@ -837,26 +854,39 @@ else
         try
         {
             var ticketId = currentItem.Id;
-            Models.Ticket oldTicket = await _context.Ticket
-            .Include(t => t.TicketType)
-            .Include(t => t.Status)
-            .Include(t => t.Priority)
-            .Include(t => t.Developer)
-            .AsNoTracking().FirstOrDefaultAsync(t => t.Id == ticketId);
-            currentItem.Updated = DateTime.Now;
+            Models.Ticket Ticket = await _context.Ticket
+                .Include(t => t.TicketType)
+                .Include(t => t.Status)
+                .Include(t => t.Priority)
+                .Include(t => t.Developer)
+                .Include(t => t.Attachments)
+                .Include(t => t.Comments)
+                .Include(t => t.Ownner)
+                .Include(t => t.TicketHistories)
+                .ThenInclude(t => t.CustomUser)
+                .AsNoTracking().FirstOrDefaultAsync(t => t.Id == ticketId);
 
-            _context.Update(currentItem);
-            _context.SaveChanges();
 
-            var userId = user.Id;
-            Models.Ticket newTicket = await _context.Ticket
-            .Include(t => t.TicketType)
-            .Include(t => t.Status)
-            .Include(t => t.Priority)
-            .Include(t => t.Developer)
-            .AsNoTracking().FirstOrDefaultAsync(t => t.Id == ticketId);
-            await _customHistoryService.AddHistoryAsync(oldTicket, newTicket, userId);
-
+            //delete all attachments in 1 ticket
+            foreach (var attachment in Ticket.Attachments)
+            {
+                _context.Attachment.Remove(attachment);
+                await _context.SaveChangesAsync();
+            }
+            //delete all comment in 1 ticket
+            foreach (var comment in Ticket.Comments)
+            {
+                _context.Comment.Remove(comment);
+                await _context.SaveChangesAsync();
+            }
+            //delete all History in 1 ticket
+            foreach (var history in Ticket.TicketHistories)
+            {
+                _context.TicketHistory.Remove(history);
+                await _context.SaveChangesAsync();
+            }
+            _context.Ticket.Remove(Ticket);
+            await _context.SaveChangesAsync();
 
 
             await GetData();

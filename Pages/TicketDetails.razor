@@ -14,6 +14,11 @@
 @inject ApplicationDbContext _context
 @inject IJSRuntime JSRuntime
 @inject ISessionStorageService sessionStorage
+@using Microsoft.AspNetCore.Identity.UI.Services
+@inject IEmailSender _emailSender
+@inject ICustomHistoryService _customHistoryService
+@inject NavigationManager NavigationManager
+@using System.IO
 @if (currentTicket.Name is null || user.FullName is null)
 {
     <div class="loader">Loading...</div>
@@ -173,11 +178,12 @@ else
                                                 <div class="file">
                                                     <a asp-controller="TicketAttachments" asp-action="Details" asp-route-id="@item.Id">
                                                         <div class="hover">
-                                                            <form asp-controller="TicketAttachments" asp-action="Details" asp-route-id="@item.Id">
+                                                            <EditForm Model="newTicketAttachment" OnValidSubmit="AddNewAttachment">
+                                                                <InputFile OnChange="@LoadFiles" />
                                                                 <button type="submit" class="btn btn-icon btn-danger">
                                                                     <i class="fa fa-trash"></i>
                                                                 </button>
-                                                            </form>
+                                                            </EditForm>
 
                                                         </div>
                                                         <div class="icon">
@@ -283,15 +289,25 @@ else
                             Comments (@currentTicket.Comments.Count)
                         </div>
                         <div class="card-body">
-                            <form asp-controller="Comments" asp-action="Create" method="post">
-                                <input type="hidden" name="TicketId" value="@currentTicket.Id" />
-                                <input type="hidden" name="CustomUserId" />
+                            <EditForm Model="newTicketComment" OnValidSubmit="AddNewComment">
                                 <div class="form-group">
-                                    <textarea id="Content" name="Content" class="form-control" rows="4" required></textarea>
+                                    <RadzenHtmlEditor @bind-Value=@newTicketComment.Content style="height: 200px; margin-bottom: 1rem;" UploadUrl="upload/image">
+                                        <RadzenHtmlEditorUndo />
+                                        <RadzenHtmlEditorRedo />
+                                        <RadzenHtmlEditorSeparator />
+                                        <RadzenHtmlEditorBold />
+                                        <RadzenHtmlEditorItalic />
+                                        <RadzenHtmlEditorUnderline />
+                                        <RadzenHtmlEditorStrikeThrough />
+                                        <RadzenHtmlEditorSeparator />
+                                        <RadzenHtmlEditorColor />
+                                        <RadzenHtmlEditorBackground />
+                                        <RadzenHtmlEditorRemoveFormat />
+                                    </RadzenHtmlEditor>
                                 </div>
 
                                 <input type="submit" value="Comment" class="btn btn-secondary" />
-                            </form>
+                            </EditForm>
                         </div>
                     </div>
                     <div class="row">
@@ -344,7 +360,7 @@ else
 
                                                     <div class="row" style="margin:0px;padding:0px;margin-bottom:15px">
                                                         <div class="col text-left" style="padding:0px 0px">
-                                                            @comment.Content
+                                                            @((MarkupString)comment.Content)
                                                         </div>
                                                         <div class="col text-right">
                                                             <p style="margin:0px;padding:0px;">@commentdate</p>
@@ -375,6 +391,328 @@ else
 
 }
 
+
+
+
+<ModalDialog @ref="_editDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>Edit Ticket #@currentTicket.Id</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col">
+                    <EditForm Model="currentTicket" OnValidSubmit="Edit">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="form-group">
+                            <label class="control-label">Name</label>
+                            <input class="form-control" @bind="currentTicket.Name" />
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Description</label>
+                            <input class="form-control" @bind="currentTicket.Description" />
+                        </div>
+
+                        @if (IsInRoleAdmin || IsProjectManager)
+                        {
+                            <div class="form-group">
+                                <label class="control-label">Project</label>
+                                <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="currentTicket.ProjectId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                Placeholder="Select Project..." Data=@ProjectList TextProperty="Name" ValueProperty="Id" />
+
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label class="control-label">Is Assigned ?</label>
+
+                                        <RadzenSelectBar Style="width:100%;" @bind-Value="currentTicket.IsAssigned" TValue="bool">
+                                            <Items>
+                                                <RadzenSelectBarItem Text="On" Value="true" />
+                                                <RadzenSelectBarItem Text="Off" Value="false" />
+                                            </Items>
+                                        </RadzenSelectBar>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label class="control-label">TicketType</label>
+                                        <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="currentTicket.TicketTypeId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                        Placeholder="Select Ticket Type..." Data=@TicketTypeList TextProperty="Name" ValueProperty="Id" />
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label class="control-label">Developer</label>
+                                        <RadzenDropDown AllowClear="true" TValue="string" @bind-Value="currentTicket.DeveloperId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                        Placeholder="Select Developer..." Data=@DeveloperList TextProperty="FullName" ValueProperty="Id" />
+
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label class="control-label">Owner</label>
+                                        <RadzenDropDown AllowClear="true" TValue="string" @bind-Value="currentTicket.OwnnerId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                        Placeholder="Select Developer..." Data=@OwnerList TextProperty="FullName" ValueProperty="Id" />
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label class="control-label">Status</label>
+                                        <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="currentTicket.StatusId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                        Placeholder="Select Ticket Status..." Data=@TicketStatusList TextProperty="Name" ValueProperty="Id" />
+
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label class="control-label">Priority</label>
+                                        <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="currentTicket.PriorityId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                        Placeholder="Select Ticket Priority..." Data=@TicketPriorityList TextProperty="Name" ValueProperty="Id" />
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+
+
+
+
+                        }
+                        else if (IsSubmitter)
+                        {
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label class="control-label">Is Assigned ?</label>
+
+                                        <RadzenSelectBar @bind-Value="currentTicket.IsAssigned" TValue="bool">
+                                            <Items>
+                                                <RadzenSelectBarItem Text="On" Value="true" />
+                                                <RadzenSelectBarItem Text="Off" Value="false" />
+                                            </Items>
+                                        </RadzenSelectBar>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label class="control-label">TicketType</label>
+                                        <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="currentTicket.TicketTypeId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                        Placeholder="Select Ticket Type..." Data=@TicketTypeList TextProperty="Name" ValueProperty="Id" />
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label class="control-label">Ticket Priority</label>
+                                        <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="currentTicket.PriorityId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                        Placeholder="Select Ticket Priority..." Data=@TicketPriorityList TextProperty="Name" ValueProperty="Id" />
+
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label class="control-label">Developer</label>
+                                        <RadzenDropDown AllowClear="true" TValue="string" @bind-Value="currentTicket.DeveloperId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                        Placeholder="Select Developer..." Data=@DeveloperList TextProperty="FullName" ValueProperty="Id" />
+
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label class="control-label">Project</label>
+                                        <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="currentTicket.ProjectId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                        Placeholder="Select Project..." Data=@ProjectList TextProperty="Name" ValueProperty="Id" />
+
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+
+
+
+                        }
+                        else
+                        {
+                            <div class="form-group">
+                                <label class="control-label">Project</label>
+                                <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="currentTicket.ProjectId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                Placeholder="Select Project..." Data=@ProjectList TextProperty="Name" ValueProperty="Id" />
+
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Is Assigned?</label>
+
+                                <RadzenSelectBar @bind-Value="currentTicket.IsAssigned" TValue="bool">
+                                    <Items>
+                                        <RadzenSelectBarItem Text="On" Value="true" />
+                                        <RadzenSelectBarItem Text="Off" Value="false" />
+                                    </Items>
+                                </RadzenSelectBar>
+
+
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label class="control-label">Ticket Priority</label>
+                                        <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="currentTicket.PriorityId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                        Placeholder="Select Ticket Priority..." Data=@TicketPriorityList TextProperty="Name" ValueProperty="Id" />
+
+                                    </div>
+
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label class="control-label">Ticket Type</label>
+                                        <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="currentTicket.TicketTypeId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                        Placeholder="Select Ticket Type..." Data=@TicketTypeList TextProperty="Name" ValueProperty="Id" />
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                        }
+
+                        <br />
+                        <div class="row">
+                            <div class="col">
+                                <button type="submit" class="btn btn-primary btn-block">Accept Changes</button>
+                            </div>
+                        </div>
+                    </EditForm>
+                    <hr />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelEditDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
+
+
+<ModalDialog @ref="_deleteDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>Delete Ticket #@currentTicket.Id</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col">
+                    <EditForm Model="currentTicket" OnValidSubmit="Delete">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="form-group">
+                            <label class="control-label">Name</label>
+                            <input class="form-control" readonly @bind="currentTicket.Name" />
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Description</label>
+                            <input class="form-control" readonly @bind="currentTicket.Description" />
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Project</label>
+                            <input class="form-control" readonly @bind="currentTicket.Project.Name" />
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Is Assigned?</label>
+
+                            <RadzenSelectBar Disabled="true" @bind-Value="currentTicket.IsAssigned" TValue="bool">
+                                <Items>
+                                    <RadzenSelectBarItem Text="On" Value="true" />
+                                    <RadzenSelectBarItem Text="Off" Value="false" />
+                                </Items>
+                            </RadzenSelectBar>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label class="control-label">Developer</label>
+                                    <input class="form-control" readonly value="@currentTicket.Developer.FullName" />
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label class="control-label">Owner</label>
+                                    <input class="form-control" readonly value="@currentTicket.Ownner.FullName" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label class="control-label">Ticket Status</label>
+                                    <input class="form-control" readonly @bind="currentTicket.Status.Name" />
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label class="control-label">Ticket Priority</label>
+                                    <input class="form-control" readonly @bind="currentTicket.Priority.Name" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Ticket Type</label>
+                            <input class="form-control" readonly @bind="currentTicket.TicketType.Name" />
+                        </div>
+
+                        <div class="row">
+                            <div class="col">
+                                <button type="submit" class="btn btn-danger btn-block">Delete</button>
+                            </div>
+                        </div>
+                    </EditForm>
+                    <hr />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelDeleteDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
+
+
+
+
+
+
 @code {
     [Parameter]
     public string TicketId { get; set; }
@@ -386,7 +724,31 @@ else
     public bool IsProjectManager;
     public bool IsNewUser;
     public DateTime currentTime;
+    public List<Models.TicketType> TicketTypeList = new();
+    public List<Models.Priority> TicketPriorityList = new();
+    public List<Models.Status> TicketStatusList = new();
+    public List<Models.Project> ProjectList = new();
+    public List<Models.CustomUser> DeveloperList = new();
+    public List<Models.CustomUser> OwnerList = new();
 
+    public Models.TicketAttachment newTicketAttachment = new();
+    public Models.TicketAttachment currentTicketAttachment = new();
+    public Models.Comment newTicketComment = new();
+    public Models.Comment currentTicketComment = new();
+
+    //Fully customized dialog
+    private double _overlayOpacity = 0.3;
+    private double _modalMinHeight = 100;
+    private double _modalMinWitdth = 100;
+    private bool _modalAnimate = true;
+    private bool _modalCloseOnClick = true;
+    private bool _modalCloseOnEsc = true;
+    private bool _modalFocus = true;
+    private bool _modalCentered = true;
+    private bool _modalShowClose = true;
+
+    private ModalDialog _editDialog;
+    private ModalDialog _deleteDialog;
 
     protected override async Task OnInitializedAsync()
     {
@@ -397,7 +759,203 @@ else
 
     }
 
+    private async Task OpenEditDialog()
+    {
+        await _editDialog.Open();
+    }
+    private async Task CancelEditDialog()
+    {
+        await _editDialog.Close();
+    }
+    private async Task OpenDeleteDialog()
+    {
 
+        await _deleteDialog.Open();
+    }
+    private async Task CancelDeleteDialog()
+    {
+        await _deleteDialog.Close();
+    }
+    public async Task Edit()
+    {
+        try
+        {
+            var ticketId = currentTicket.Id;
+            Models.Ticket oldTicket = await _context.Ticket
+                .Include(t => t.TicketType)
+                .Include(t => t.Status)
+                .Include(t => t.Priority)
+                .Include(t => t.Developer)
+                .AsNoTracking().FirstOrDefaultAsync(t => t.Id == ticketId);
+            currentTicket.Updated = DateTime.Now;
+            _context.Update(currentTicket);
+            _context.SaveChanges();
+
+            var userId = user.Id;
+            Models.Ticket newTicket = await _context.Ticket
+                .Include(t => t.TicketType)
+                .Include(t => t.Status)
+                .Include(t => t.Priority)
+                .Include(t => t.Developer)
+                .AsNoTracking().FirstOrDefaultAsync(t => t.Id == ticketId);
+            await _customHistoryService.AddHistoryAsync(oldTicket, newTicket, userId);
+
+
+            await GetData();
+            CancelEditDialog();
+            await JSRuntime.InvokeVoidAsync("success", null);
+
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+
+        }
+    }
+    public async Task Delete()
+    {
+        try
+        {
+            var ticketId = currentTicket.Id;
+            Models.Ticket Ticket = await _context.Ticket
+                .Include(t => t.TicketType)
+                .Include(t => t.Status)
+                .Include(t => t.Priority)
+                .Include(t => t.Developer)
+                .Include(t => t.Attachments)
+                .Include(t => t.Comments)
+                .Include(t => t.Ownner)
+                .Include(t => t.TicketHistories)
+                .ThenInclude(t => t.CustomUser)
+                .AsNoTracking().FirstOrDefaultAsync(t => t.Id == ticketId);
+
+
+            //delete all attachments in 1 ticket
+            foreach (var attachment in Ticket.Attachments)
+            {
+                _context.Attachment.Remove(attachment);
+                await _context.SaveChangesAsync();
+            }
+            //delete all comment in 1 ticket
+            foreach (var comment in Ticket.Comments)
+            {
+                _context.Comment.Remove(comment);
+                await _context.SaveChangesAsync();
+            }
+            //delete all History in 1 ticket
+            foreach (var history in Ticket.TicketHistories)
+            {
+                _context.TicketHistory.Remove(history);
+                await _context.SaveChangesAsync();
+            }
+            _context.Ticket.Remove(Ticket);
+            await _context.SaveChangesAsync();
+
+
+            await GetData();
+            CancelDeleteDialog();
+            await JSRuntime.InvokeVoidAsync("success", null);
+            NavigationManager.NavigateTo("/ticket");
+
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+
+        }
+    }
+
+    private async Task LoadFiles(InputFileChangeEventArgs e)
+    {
+        using var stream = new MemoryStream();
+        var file = e.File;
+        var OpenSteam = file.OpenReadStream();
+        await OpenSteam.CopyToAsync(stream);
+
+        newTicketAttachment.FileData = stream.ToArray();
+        newTicketAttachment.ContentType = e.File.ContentType;
+        newTicketAttachment.FileName = e.File.Name;
+
+    }
+
+    public async Task AddNewComment()
+    {
+        try
+        {
+            newTicketComment.Created = DateTime.Now;
+            newTicketComment.Updated = newTicketComment.Created;
+            newTicketComment.CustomUserId = user.Id;
+            var id = newTicketComment.TicketId;
+            _context.Add(newTicketComment);
+            _context.SaveChanges();
+
+            var messageContent = newTicketComment.Content;
+
+            Models.Notification notification = new Models.Notification
+            {
+                Name = "New Comment on your ticket",
+                TicketId = newTicketComment.TicketId,
+                Description = $"You have a new comment from {user.FullName} on your ticket {currentTicket.Name}, comment : {messageContent}",
+                Created = DateTime.Now,
+                SenderId = newTicketComment.CustomUserId,
+                RecipientId = currentTicket.DeveloperId
+            };
+            _context.Notification.Add(notification);
+            _context.SaveChanges();
+
+
+            var receiver = currentTicket.DeveloperId;
+            string devEmail = (await _userManager.FindByIdAsync(receiver)).Email;
+            string subject = $"New Comment From {(await _userManager.FindByIdAsync(newTicketComment.CustomUserId)).FullName} on your Ticket.";
+            string message = $"You have a new Comment from {user.FullName} on Ticket {currentTicket.Name}, comment : {messageContent}";
+
+            await _emailSender.SendEmailAsync(devEmail, subject, message);
+
+            await JSRuntime.InvokeVoidAsync("success", null);
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+        }
+
+    }
+    public async Task AddNewAttachment()
+    {
+        if (newTicketAttachment.FileData is null)
+        {
+            await JSRuntime.InvokeVoidAsync("errorFileMissing", null);
+        }
+        else
+        {
+            try
+            {
+                newTicketAttachment.Created = DateTimeOffset.Now;
+                newTicketAttachment.CustomUserId = user.Id;
+                newTicketAttachment.TicketId = currentTicket.Id;
+                _context.Add(newTicketAttachment);
+                _context.SaveChanges();
+                var projectManager = await _projectService.ProjectManagerOnProjectAsync(currentTicket.ProjectId);
+                Models.Notification notification = new Models.Notification
+                {
+                    Name = $"New Attachment on Ticket #{currentTicket.Id}",
+                    Description = $"A new attachment: {newTicketAttachment.FileName} has been uploaded by {user.FullName} into ticket #{currentTicket.Id}",
+                    Created = DateTime.Now,
+                    SenderId = user.Id,
+                    RecipientId = projectManager.Id,
+                    TicketId = currentTicket.Id
+                };
+                _context.Notification.Add(notification);
+                _context.SaveChanges();
+
+                await JSRuntime.InvokeVoidAsync("success", null);
+            }
+            catch (Exception ex)
+            {
+                await JSRuntime.InvokeVoidAsync("error", null);
+            }
+
+        }
+    }
 
     public async Task GetData()
     {
@@ -416,6 +974,12 @@ else
 
         currentTime = DateTime.Now;
 
+        TicketTypeList = _context.TicketType.ToList();
+        TicketPriorityList = _context.Priority.ToList();
+        TicketStatusList = _context.Status.ToList();
+        OwnerList = _context.Users.ToList();
+        ProjectList = _context.Project.ToList();
+        DeveloperList = _context.Users.ToList();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

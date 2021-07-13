@@ -102,6 +102,15 @@ function error() {
         timer: 1200
     })
 }
+function errorFileMissing() {
+    Swal.fire({
+        position: 'center',
+        icon: 'error',
+        title: 'Opp, You forgot to upload a file',
+        showConfirmButton: false,
+        timer: 1200
+    })
+}
 function errorPasswordNotMatch() {
     Swal.fire({
         position: 'center',
