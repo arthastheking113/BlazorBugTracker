@@ -249,7 +249,7 @@ else
                                     <div class="info-box-content">
                                         <span class="info-box-text">Total Tickets</span>
                                         <span class="info-box-number">
-                                            @*@ticketInProject.Count*@
+                                            @ticketInProject.Count
                                             <small>Tickets</small>
                                         </span>
                                     </div>
@@ -263,7 +263,7 @@ else
                                     <div class="info-box-content">
                                         <span class="info-box-text">Un-Assigned Tickets</span>
                                         <span class="info-box-number">
-                                            @*@ticketInProject.Where(t => t.IsAssigned == false).Count()*@
+                                            @ticketInProject.Where(t => t.IsAssigned == false).Count()
                                             <small>Tickets</small>
                                         </span>
                                     </div>
@@ -277,7 +277,7 @@ else
                                     <div class="info-box-content">
                                         <span class="info-box-text">Closed Tickets</span>
                                         <span class="info-box-number">
-                                            @*@ticketInProject.Where(t => t.Status.Name == "Closed").ToList().Count*@
+                                            @ticketInProject.Where(t => t.Status.Name == "Closed").ToList().Count
                                             <small>Tickets</small>
                                         </span>
                                     </div>
@@ -468,10 +468,10 @@ else
                                     <p class="text-sm">
                                         Project Leader
 
-                                        @*@if (projectManager is not null)
+                                        @if (projectManager is not null)
                                             {
                                                 <b class="d-block">@(projectManager.FullName)</b>
-                                            }*@
+                                            }
                                     </p>
                                 </div>
                             </div>
@@ -479,26 +479,26 @@ else
                                     <div class="col">
                                         <p class="text-sm">
                                             Developer
-                                            @*@if (developerOnProject.Count != 0)
+                                            @if (developerOnProject.Count != 0)
                                             {
                                                 foreach (var developer in developerOnProject)
                                                 {
                                                     <b class="d-block">@(developer.FullName)</b>
                                                 }
-                                            }*@
+                                            }
 
                                         </p>
                                     </div>
                                     <div class="col">
                                         <p class="text-sm">
                                             Submitter
-                                            @*@if (submitterOnProject.Count != 0)
+                                            @if (submitterOnProject.Count != 0)
                                             {
                                                 foreach (var submitter in submitterOnProject)
                                                 {
                                                     <b class="d-block">@(submitter.FullName)</b>
                                                 }
-                                            }*@
+                                            }
 
                                         </p>
                                     </div>
@@ -520,7 +520,6 @@ else
                                     </label>
                                     <label class="btn btn-outline-secondary btn-sm">
                                         Upload File
-                                        <input asp-for="@currentProject.Attachments.FirstOrDefault().FormFile" type="file" />
                                     </label>
                                 </div>
                                 <div class="row">
@@ -587,7 +586,7 @@ else
     public bool IsNewUser;
     public DateTime currentTime;
 
-    protected override async Task OnInitializedAsync()
+    protected override void  OnInitialized()
     {
         GetData();
     }
