@@ -737,13 +737,13 @@ else
                     Description = $"New Ticket #{newItem.Id} is Created by Submitter in {projectName} and Waiting for being Assigned",
                     Created = DateTime.Now,
                     SenderId = newItem.OwnnerId,
-                    RecipientId = (await _projectService.ProjectManagerOnProjectAsync(newItem.ProjectId)).Id
+                    RecipientId = (_projectService.ProjectManagerOnProject(newItem.ProjectId)).Id
                 };
                 _context.Notification.Add(notification);
                 _context.SaveChanges();
 
                 //email to project manager about the notification
-                string PMEmail = (await _projectService.ProjectManagerOnProjectAsync(newItem.ProjectId)).Email;
+                string PMEmail = (_projectService.ProjectManagerOnProject(newItem.ProjectId)).Email;
                 string subject = "New Ticket Has Been Created by Submitter";
                 string message = $"A new ticket {newItem.Name} has been created by Submitter {user.FullName} about {newItem.Description} for project: {projectName}, and waiting approval from you.";
 
@@ -756,7 +756,7 @@ else
                     TicketId = newItem.Id,
                     Description = $"You just create a new ticket #{newItem.Id} in project {projectName} and waiting for being Assigned",
                     Created = DateTime.Now,
-                    SenderId = (await _projectService.ProjectManagerOnProjectAsync(newItem.ProjectId)).Id,
+                    SenderId = (_projectService.ProjectManagerOnProject(newItem.ProjectId)).Id,
                     RecipientId = newItem.OwnnerId
                 };
                 _context.Notification.Add(notification2);
@@ -775,13 +775,13 @@ else
                     Description = $"New Ticket #{newItem.Id} is Created by Developer in {projectName} and Waiting for being Approve",
                     Created = DateTime.Now,
                     SenderId = newItem.OwnnerId,
-                    RecipientId = (await _projectService.ProjectManagerOnProjectAsync(newItem.ProjectId)).Id
+                    RecipientId = (_projectService.ProjectManagerOnProject(newItem.ProjectId)).Id
                 };
                 _context.Notification.Add(notification);
                 _context.SaveChanges();
 
 
-                string PMEmail = (await _projectService.ProjectManagerOnProjectAsync(newItem.ProjectId)).Email;
+                string PMEmail = (_projectService.ProjectManagerOnProject(newItem.ProjectId)).Email;
                 string subject = "New Ticket Has Been Created by Developer";
                 string message = $"A new ticket {newItem.Name} has been created by Developer {user.FullName} about {newItem.Description} for project: {projectName}, and waiting approval from you.";
 
@@ -793,7 +793,7 @@ else
                     TicketId = newItem.Id,
                     Description = $"You just create a new ticket #{newItem.Id} in project {projectName} and waiting for being Assigned",
                     Created = DateTime.Now,
-                    SenderId = (await _projectService.ProjectManagerOnProjectAsync(newItem.ProjectId)).Id,
+                    SenderId = (_projectService.ProjectManagerOnProject(newItem.ProjectId)).Id,
                     RecipientId = newItem.OwnnerId
                 };
                 _context.Notification.Add(notification2);
@@ -804,7 +804,7 @@ else
 
 
             CancelCreateDialog();
-            await GetData();
+            GetData();
             await JSRuntime.InvokeVoidAsync("success", null);
         }
         catch (Exception ex)
@@ -838,7 +838,7 @@ else
             await _customHistoryService.AddHistoryAsync(oldTicket, newTicket, userId);
 
 
-            await GetData();
+            GetData();
             CancelEditDialog();
             await JSRuntime.InvokeVoidAsync("success", null);
 
@@ -889,7 +889,7 @@ else
             await _context.SaveChangesAsync();
 
 
-            await GetData();
+            GetData();
             CancelDeleteDialog();
             await JSRuntime.InvokeVoidAsync("success", null);
 
@@ -903,11 +903,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        await GetData();
+        GetData();
     }
 
 
-    public async Task GetData()
+    public void  GetData()
     {
         ItemList = _context.Ticket
             .Include(t => t.Attachments)

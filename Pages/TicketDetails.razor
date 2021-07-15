@@ -934,7 +934,7 @@ else
                 newTicketAttachment.TicketId = currentTicket.Id;
                 _context.Add(newTicketAttachment);
                 _context.SaveChanges();
-                var projectManager = await _projectService.ProjectManagerOnProjectAsync(currentTicket.ProjectId);
+                var projectManager = _projectService.ProjectManagerOnProject(currentTicket.ProjectId);
                 Models.Notification notification = new Models.Notification
                 {
                     Name = $"New Attachment on Ticket #{currentTicket.Id}",

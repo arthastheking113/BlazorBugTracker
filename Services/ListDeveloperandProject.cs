@@ -23,18 +23,18 @@ namespace BlazorBugTracker.Services
             _userManager = userManager;
         }
 
-        public async Task<(IEnumerable<CustomUser>, List<Project>)> ReturnDeveloperAndProjectAsync(CustomUser User)
+        public  (IEnumerable<CustomUser>, List<Project>) ReturnDeveloperAndProject(CustomUser User)
         {
             IEnumerable<CustomUser> allDeveloper = new List<CustomUser>();
             var allProject = _context.Project.ToList();
             List<Project> listProject = new List<Project>();
             foreach (var item in allProject)
             {
-                var developer = await _projectService.DeveloperOnProjectAsync(item.Id);
+                var developer = _projectService.DeveloperOnProject(item.Id);
                 allDeveloper = allDeveloper.Union(developer);
 
 
-                if (await _projectService.IsUserOnProjectAsync(User.Id, item.Id))
+                if (_projectService.IsUserOnProject(User.Id, item.Id))
                 {
                     listProject.Add(item);
                 }
@@ -43,14 +43,14 @@ namespace BlazorBugTracker.Services
             return (allDeveloper, listProject);
         }
 
-        public async Task<IEnumerable<CustomUser>> ReturnDeveloperOnlyAsync()
+        public  IEnumerable<CustomUser> ReturnDeveloperOnly()
         {
 
             IEnumerable<CustomUser> allDeveloper = new List<CustomUser>();
             var allProject = _context.Project.ToList();
             foreach (var item in allProject)
             {
-                var developer = await _projectService.DeveloperOnProjectAsync(item.Id);
+                var developer = _projectService.DeveloperOnProject(item.Id);
                 allDeveloper = allDeveloper.Union(developer);
             }
 

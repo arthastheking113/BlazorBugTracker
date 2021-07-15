@@ -30,12 +30,12 @@ namespace BlazorBugTracker.Services
         {
             try
             {
-                if (!await IsUserOnProjectAsync(userId, projectId))
+                if (!IsUserOnProject(userId, projectId))
                 {
                     CustomUser user = await _userManager.FindByIdAsync(userId);
                     if ( await _roleService.IsUserInRoleAsync(user, Roles.ProjectManager.ToString()))
                     {
-                        var oldManager = await ProjectManagerOnProjectAsync(projectId);
+                        var oldManager = ProjectManagerOnProject(projectId);
                         if (oldManager != null)
                         {
                             await RemoveUserFromProjectAsync(oldManager.Id, projectId);
@@ -60,17 +60,24 @@ namespace BlazorBugTracker.Services
 
         }
 
-        public async Task<IEnumerable<CustomUser>> DeveloperOnProjectAsync(int projectId)
+        public IEnumerable<CustomUser> DeveloperOnProject(int projectId)
         {
-            var developers = await _userManager.GetUsersInRoleAsync(Roles.Developer.ToString());
-            var onProject = await UserOnProjectAsync(projectId);
+            var roles = _context.Roles.FirstOrDefault(r => r.Name == Roles.Developer.ToString());
+            var user = _context.UserRoles.Where(u => u.RoleId == roles.Id).Select(u => u.UserId).ToList();
+            List<CustomUser> developers = new List<CustomUser>();
+            foreach (var item in user)
+            {
+                var eachUser = _context.Users.FirstOrDefault(u => u.Id == item);
+                developers.Add(eachUser);
+            }
+            var onProject = UserOnProject(projectId);
             var developerOnProject = developers.Intersect(onProject).ToList();
             return developerOnProject;
         }
 
-        public async Task<bool> IsUserOnProjectAsync(string userId, int projectId)
+        public bool IsUserOnProject(string userId, int projectId)
         {
-            var project = await _context.Project.Include(p => p.CustomUsers).FirstAsync(c => c.Id == projectId);
+            var project = _context.Project.Include(p => p.CustomUsers).First(c => c.Id == projectId);
             var user = project.CustomUsers.Any(u => u.Id == userId);
             return user;
         }
@@ -85,7 +92,7 @@ namespace BlazorBugTracker.Services
             var output = new List<Project>();
             foreach (var project in await _context.Project.ToListAsync())
             {
-                if (await IsUserOnProjectAsync(userId, project.Id))
+                if (IsUserOnProject(userId, project.Id))
                 {
                     output.Add(project);
                 }
@@ -93,11 +100,19 @@ namespace BlazorBugTracker.Services
             return output;
         }
 
-        public async Task<CustomUser> ProjectManagerOnProjectAsync(int projectId)
+        public CustomUser ProjectManagerOnProject(int projectId)
         {
-            var projectManager = await _userManager.GetUsersInRoleAsync(Roles.ProjectManager.ToString());
-            var onProject = await UserOnProjectAsync(projectId);
-            var manager = projectManager.Intersect(onProject.ToList()).FirstOrDefault();
+            var roles = _context.Roles.FirstOrDefault(r => r.Name == Roles.ProjectManager.ToString());
+            var user = _context.UserRoles.Where(u => u.RoleId == roles.Id).Select(u => u.UserId).ToList();
+            List<CustomUser> userList = new List<CustomUser>();
+            foreach (var item in user)
+            {
+                var eachUser = _context.Users.FirstOrDefault(u => u.Id == item);
+                userList.Add(eachUser);
+            }
+            CustomUser manager = new CustomUser();
+            var onProject = UserOnProject(projectId);
+            manager = userList.Intersect(onProject.ToList()).FirstOrDefault();
             return manager;
         }
 
@@ -105,7 +120,7 @@ namespace BlazorBugTracker.Services
         {
             try
             {
-                if (await IsUserOnProjectAsync(userId, projectId))
+                if (IsUserOnProject(userId, projectId))
                 {
                     CustomUser user = await _userManager.FindByIdAsync(userId);
                     Project project = await _context.Project.FindAsync(projectId);
@@ -127,10 +142,17 @@ namespace BlazorBugTracker.Services
 
         }
 
-        public async Task<IEnumerable<CustomUser>> SubmitterOnProjectAsync(int projectId)
+        public IEnumerable<CustomUser> SubmitterOnProject(int projectId)
         {
-            var submitters = await _userManager.GetUsersInRoleAsync(Roles.Submitter.ToString());
-            var onProject = await UserOnProjectAsync(projectId);
+            var roles = _context.Roles.FirstOrDefault(r => r.Name == Roles.Submitter.ToString());
+            var user = _context.UserRoles.Where(u => u.RoleId == roles.Id).Select(u => u.UserId).ToList();
+            List<CustomUser> submitters = new List<CustomUser>();
+            foreach (var item in user)
+            {
+                var eachUser = _context.Users.FirstOrDefault(u => u.Id == item);
+                submitters.Add(eachUser);
+            }
+            var onProject = UserOnProject(projectId);
             var submitterOnProject = submitters.Intersect(onProject).ToList();
             return submitterOnProject;
         }
@@ -141,7 +163,7 @@ namespace BlazorBugTracker.Services
             var userss = await _context.Users.ToListAsync();
             foreach (var user in userss)
             {
-                if (!await IsUserOnProjectAsync(user.Id, projectId))
+                if (!IsUserOnProject(user.Id, projectId))
                 {
                     output.Add(user);
                 }
@@ -149,13 +171,13 @@ namespace BlazorBugTracker.Services
             return output;
         }
 
-        public async Task<IEnumerable<CustomUser>> UserOnProjectAsync(int projectId)
+        public  IEnumerable<CustomUser> UserOnProject(int projectId)
         {
             var output = new List<CustomUser>();
-            var userss = await _context.Users.ToListAsync();
+            var userss = _context.Users.ToList();
             foreach (var user in userss)
             {
-                if(await IsUserOnProjectAsync(user.Id, projectId))
+                if(IsUserOnProject(user.Id, projectId))
                 {
                     output.Add(user);
                 }

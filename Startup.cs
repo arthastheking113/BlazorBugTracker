@@ -45,7 +45,8 @@ namespace BlazorBugTracker
         {
             services.AddDbContext<ApplicationDbContext>(options =>
                options.UseNpgsql(
-                   DataManage.GetConnectionString(Configuration)), ServiceLifetime.Transient);
+                   DataManage.GetConnectionString(Configuration)), contextLifetime: ServiceLifetime.Transient,
+    optionsLifetime: ServiceLifetime.Transient);
             services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddIdentity<CustomUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
                .AddDefaultUI()

@@ -8,8 +8,8 @@ namespace BlazorBugTracker.Services
 {
     public interface IListDeveloperAndProject
     {
-        public Task<IEnumerable<CustomUser>> ReturnDeveloperOnlyAsync();
+        public IEnumerable<CustomUser> ReturnDeveloperOnly();
 
-        public Task<(IEnumerable<CustomUser>, List<Project>)> ReturnDeveloperAndProjectAsync(CustomUser User);
+        public (IEnumerable<CustomUser>, List<Project>) ReturnDeveloperAndProject(CustomUser User);
     }
 }

@@ -18,126 +18,86 @@
 @inject IHttpContextAccessor _httpContextAccessor
 @inject ISessionStorageService sessionStorage
 
-<section class="content">
+@if (currentProject is null)
+{
+    <div class="loader">Loading...</div>
+}
+else
+{
+    <section class="content">
 
-    <!-- Default box -->
-    <div class="card">
-        <div class="card-header bg-dark">
-            <div class="row">
-                <div class="col">
-                    <h3 class="card-title">View Project Details</h3>
-                </div>
-            </div>
-
-        </div>
-        <div class="card-header">
-            <div class="row">
-                <div class="col">
-                    <a asp-controller="Projects" asp-action="Index" class="btn btn-secondary"> <i class="fas fa-arrow-circle-left"></i> Back</a>
-                    <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#exampleModal">
-                        <i class="fas fa-plus-square"></i> Create New Ticket
-                    </button>
-
-                    <!-- Modal -->
-                    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="exampleModalLabel">Create New Ticket #</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <form asp-controller="Tickets" asp-action="Create" method="post">
-                                    <div class="modal-body">
-                                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                                        <div class="form-group">
-                                            <label class="control-label">Name</label>
-                                            <input name="Name" class="form-control" required />
-
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="control-label">Description</label>
-                                            <input name="Description" class="form-control" required />
-
-                                        </div>
-                                        <input type="hidden" class="form-control" name="projectId" value="@currentProject.Id" />
-                                        @if (!IsDeveloper)
-                                        {
-                                            <div class="form-group form-check">
-                                                <label class="form-check-label">
-                                                    <input class="form-check-input" name="IsAssigned" type="checkbox" value="true" /> Assigned?
-                                                </label>
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label name="DeveloperId" class="control-label">Developer</label>
-                                                <select name="DeveloperId" class="form-control" required></select>
-                                            </div>
-                                        }
-
-
-                                        @if (!IsInRoleAdmin || !IsProjectManager)
-                                        {
-                                            <div class="form-group">
-                                                <label name="StatusId" class="control-label">Status</label>
-                                                <select name="StatusId" class="form-control" asp-items="ViewBag.StatusId"></select>
-                                            </div>
-                                            <div class="form-group">
-                                                <label name="PriorityId" class="control-label">Priority</label>
-                                                <select name="PriorityId" class="form-control" asp-items="ViewBag.PriorityId"></select>
-                                            </div>
-                                            <div class="form-group">
-                                                <label name="TicketTypeId" class="control-label">Ticket Type</label>
-                                                <select name="TicketTypeId" class="form-control" asp-items="ViewBag.TicketTypeId"></select>
-                                            </div>
-                                        }
-                                    </div>
-                                    <div class="modal-footer">
-
-                                        <button type="submit" class="btn btn-primary">Create</button>
-                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
+        <!-- Default box -->
+        <div class="card">
+            <div class="card-header bg-dark">
+                <div class="row">
+                    <div class="col">
+                        <h3 class="card-title">View Project Details</h3>
                     </div>
+                </div>
 
-                    @*<a asp-controller="Projects" asp-action="Create" class="btn btn-secondary"> <i class="fas fa-tasks"></i> Create New Projects</a>*@
-
-
-                    @if (IsInRoleAdmin || IsProjectManager)
-                    {
-
-                        <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#exampleModal2">
-                            <i class="fas fa-tasks"></i> Create New Projects
+            </div>
+            <div class="card-header">
+                <div class="row">
+                    <div class="col">
+                        <a asp-controller="Projects" asp-action="Index" class="btn btn-secondary"> <i class="fas fa-arrow-circle-left"></i> Back</a>
+                        <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#exampleModal">
+                            <i class="fas fa-plus-square"></i> Create New Ticket
                         </button>
 
                         <!-- Modal -->
-                        <div class="modal fade" id="exampleModal2" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel2" aria-hidden="true">
+                        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title" id="exampleModalLabel2">Create New Project</h5>
+                                        <h5 class="modal-title" id="exampleModalLabel">Create New Ticket #</h5>
                                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                             <span aria-hidden="true">&times;</span>
                                         </button>
                                     </div>
-                                    <form asp-controller="Projects" asp-action="Create" method="post">
+                                    <form asp-controller="Tickets" asp-action="Create" method="post">
                                         <div class="modal-body">
+                                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                                             <div class="form-group">
-                                                <label asp-for="Name" class="control-label"></label>
+                                                <label class="control-label">Name</label>
                                                 <input name="Name" class="form-control" required />
-                                            </div>
-                                            <div class="form-group">
-                                                <label asp-for="Description" class="control-label"></label>
-                                                <textarea name="Description" class="form-control" rows="4" required></textarea>
-                                            </div>
-                                            <div class="form-group">
-                                                <label class="control-label">Upload Image</label>
-                                                <input type="file" name="image" />
-                                            </div>
 
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label">Description</label>
+                                                <input name="Description" class="form-control" required />
+
+                                            </div>
+                                            <input type="hidden" class="form-control" name="projectId" value="@currentProject.Id" />
+                                            @if (!IsDeveloper)
+                                            {
+                                                <div class="form-group form-check">
+                                                    <label class="form-check-label">
+                                                        <input class="form-check-input" name="IsAssigned" type="checkbox" value="true" /> Assigned?
+                                                    </label>
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label name="DeveloperId" class="control-label">Developer</label>
+                                                    <select name="DeveloperId" class="form-control" required></select>
+                                                </div>
+                                            }
+
+
+                                            @if (!IsInRoleAdmin || !IsProjectManager)
+                                            {
+                                                <div class="form-group">
+                                                    <label name="StatusId" class="control-label">Status</label>
+                                                    <select name="StatusId" class="form-control" asp-items="ViewBag.StatusId"></select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label name="PriorityId" class="control-label">Priority</label>
+                                                    <select name="PriorityId" class="form-control" asp-items="ViewBag.PriorityId"></select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label name="TicketTypeId" class="control-label">Ticket Type</label>
+                                                    <select name="TicketTypeId" class="form-control" asp-items="ViewBag.TicketTypeId"></select>
+                                                </div>
+                                            }
                                         </div>
                                         <div class="modal-footer">
 
@@ -149,362 +109,477 @@
                             </div>
                         </div>
 
-                        @*<a class="btn btn-secondary" asp-controller="Projects" asp-action="Edit" asp-route-id="@currentProject.Id" method="get"><i class="fas fa-edit"></i> Edit Project</a>*@
+                        @*<a asp-controller="Projects" asp-action="Create" class="btn btn-secondary"> <i class="fas fa-tasks"></i> Create New Projects</a>*@
 
 
+                        @if (IsInRoleAdmin || IsProjectManager)
+                        {
 
-                        <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#exampleModal3">
-                            <i class="fas fa-edit"></i> Edit Project
-                        </button>
+                            <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#exampleModal2">
+                                <i class="fas fa-tasks"></i> Create New Projects
+                            </button>
 
-                        <!-- Modal -->
-                        <div class="modal fade" id="exampleModal3" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel3" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="exampleModalLabel3">Edit Project</h5>
-                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <form asp-controller="Projects" asp-action="Edit" method="post" enctype="multipart/form-data">
-                                        <div class="modal-body">
-                                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                                            <input type="hidden" asp-for="Id" />
-                                            <div class="form-group">
-                                                <label class="control-label">Upload Image</label>
-                                                <input type="file" name="image" />
-                                            </div>
-                                            <div class="form-group">
-                                                <label asp-for="Name" class="control-label"></label>
-                                                <input asp-for="Name" class="form-control" required />
-                                                <span asp-validation-for="Name" class="text-danger"></span>
-                                            </div>
-                                            <input type="hidden" asp-for="Created" class="form-control" />
-                                            <div class="form-group">
-                                                <label asp-for="Description" class="control-label"></label>
-                                                <textarea asp-for="Description" class="form-control" rows="4" required></textarea>
-                                                <span asp-validation-for="Description" class="text-danger"></span>
-                                            </div>
-                                            @if (currentProject.ImageData != null && currentProject.ContentType != null)
-                                            {
-                                                <input type="hidden" name="imageData" value="@Convert.ToBase64String(currentProject.ImageData)" class="form-control" />
-                                                <input type="hidden" name="contentType" value="@currentProject.ContentType" class="form-control" />
-                                            }
-
-
-                                            @if (IsInRoleAdmin)
-                                            {
+                            <!-- Modal -->
+                            <div class="modal fade" id="exampleModal2" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel2" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel2">Create New Project</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <form asp-controller="Projects" asp-action="Create" method="post">
+                                            <div class="modal-body">
                                                 <div class="form-group">
-                                                    <label asp-for="CompanyId" class="control-label"></label>
-                                                    <select asp-for="CompanyId" class="form-control" asp-items="ViewBag.CompanyId"></select>
-                                                    <span asp-validation-for="CompanyId" class="text-danger"></span>
+                                                    <label asp-for="Name" class="control-label"></label>
+                                                    <input name="Name" class="form-control" required />
+                                                </div>
+                                                <div class="form-group">
+                                                    <label asp-for="Description" class="control-label"></label>
+                                                    <textarea name="Description" class="form-control" rows="4" required></textarea>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">Upload Image</label>
+                                                    <input type="file" name="image" />
+                                                </div>
+
+                                            </div>
+                                            <div class="modal-footer">
+
+                                                <button type="submit" class="btn btn-primary">Create</button>
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @*<a class="btn btn-secondary" asp-controller="Projects" asp-action="Edit" asp-route-id="@currentProject.Id" method="get"><i class="fas fa-edit"></i> Edit Project</a>*@
+
+
+
+                            <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#exampleModal3">
+                                <i class="fas fa-edit"></i> Edit Project
+                            </button>
+
+                            <!-- Modal -->
+                            <div class="modal fade" id="exampleModal3" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel3" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel3">Edit Project</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <form asp-controller="Projects" asp-action="Edit" method="post" enctype="multipart/form-data">
+                                            <div class="modal-body">
+                                                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                                                <input type="hidden" asp-for="Id" />
+                                                <div class="form-group">
+                                                    <label class="control-label">Upload Image</label>
+                                                    <input type="file" name="image" />
+                                                </div>
+                                                <div class="form-group">
+                                                    <label asp-for="Name" class="control-label"></label>
+                                                    <input asp-for="Name" class="form-control" required />
+                                                    <span asp-validation-for="Name" class="text-danger"></span>
+                                                </div>
+                                                <input type="hidden" asp-for="Created" class="form-control" />
+                                                <div class="form-group">
+                                                    <label asp-for="Description" class="control-label"></label>
+                                                    <textarea asp-for="Description" class="form-control" rows="4" required></textarea>
+                                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                                </div>
+                                                @if (currentProject.ImageData != null && currentProject.ContentType != null)
+                                                {
+                                                    <input type="hidden" name="imageData" value="@Convert.ToBase64String(currentProject.ImageData)" class="form-control" />
+                                                    <input type="hidden" name="contentType" value="@currentProject.ContentType" class="form-control" />
+                                                }
+
+
+                                                @if (IsInRoleAdmin)
+                                                {
+                                                    <div class="form-group">
+                                                        <label asp-for="CompanyId" class="control-label"></label>
+                                                        <select asp-for="CompanyId" class="form-control" asp-items="ViewBag.CompanyId"></select>
+                                                        <span asp-validation-for="CompanyId" class="text-danger"></span>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <input type="hidden" asp-for="CompanyId" class="form-control">
+                                                }
+
+
+
+
+                                            </div>
+                                            <div class="modal-footer">
+
+                                                <button type="submit" class="btn btn-primary">Create</button>
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                            <a class="btn btn-secondary" asp-controller="Tickets" asp-action="Index" method="get"><i class="fas fa-ticket-alt"></i> View All Tickets On System</a>
+                        }
+
+
+                    </div>
+                    <div class="col text-right">
+                        <p style="margin-top: 1%; margin-bottom: 0; color: black; font-size: 14px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; border-radius: 0; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; ">Created on: @currentProject.Created.ToString("dd MMMM yyyy - hh:mm tt")</p>
+                    </div>
+                </div>
+
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12 col-md-12 col-lg-8 order-2 order-md-1">
+                        <div class="row" style="border-bottom:1px solid;">
+                            <div class="col-12 col-sm-4">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-poll"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Total Tickets</span>
+                                        <span class="info-box-number">
+                                            @*@ticketInProject.Count*@
+                                            <small>Tickets</small>
+                                        </span>
+                                    </div>
+                                    <!-- /.info-box-content -->
+                                </div>
+                                <!-- /.info-box -->
+                            </div>
+                            <div class="col-12 col-sm-4">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-exclamation"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Un-Assigned Tickets</span>
+                                        <span class="info-box-number">
+                                            @*@ticketInProject.Where(t => t.IsAssigned == false).Count()*@
+                                            <small>Tickets</small>
+                                        </span>
+                                    </div>
+                                    <!-- /.info-box-content -->
+                                </div>
+                                <!-- /.info-box -->
+                            </div>
+                            <div class="col-12 col-sm-4">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-cyan elevation-1"><i class="fas fa-check-circle"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Closed Tickets</span>
+                                        <span class="info-box-number">
+                                            @*@ticketInProject.Where(t => t.Status.Name == "Closed").ToList().Count*@
+                                            <small>Tickets</small>
+                                        </span>
+                                    </div>
+                                    <!-- /.info-box-content -->
+                                </div>
+                                <!-- /.info-box -->
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="row mb-0">
+                                    <div class="col text-left">
+                                        <h4 class="mt-2">Recent Activity</h4>
+                                    </div>
+                                    <div class="col text-right mr-2">
+                                        <h4 class="mt-2"><a asp-controller="Tickets" asp-action="ProjectIndex" asp-route-id="@currentProject.Id" class="btn btn-secondary"><i class="fas fa-eye"></i> View All Tickets In This Project</a></h4>
+                                    </div>
+                                </div>
+                                <hr class="mt-0" />
+                                @if (ticketInProject is not null)
+                                {
+                                    if (ticketInProject.Count >= 5)
+                                    {
+                                        var count = 1;
+                                        foreach (var ticket in ticketInProject)
+                                        {
+                                            if (count == 6)
+                                            {
+                                                break;
+                                            }
+                                            if (ticket.DeveloperId != null && ticket.OwnnerId != null)
+                                            {
+                                                byte[] imageData = ticket.Developer.ImageData;
+                                                string imageType = ticket.Developer.ContentType;
+                                                <div class="post">
+                                                    <div class="user-block">
+                                                        <img class="img-circle img-bordered-sm" src="@_imageService.DecodeFileAvatar(imageData, imageType)" alt="user image">
+                                                        <span class="username">
+                                                            <a>@(ticket.Developer.FullName) - Roles - Ticket #@(ticket.Id)</a>
+                                                        </span>
+                                                        <span class="description">Shared publicly - @ticket.Created.ToString("dd MMMM yyyy - hh:mm tt")</span>
+                                                    </div>
+                                                    <!-- /.user-block -->
+                                                    <a class="text-dark" asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id">
+                                                        @ticket.Description
+                                                    </a>
+
+                                                    <div class="row mt-2">
+                                                        <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm mr-2"><i class="fas fa-comment-dots"></i> @ticket.Comments.Count Comments </a>
+                                                        <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm mr-2"> <i class="fas fa-file"></i> @((_context.Attachment.Where(a => a.TicketId == ticket.Id).ToList()).Count) Files Attached </a>
+                                                        <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm mr-2"><i class="fas fa-user-edit"></i> @((_context.TicketHistory.Where(a => a.TicketId == ticket.Id).ToList()).Count) Changes </a>
+                                                    </div>
+
                                                 </div>
                                             }
                                             else
                                             {
-                                                <input type="hidden" asp-for="CompanyId" class="form-control">
+                                                byte[] imageData = null;
+                                                string imageType = null;
+                                                <div class="post">
+                                                    <div class="user-block">
+                                                        <img class="img-circle img-bordered-sm" src="@_imageService.DecodeFileAvatar(imageData, imageType)" alt="user image">
+                                                        <span class="username">
+                                                            @if (ticket.DeveloperId != null && ticket.OwnnerId != null)
+                                                            {
+                                                                <a>Un-Assigned Ticket - Create By Submitter - @(ticket.Ownner.FullName) - Ticket #@(ticket.Id)</a>
+                                                            }
+                                                            else
+                                                            {
+                                                                <a>Un-Assigned Ticket - Create By Submitter - Unknow - Ticket #@(ticket.Id)</a>
+                                                            }
+                                                        </span>
+                                                        <span class="description">Shared publicly - @ticket.Created.ToString("dd MMMM yyyy - hh:mm tt")</span>
+                                                    </div>
+                                                    <!-- /.user-block -->
+                                                    <a class="text-dark" asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id">
+                                                        @ticket.Description
+                                                    </a>
+
+                                                    <div class="row mt-2">
+                                                        <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm mr-2"><i class="fas fa-comment-dots"></i> @ticket.Comments.Count Comments </a>
+                                                        <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm mr-2"> <i class="fas fa-file"></i> @((ticket.Attachments.Where(a => a.TicketId == ticket.Id).ToList()).Count) Files Attached </a>
+                                                        <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm mr-2"><i class="fas fa-user-edit"></i> @((ticket.TicketHistories.Where(a => a.TicketId == ticket.Id).ToList()).Count) Changes </a>
+                                                    </div>
+
+                                                </div>
+                                            }
+
+
+
+                                            count++;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        foreach (var ticket in ticketInProject)
+                                        {
+                                            @if (ticket.DeveloperId != null && ticket.OwnnerId != null)
+                                            {
+                                                byte[] imageData = ticket.Developer.ImageData;
+                                                string imageType = ticket.Developer.ContentType;
+                                                <div class="post">
+                                                    <div class="user-block">
+                                                        <img class="img-circle img-bordered-sm" src="@_imageService.DecodeFileAvatar(imageData, imageType)" alt="user image">
+                                                        <span class="username">
+                                                            @if (ticket.DeveloperId != null && ticket.OwnnerId != null)
+                                                            {
+                                                                <a>@(ticket.Developer.FullName) - Role - Ticket #@(ticket.Id)</a> }
+                                                            else
+                                                            {
+                                                                <a>Unknow - Ticket #@(ticket.Id)</a>
+                                                            }
+
+                                                        </span>
+                                                        <span class="description">Shared publicly - @ticket.Created</span>
+                                                    </div>
+                                                    <!-- /.user-block -->
+                                                    <p>
+                                                        @ticket.Description
+                                                    </p>
+
+                                                    <div class="row">
+                                                        <a asp-controller="Tickets  " asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm mr-2"><i class="fas fa-comment-dots"></i> @ticket.Comments.Count Comments </a>
+                                                        <a asp-controller="Tickets  " asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm"> <i class="fas fa-file"></i> @ticket.Comments.Count Files</a>
+                                                    </div>
+
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                byte[] imageData = null;
+                                                string imageType = null;
+                                                <div class="post">
+                                                    <div class="user-block">
+                                                        <img class="img-circle img-bordered-sm" src="@_imageService.DecodeFileAvatar(imageData, imageType)" alt="user image">
+                                                        <span class="username">
+                                                            @if (ticket.DeveloperId != null && ticket.OwnnerId != null)
+                                                            {
+                                                                <a>@(ticket.Developer.FullName) - Role - Ticket #@(ticket.Id)</a> }
+                                                            else
+                                                            {
+                                                                <a>Unknow - Ticket #@(ticket.Id)</a>
+                                                            }
+
+                                                        </span>
+                                                        <span class="description">Shared publicly - @ticket.Created</span>
+                                                    </div>
+                                                    <!-- /.user-block -->
+                                                    <p>
+                                                        @ticket.Description
+                                                    </p>
+
+                                                    <div class="row">
+                                                        <a asp-controller="Tickets  " asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm mr-2"><i class="fas fa-comment-dots"></i> @ticket.Comments.Count Comments </a>
+                                                        <a asp-controller="Tickets  " asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm"> <i class="fas fa-file"></i> @ticket.Comments.Count Files</a>
+                                                    </div>
+
+                                                </div>
                                             }
 
 
 
 
-                                        </div>
-                                        <div class="modal-footer">
-
-                                            <button type="submit" class="btn btn-primary">Create</button>
-                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-
-
-
-                        <a class="btn btn-secondary" asp-controller="Tickets" asp-action="Index" method="get"><i class="fas fa-ticket-alt"></i> View All Tickets On System</a>
-                    }
-
-
-                </div>
-                <div class="col text-right">
-                    <p style="margin-top: 1%; margin-bottom: 0; color: black; font-size: 14px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; border-radius: 0; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; ">Created on: @currentProject.Created.ToString("dd MMMM yyyy - hh:mm tt")</p>
-                </div>
-            </div>
-
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-12 col-md-12 col-lg-8 order-2 order-md-1">
-                    <div class="row" style="border-bottom:1px solid;">
-                        <div class="col-12 col-sm-4">
-                            <div class="info-box">
-                                <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-poll"></i></span>
-                                <div class="info-box-content">
-                                    <span class="info-box-text">Total Tickets</span>
-                                    <span class="info-box-number">
-                                        @currentProject.Tickets.Count
-                                        <small>Tickets</small>
-                                    </span>
-                                </div>
-                                <!-- /.info-box-content -->
-                            </div>
-                            <!-- /.info-box -->
-                        </div>
-                        <div class="col-12 col-sm-4">
-                            <div class="info-box">
-                                <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-exclamation"></i></span>
-                                <div class="info-box-content">
-                                    <span class="info-box-text">Un-Assigned Tickets</span>
-                                    <span class="info-box-number">
-                                        @currentProject.Tickets.Where(t => t.IsAssigned == false).Count()
-                                        <small>Tickets</small>
-                                    </span>
-                                </div>
-                                <!-- /.info-box-content -->
-                            </div>
-                            <!-- /.info-box -->
-                        </div>
-                        <div class="col-12 col-sm-4">
-                            <div class="info-box">
-                                <span class="info-box-icon bg-cyan elevation-1"><i class="fas fa-check-circle"></i></span>
-                                <div class="info-box-content">
-                                    <span class="info-box-text">Closed Tickets</span>
-                                    <span class="info-box-number">
-                                        @currentProject.Tickets.Where(t => t.Status.Name == "Closed").ToList().Count
-                                        <small>Tickets</small>
-                                    </span>
-                                </div>
-                                <!-- /.info-box-content -->
-                            </div>
-                            <!-- /.info-box -->
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="row mb-0">
-                                <div class="col text-left">
-                                    <h4 class="mt-2">Recent Activity</h4>
-                                </div>
-                                <div class="col text-right mr-2">
-                                    <h4 class="mt-2"><a asp-controller="Tickets" asp-action="ProjectIndex" asp-route-id="@currentProject.Id" class="btn btn-secondary"><i class="fas fa-eye"></i> View All Tickets In This Project</a></h4>
-                                </div>
-                            </div>
-                            <hr class="mt-0" />
-                            @if (currentProject.Tickets.Count >= 5)
-                            {
-                                var count = 1;
-                                foreach (var ticket in currentProject.Tickets)
-                                {
-                                    if (count == 6)
-                                    {
-                                        break;
+                                        }
                                     }
-                                    if (ticket.DeveloperId != null)
-                                    {
-                                        byte[] imageData = ticket.Developer.ImageData;
-                                        string imageType = ticket.Developer.ContentType;
-                                        <div class="post">
-                                            <div class="user-block">
-                                                <img class="img-circle img-bordered-sm" src="@_imageService.DecodeFileAvatar(imageData, imageType)" alt="user image">
-                                                <span class="username">
-                                                    <a>@(ticket.Developer.FullName) - Roles - Ticket #@(ticket.Id)</a>
-                                                </span>
-                                                <span class="description">Shared publicly - @ticket.Created.ToString("dd MMMM yyyy - hh:mm tt")</span>
-                                            </div>
-                                            <!-- /.user-block -->
-                                            <a class="text-dark" asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id">
-                                                @ticket.Description
-                                            </a>
-
-                                            <div class="row mt-2">
-                                                <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm mr-2"><i class="fas fa-comment-dots"></i> @ticket.Comments.Count Comments </a>
-                                                <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm mr-2"> <i class="fas fa-file"></i> @((_context.Attachment.Where(a => a.TicketId == ticket.Id).ToList()).Count) Files Attached </a>
-                                                <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm mr-2"><i class="fas fa-user-edit"></i> @((_context.TicketHistory.Where(a => a.TicketId == ticket.Id).ToList()).Count) Changes </a>
-                                            </div>
-
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        byte[] imageData = null;
-                                        string imageType = null;
-                                        <div class="post">
-                                            <div class="user-block">
-                                                <img class="img-circle img-bordered-sm" src="@_imageService.DecodeFileAvatar(imageData, imageType)" alt="user image">
-                                                <span class="username">
-                                                    <a>Un-Assigned Ticket - Create By Submitter - @(ticket.Ownner.FullName) - Ticket #@(ticket.Id)</a>
-                                                </span>
-                                                <span class="description">Shared publicly - @ticket.Created.ToString("dd MMMM yyyy - hh:mm tt")</span>
-                                            </div>
-                                            <!-- /.user-block -->
-                                            <a class="text-dark" asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id">
-                                                @ticket.Description
-                                            </a>
-
-                                            <div class="row mt-2">
-                                                <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm mr-2"><i class="fas fa-comment-dots"></i> @ticket.Comments.Count Comments </a>
-                                                <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm mr-2"> <i class="fas fa-file"></i> @((_context.Attachment.Where(a => a.TicketId == ticket.Id).ToList()).Count) Files Attached </a>
-                                                <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm mr-2"><i class="fas fa-user-edit"></i> @((_context.TicketHistory.Where(a => a.TicketId == ticket.Id).ToList()).Count) Changes </a>
-                                            </div>
-
-                                        </div>
-                                    }
-
-
-
-                                    count++;
-                                }
-                            }
-                            else
-                            {
-                                foreach (var ticket in currentProject.Tickets)
-                                {
-                                    byte[] imageData = ticket.Developer.ImageData;
-                                    string imageType = ticket.Developer.ContentType;
-                                    <div class="post">
-                                        <div class="user-block">
-                                            <img class="img-circle img-bordered-sm" src="@_imageService.DecodeFileAvatar(imageData, imageType)" alt="user image">
-                                            <span class="username">
-                                                <a>@(ticket.Developer.FullName) - Role - Ticket #@(ticket.Id)</a>
-                                            </span>
-                                            <span class="description">Shared publicly - @ticket.Created</span>
-                                        </div>
-                                        <!-- /.user-block -->
-                                        <p>
-                                            @ticket.Description
-                                        </p>
-
-                                        <div class="row">
-                                            <a asp-controller="Tickets  " asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm mr-2"><i class="fas fa-comment-dots"></i> @ticket.Comments.Count Comments </a>
-                                            <a asp-controller="Tickets  " asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm"> <i class="fas fa-file"></i> @ticket.Comments.Count Files</a>
-                                        </div>
-
-                                    </div>
-
 
                                 }
-                            }
 
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-12 col-md-12 col-lg-4 order-1 order-md-2">
-                    <img src="@(_imageService.DecodeFile(currentProject.ImageData,currentProject.ContentType))" style="width:100%" />
-                    <h3 class="text-primary"><i class="fas fa-paint-brush"></i> @currentProject.Name</h3>
-                    <p class="text-muted">@currentProject.Description</p>
-                    <br>
-                    <div class="text-muted">
-                        <div class="row">
-                            <div class="col">
-                                <p class="text-sm">
-                                    Client Company
-                                    <b class="d-block">@currentProject.Company.Name</b>
-                                </p>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col">
-                                <p class="text-sm">
-                                    Project Leader
-
-                                    @if (projectManager != null)
-                                    {
-                                        <b class="d-block">@(projectManager.FullName)</b>
-                                    }
-                                </p>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col">
-                                <p class="text-sm">
-                                    Developer
-                                    @foreach (var developer in developerOnProject)
-                                    {
-                                        <b class="d-block">@(developer.FullName)</b>
-                                    }
-                                </p>
-                            </div>
-                            <div class="col">
-                                <p class="text-sm">
-                                    Submitter
-                                    @foreach (var submitter in submitterOnProject)
-                                    {
-                                        <b class="d-block">@(submitter.FullName)</b>
-                                    }
-                                </p>
-                            </div>
-                        </div>
-
-
-                    </div>
-
-                    <h5 class="mt-5 text-muted">Project files</h5>
-
-                    <div class="row">
-                        <form asp-action="Create" asp-controller="ProjectAttachments" enctype="multipart/form-data" method="post">
-                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                            <input type="hidden" asp-for="@currentProject.Id" name="ProjectId">
-                            <div class="media-body ml-3">
-                                <label>
-                                    Description
-                                    <input name="Description" type="text" class="form-control" />
-                                </label>
-                                <label class="btn btn-outline-secondary btn-sm">
-                                    Upload File
-                                    <input asp-for="@currentProject.Attachments.FirstOrDefault().FormFile" type="file" />
-                                </label>
+                    <div class="col-12 col-md-12 col-lg-4 order-1 order-md-2">
+                        <img src="@(_imageService.DecodeFile(currentProject.ImageData,currentProject.ContentType))" style="width:100%" />
+                        <h3 class="text-primary"><i class="fas fa-paint-brush"></i> @currentProject.Name</h3>
+                        <p class="text-muted">@currentProject.Description</p>
+                        <br>
+                        <div class="text-muted">
+                            <div class="row">
+                                <div class="col">
+                                    <p class="text-sm">
+                                        Client Company
+                                        <b class="d-block">@currentProject.Company.Name</b>
+                                    </p>
+                                </div>
                             </div>
                             <div class="row">
-                                <div class="col text-center">
-                                    <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+                                <div class="col">
+                                    <p class="text-sm">
+                                        Project Leader
+
+                                        @*@if (projectManager is not null)
+                                            {
+                                                <b class="d-block">@(projectManager.FullName)</b>
+                                            }*@
+                                    </p>
                                 </div>
                             </div>
-                        </form>
-                    </div>
-                    <div class="row clearfix">
+                            <div class="row">
+                                    <div class="col">
+                                        <p class="text-sm">
+                                            Developer
+                                            @*@if (developerOnProject.Count != 0)
+                                            {
+                                                foreach (var developer in developerOnProject)
+                                                {
+                                                    <b class="d-block">@(developer.FullName)</b>
+                                                }
+                                            }*@
 
-                        @foreach (var item in currentProject.Attachments)
-                        {
-                            <div class="col-2">
-                                <div class="card">
-                                    <div class="file">
-                                        <a asp-controller="ProjectAttachments" asp-action="Details" asp-route-id="@item.Id">
-                                            <div class="hover">
-                                                <form asp-controller="ProjectAttachments" asp-action="Delete" asp-route-id="@item.Id" method="get">
-                                                    <button type="submit" class="btn btn-icon btn-danger"><i class="fa fa-trash"></i> </button>
-                                                </form>
+                                        </p>
+                                    </div>
+                                    <div class="col">
+                                        <p class="text-sm">
+                                            Submitter
+                                            @*@if (submitterOnProject.Count != 0)
+                                            {
+                                                foreach (var submitter in submitterOnProject)
+                                                {
+                                                    <b class="d-block">@(submitter.FullName)</b>
+                                                }
+                                            }*@
 
-                                            </div>
-                                            <div class="icon">
-                                                <img src="@_customFileService.GetFileIcon(item.FileName)" style="height:60px;width:60px" />
-                                            </div>
-                                            <div class="file-name">
-                                                <p class="m-b-5 text-muted">@System.IO.Path.GetFileNameWithoutExtension(item.FileName)</p>
-                                                <small>Size: @_customFileService.FormatFileSize(item.FileData.Length) <span class="date text-muted">@item.Created.ToString("MMM dd, yyyy")</span></small>
-                                            </div>
-                                        </a>
+                                        </p>
                                     </div>
                                 </div>
-                            </div>}
+
+
+                        </div>
+
+                        <h5 class="mt-5 text-muted">Project files</h5>
+
+                        <div class="row">
+                            <form asp-action="Create" asp-controller="ProjectAttachments" enctype="multipart/form-data" method="post">
+                                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                                <input type="hidden" asp-for="@currentProject.Id" name="ProjectId">
+                                <div class="media-body ml-3">
+                                    <label>
+                                        Description
+                                        <input name="Description" type="text" class="form-control" />
+                                    </label>
+                                    <label class="btn btn-outline-secondary btn-sm">
+                                        Upload File
+                                        <input asp-for="@currentProject.Attachments.FirstOrDefault().FormFile" type="file" />
+                                    </label>
+                                </div>
+                                <div class="row">
+                                    <div class="col text-center">
+                                        <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="row clearfix">
+                            @if (currentProject.Attachments is not null)
+                            {
+                                @foreach (var item in currentProject.Attachments)
+                                {
+                                    <div class="col-2">
+                                        <div class="card">
+                                            <div class="file">
+                                                <a asp-controller="ProjectAttachments" asp-action="Details" asp-route-id="@item.Id">
+                                                    <div class="hover">
+                                                        <form asp-controller="ProjectAttachments" asp-action="Delete" asp-route-id="@item.Id" method="get">
+                                                            <button type="submit" class="btn btn-icon btn-danger"><i class="fa fa-trash"></i> </button>
+                                                        </form>
+
+                                                    </div>
+                                                    <div class="icon">
+                                                        <img src="@_customFileService.GetFileIcon(item.FileName)" style="height:60px;width:60px" />
+                                                    </div>
+                                                    <div class="file-name">
+                                                        <p class="m-b-5 text-muted">@System.IO.Path.GetFileNameWithoutExtension(item.FileName)</p>
+                                                        <small>Size: @_customFileService.FormatFileSize(item.FileData.Length) <span class="date text-muted">@item.Created.ToString("MMM dd, yyyy")</span></small>
+                                                    </div>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>}
+                            }
+
+                        </div>
                     </div>
                 </div>
             </div>
+            <!-- /.card-body -->
         </div>
-        <!-- /.card-body -->
-    </div>
-    <!-- /.card -->
+        <!-- /.card -->
 
-</section>
+    </section>
+}
+
+
 @code {
     [Parameter]
-    public int ProjectId { get; set; }
+    public string ProjectId { get; set; }
     public Models.CustomUser user = new();
     public Models.CustomUser projectManager = new();
     public Models.Project currentProject = new();
+    public List<Models.Ticket> ticketInProject = new();
     public List<Models.CustomUser> developerOnProject = new();
     public List<Models.CustomUser> submitterOnProject = new();
-
+    public int CloseId;
     public bool IsInRoleAdmin;
     public bool IsDeveloper;
     public bool IsSubmitter;
@@ -514,25 +589,42 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await GetData();
+        GetData();
     }
 
 
 
-    public async Task GetData()
+    public void GetData()
     {
         currentProject = _context.Project
             .Include(p => p.Attachments)
             .Include(p => p.Company)
             .Include(p => p.CustomUsers)
             .Include(p => p.Tickets)
-            .FirstOrDefault(p => p.Id == ProjectId);
+            .FirstOrDefault(p => p.Id == Convert.ToInt32(ProjectId));
+        ticketInProject = _context.Ticket
+            .Include(t => t.Attachments)
+            .Include(t => t.Comments)
+            .Include(t => t.Developer)
+            .Include(t => t.Ownner)
+            .Include(t => t.Priority)
+            .Include(t => t.Project)
+            .Include(t => t.Status)
+            .Include(t => t.TicketHistories)
+            .Include(t => t.TicketType)
+            .Where(t => t.ProjectId == currentProject.Id).ToList();
+        CloseId = _context.Status.FirstOrDefault(s => s.Name == "Closed").Id;
 
 
         currentTime = DateTime.Now;
-        projectManager = await _projectService.ProjectManagerOnProjectAsync(currentProject.Id);
-        developerOnProject = (await _projectService.DeveloperOnProjectAsync(currentProject.Id)).ToList();
-        submitterOnProject = (await _projectService.SubmitterOnProjectAsync(currentProject.Id)).ToList();
+        projectManager = _projectService.ProjectManagerOnProject(currentProject.Id);
+        if (projectManager is null)
+        {
+            projectManager = null;
+        }
+        developerOnProject = (_projectService.DeveloperOnProject(currentProject.Id)).ToList();
+
+        submitterOnProject = (_projectService.SubmitterOnProject(currentProject.Id)).ToList();
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
