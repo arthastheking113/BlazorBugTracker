@@ -1,8 +1,158 @@
 ﻿@page "/manage/project/user"
 
+@using BlazorBugTracker.Data
+@using BlazorBugTracker.Services
+@using Microsoft.AspNetCore.Identity
+@inject ApplicationDbContext _context
+@inject UserManager<CustomUser> _userManager
+@inject ICustomRoleService _roleService
+@inject ICustomProjectService _projectService
+<div class="container-fluid" style="padding-left:10%;padding-right:10%;">
+    <div class="shadow-lg mb-5 bg-white rounded">
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header bg-dark">
+                        <h3 class="card-title">Manager User Project</h3>
+                    </div>
+                    <div class="card-body">
+                        <form asp-controller="Projects" asp-action="ManagerUserProject" method="post">
+                            <div class="row">
+                                <div class="col p-3">
+                                    <div class="row">
+                                        <div class="col">
+                                            Project
+                                        </div>
 
-<h3>ManageUserProject</h3>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="form-group">
+                                                <RadzenListBox AllowFiltering="true" AllowClear="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value=@ProjectSelected Data=@ProjectList TextProperty="Name" ValueProperty="Id"
+                                                               TValue="string" Placeholder="Select Role..." Style="height:400px;width:100%" />
+                                            </div>
+
+
+                                        </div>
+
+                                    </div>
+                                </div>
+                                <div class="col  p-3">
+                                    <div class="row">
+                                        <div class="col">
+                                            Project Manager
+                                        </div>
+
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="form-group">
+                                                <select class="form-control select2bs4" style="width: 100%;" name="ProjectManagerId"></select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="row">
+                                <div class="col p-3">
+                                    <div class="row">
+                                        <div class="col">
+                                            Developers
+                                        </div>
+
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="card card-default">
+                                                <div class="card-body" style="padding:0;">
+                                                    <div class="row">
+                                                        <div class="col-12">
+                                                            <div class="form-group">
+
+                                                                <select class="duallistbox" size="15" multiple="multiple" name="DevelopersId"></select>
+                                                            </div>
+                                                            <!-- /.form-group -->
+                                                        </div>
+                                                        <!-- /.col -->
+                                                    </div>
+                                                    <!-- /.row -->
+                                                </div>
+                                                <!-- /.card-body -->
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                                <div class="col p-3">
+                                    <div class="row">
+                                        <div class="col">
+                                            Submitters
+                                        </div>
+
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="card card-default">
+                                                <div class="card-body" style="padding:0;">
+                                                    <div class="row">
+                                                        <div class="col-12">
+                                                            <div class="form-group">
+
+                                                                <select class="duallistbox" size="15" multiple="multiple" name="SubmittersId"></select>
+                                                            </div>
+                                                            <!-- /.form-group -->
+                                                        </div>
+                                                        <!-- /.col -->
+                                                    </div>
+                                                    <!-- /.row -->
+                                                </div>
+                                                <!-- /.card-body -->
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col text-center">
+                                    <input type="submit" class="btn btn-secondary" value="         Save         " />
+                                    <a asp-controller="Projects" asp-action="ManagerUserProject" class="btn btn-secondary">Cancel</a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
 
 @code {
+    public List<Models.CustomUser> DeveloperList = new();
+    public List<Models.CustomUser> SubmitterList= new();
+    public List<Models.CustomUser> ProjectManagerList = new();
+    public List<Models.Project> ProjectList = new();
+    public List<IdentityRole> RoleList = new();
+    public int ProjectSelected
+
+    public void GetData()
+    {
+        DeveloperList = new();
+        SubmitterList = new();
+
+        ProjectList = _context.Project.ToList();
+        RoleList = _context.Roles.ToList();
+        foreach (var item in ProjectList)
+        {
+            DeveloperList.Union(_projectService.DeveloperOnProject(item.Id).ToList());
+            SubmitterList.Union(_projectService.SubmitterOnProject(item.Id).ToList());
+            ProjectManagerList.Add(_projectService.ProjectManagerOnProject(item.Id));
+        }
+        ProjectManagerList = ProjectManagerList.Distinct().ToList();
+
+    }
 
 }

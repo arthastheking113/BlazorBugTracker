@@ -64,7 +64,7 @@
     </div>
     <component type="typeof(App)" render-mode="ServerPrerendered" />
 
-    <div id="blazor-error-ui">
+    @*<div id="blazor-error-ui">
         <environment include="Staging,Production">
             An error has occurred. This application may no longer respond until reloaded.
         </environment>
@@ -73,7 +73,7 @@
         </environment>
         <a href="" class="reload">Reload</a>
         <a class="dismiss">🗙</a>
-    </div>
+    </div>*@
 
     <script src="_framework/blazor.server.js"></script>
     <script src="~/plugins/jquery/jquery.min.js"></script>
@@ -85,14 +85,13 @@
     </script>
     <!-- Bootstrap 4 -->
     <script src="~/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <!-- ChartJS -->
-    <script src="~/plugins/chart.js/Chart.min.js"></script>
+
     <!-- Sparkline -->
     <script src="~/plugins/sparklines/sparkline.js"></script>
     <!-- JQVMap -->
-    <script src="~/plugins/jqvmap/jquery.vmap.min.js"></script>
-    <script src="~/plugins/jqvmap/maps/jquery.vmap.usa.js"></script>
-    <!-- jQuery Knob Chart -->
+    <!--<script src="~/plugins/jqvmap/jquery.vmap.min.js"></script>
+    <script src="~/plugins/jqvmap/maps/jquery.vmap.usa.js"></script>-->
+     @*jQuery Knob Chart*@ 
     <script src="~/plugins/jquery-knob/jquery.knob.min.js"></script>
     <!-- daterangepicker -->
     <script src="~/plugins/moment/moment.min.js"></script>
@@ -116,8 +115,7 @@
     <script src="~/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
     <script src="~/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
     <script src="~/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
-    <!-- ChartJS -->
-    <script src="~/plugins/chart.js/Chart.min.js"></script>
+
     <!-- AdminLTE for demo purposes -->
     <script src="~/js/demo.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

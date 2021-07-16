@@ -39,10 +39,11 @@ else
             <div class="card-header">
                 <div class="row">
                     <div class="col">
-                        <a asp-controller="Projects" asp-action="Index" class="btn btn-secondary"> <i class="fas fa-arrow-circle-left"></i> Back</a>
-                        <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#exampleModal">
+                        <a class="btn text-white btn-secondary"> <i class="fas fa-arrow-circle-left"></i> Back</a>
+                        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#exampleModal">
                             <i class="fas fa-plus-square"></i> Create New Ticket
                         </button>
+                        <button class="btn btn-info"><i class="fas fa-pencil-alt"></i> Edit Project</button>
 
                         <!-- Modal -->
                         <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -109,7 +110,6 @@ else
                             </div>
                         </div>
 
-                        @*<a asp-controller="Projects" asp-action="Create" class="btn btn-secondary"> <i class="fas fa-tasks"></i> Create New Projects</a>*@
 
 
                         @if (IsInRoleAdmin || IsProjectManager)
@@ -244,46 +244,55 @@ else
                     <div class="col-12 col-md-12 col-lg-8 order-2 order-md-1">
                         <div class="row" style="border-bottom:1px solid;">
                             <div class="col-12 col-sm-4">
-                                <div class="info-box">
-                                    <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-poll"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Total Tickets</span>
-                                        <span class="info-box-number">
-                                            @ticketInProject.Count
-                                            <small>Tickets</small>
-                                        </span>
+                                <a class="text-dark" href="/project/@currentProject.Id/ticket">
+                                    <div class="info-box" style="cursor:pointer;">
+                                        <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-poll"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Total Tickets</span>
+                                            <span class="info-box-number">
+                                                @ticketInProject.Count
+                                                <small>Tickets</small>
+                                            </span>
+                                        </div>
+                                        <!-- /.info-box-content -->
                                     </div>
-                                    <!-- /.info-box-content -->
-                                </div>
-                                <!-- /.info-box -->
+                                    <!-- /.info-box -->
+                                </a>
+                     
                             </div>
                             <div class="col-12 col-sm-4">
-                                <div class="info-box">
-                                    <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-exclamation"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Un-Assigned Tickets</span>
-                                        <span class="info-box-number">
-                                            @ticketInProject.Where(t => t.IsAssigned == false).Count()
-                                            <small>Tickets</small>
-                                        </span>
+                                <a class="text-dark" href="/project/@currentProject.Id/ticket">
+                                    <div class="info-box" style="cursor:pointer;">
+                                        <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-exclamation"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Un-Assigned Tickets</span>
+                                            <span class="info-box-number">
+                                                @ticketInProject.Where(t => t.IsAssigned == false).Count()
+                                                <small>Tickets</small>
+                                            </span>
+                                        </div>
+                                        <!-- /.info-box-content -->
                                     </div>
-                                    <!-- /.info-box-content -->
-                                </div>
-                                <!-- /.info-box -->
+                                    <!-- /.info-box -->
+                                </a>
+                    
                             </div>
                             <div class="col-12 col-sm-4">
-                                <div class="info-box">
-                                    <span class="info-box-icon bg-cyan elevation-1"><i class="fas fa-check-circle"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Closed Tickets</span>
-                                        <span class="info-box-number">
-                                            @ticketInProject.Where(t => t.Status.Name == "Closed").ToList().Count
-                                            <small>Tickets</small>
-                                        </span>
+                                <a class="text-dark" href="/project/@currentProject.Id/ticket">
+                                    <div class="info-box" style="cursor:pointer;">
+                                        <span class="info-box-icon bg-cyan elevation-1"><i class="fas fa-check-circle"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Closed Tickets</span>
+                                            <span class="info-box-number">
+                                                @ticketInProject.Where(t => t.Status.Name == "Closed").ToList().Count
+                                                <small>Tickets</small>
+                                            </span>
+                                        </div>
+                                        <!-- /.info-box-content -->
                                     </div>
-                                    <!-- /.info-box-content -->
-                                </div>
-                                <!-- /.info-box -->
+                                    <!-- /.info-box -->
+                                </a>
+                                
                             </div>
                         </div>
                         <div class="row">
@@ -293,7 +302,7 @@ else
                                         <h4 class="mt-2">Recent Activity</h4>
                                     </div>
                                     <div class="col text-right mr-2">
-                                        <h4 class="mt-2"><a asp-controller="Tickets" asp-action="ProjectIndex" asp-route-id="@currentProject.Id" class="btn btn-secondary"><i class="fas fa-eye"></i> View All Tickets In This Project</a></h4>
+                                        <h4 class="mt-2 text-white"><a href="/project/@currentProject.Id/ticket" class="btn btn-secondary"><i class="fas fa-eye"></i> View All Tickets In This Project</a></h4>
                                     </div>
                                 </div>
                                 <hr class="mt-0" />
@@ -316,19 +325,19 @@ else
                                                     <div class="user-block">
                                                         <img class="img-circle img-bordered-sm" src="@_imageService.DecodeFileAvatar(imageData, imageType)" alt="user image">
                                                         <span class="username">
-                                                            <a>@(ticket.Developer.FullName) - Roles - Ticket #@(ticket.Id)</a>
+                                                            <a href="/ticket/details/@ticket.Id">@(ticket.Ownner.FullName) - @_roleService.ReturnUserRole2(ticket.Ownner) - Ticket #@(ticket.Id)</a>
                                                         </span>
                                                         <span class="description">Shared publicly - @ticket.Created.ToString("dd MMMM yyyy - hh:mm tt")</span>
                                                     </div>
                                                     <!-- /.user-block -->
-                                                    <a class="text-dark" asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id">
+                                                    <a class="text-dark" href="/ticket/details/@ticket.Id">
                                                         @ticket.Description
                                                     </a>
 
                                                     <div class="row mt-2">
-                                                        <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm mr-2"><i class="fas fa-comment-dots"></i> @ticket.Comments.Count Comments </a>
-                                                        <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm mr-2"> <i class="fas fa-file"></i> @((_context.Attachment.Where(a => a.TicketId == ticket.Id).ToList()).Count) Files Attached </a>
-                                                        <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm mr-2"><i class="fas fa-user-edit"></i> @((_context.TicketHistory.Where(a => a.TicketId == ticket.Id).ToList()).Count) Changes </a>
+                                                        <a href="/ticket/details/@ticket.Id" class="link-black text-sm mr-2"><i class="fas fa-comment-dots"></i> @ticket.Comments.Count Comments </a>
+                                                        <a href="/ticket/details/@ticket.Id" class="link-black text-sm mr-2"> <i class="fas fa-file"></i> @((_context.Attachment.Where(a => a.TicketId == ticket.Id).ToList()).Count) Files Attached </a>
+                                                        <a href="/ticket/details/@ticket.Id" class="link-black text-sm mr-2"><i class="fas fa-user-edit"></i> @((_context.TicketHistory.Where(a => a.TicketId == ticket.Id).ToList()).Count) Changes </a>
                                                     </div>
 
                                                 </div>
@@ -343,24 +352,24 @@ else
                                                         <span class="username">
                                                             @if (ticket.DeveloperId != null && ticket.OwnnerId != null)
                                                             {
-                                                                <a>Un-Assigned Ticket - Create By Submitter - @(ticket.Ownner.FullName) - Ticket #@(ticket.Id)</a>
+                                                                <a href="/ticket/details/@ticket.Id">Un-Assigned Ticket - Create By @_roleService.ReturnUserRole2(ticket.Ownner) - @(ticket.Ownner.FullName) - Ticket #@(ticket.Id)</a>
                                                             }
                                                             else
                                                             {
-                                                                <a>Un-Assigned Ticket - Create By Submitter - Unknow - Ticket #@(ticket.Id)</a>
+                                                                <a href="/ticket/details/@ticket.Id">Un-Assigned Ticket - Create By Unknow - Unknow - Ticket #@(ticket.Id)</a>
                                                             }
                                                         </span>
                                                         <span class="description">Shared publicly - @ticket.Created.ToString("dd MMMM yyyy - hh:mm tt")</span>
                                                     </div>
                                                     <!-- /.user-block -->
-                                                    <a class="text-dark" asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id">
+                                                    <a class="text-dark" >
                                                         @ticket.Description
                                                     </a>
 
                                                     <div class="row mt-2">
-                                                        <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm mr-2"><i class="fas fa-comment-dots"></i> @ticket.Comments.Count Comments </a>
-                                                        <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm mr-2"> <i class="fas fa-file"></i> @((ticket.Attachments.Where(a => a.TicketId == ticket.Id).ToList()).Count) Files Attached </a>
-                                                        <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm mr-2"><i class="fas fa-user-edit"></i> @((ticket.TicketHistories.Where(a => a.TicketId == ticket.Id).ToList()).Count) Changes </a>
+                                                        <a href="/ticket/details/@ticket.Id" class="link-black text-sm mr-2"><i class="fas fa-comment-dots"></i> @ticket.Comments.Count Comments </a>
+                                                        <a href="/ticket/details/@ticket.Id" class="link-black text-sm mr-2"> <i class="fas fa-file"></i> @((ticket.Attachments.Where(a => a.TicketId == ticket.Id).ToList()).Count) Files Attached </a>
+                                                        <a href="/ticket/details/@ticket.Id" class="link-black text-sm mr-2"><i class="fas fa-user-edit"></i> @((ticket.TicketHistories.Where(a => a.TicketId == ticket.Id).ToList()).Count) Changes </a>
                                                     </div>
 
                                                 </div>
@@ -385,10 +394,11 @@ else
                                                         <span class="username">
                                                             @if (ticket.DeveloperId != null && ticket.OwnnerId != null)
                                                             {
-                                                                <a>@(ticket.Developer.FullName) - Role - Ticket #@(ticket.Id)</a> }
+                                                                <a href="/ticket/details/@ticket.Id">@(ticket.Ownner.FullName) - Create By @(_roleService.ReturnUserRole2(ticket.Ownner)) - Ticket #@(ticket.Id)</a> 
+                                                            }
                                                             else
                                                             {
-                                                                <a>Unknow - Ticket #@(ticket.Id)</a>
+                                                                <a href="/ticket/details/@ticket.Id">Unknow - Create By Unknow - Ticket #@(ticket.Id)</a>
                                                             }
 
                                                         </span>
@@ -400,8 +410,10 @@ else
                                                     </p>
 
                                                     <div class="row">
-                                                        <a asp-controller="Tickets  " asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm mr-2"><i class="fas fa-comment-dots"></i> @ticket.Comments.Count Comments </a>
-                                                        <a asp-controller="Tickets  " asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm"> <i class="fas fa-file"></i> @ticket.Comments.Count Files</a>
+                                                        <a href="/ticket/details/@ticket.Id" class="link-black text-sm mr-2"><i class="fas fa-comment-dots"></i> @ticket.Comments.Count Comments </a>
+                                                        <a href="/ticket/details/@ticket.Id" class="link-black text-sm"> <i class="fas fa-file"></i> @ticket.Comments.Count Files</a>
+                                                        <a href="/ticket/details/@ticket.Id" class="link-black text-sm mr-2"><i class="fas fa-user-edit"></i> @((ticket.TicketHistories.Where(a => a.TicketId == ticket.Id).ToList()).Count) Changes </a>
+
                                                     </div>
 
                                                 </div>
@@ -416,10 +428,10 @@ else
                                                         <span class="username">
                                                             @if (ticket.DeveloperId != null && ticket.OwnnerId != null)
                                                             {
-                                                                <a>@(ticket.Developer.FullName) - Role - Ticket #@(ticket.Id)</a> }
+                                                                <a href="/ticket/details/@ticket.Id">@(ticket.Ownner.FullName) - @_roleService.ReturnUserRole2(ticket.Ownner) - Ticket #@(ticket.Id)</a> }
                                                             else
                                                             {
-                                                                <a>Unknow - Ticket #@(ticket.Id)</a>
+                                                                <a href="/ticket/details/@ticket.Id">Unknow - Ticket #@(ticket.Id)</a>
                                                             }
 
                                                         </span>
@@ -431,8 +443,9 @@ else
                                                     </p>
 
                                                     <div class="row">
-                                                        <a asp-controller="Tickets  " asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm mr-2"><i class="fas fa-comment-dots"></i> @ticket.Comments.Count Comments </a>
-                                                        <a asp-controller="Tickets  " asp-action="Details" asp-route-id="@ticket.Id" class="link-black text-sm"> <i class="fas fa-file"></i> @ticket.Comments.Count Files</a>
+                                                        <a href="/ticket/details/@ticket.Id" class="link-black text-sm mr-2"><i class="fas fa-comment-dots"></i> @ticket.Comments.Count Comments </a>
+                                                        <a href="/ticket/details/@ticket.Id" class="link-black text-sm"> <i class="fas fa-file"></i> @ticket.Comments.Count Files</a>
+                                                        <a href="/ticket/details/@ticket.Id" class="link-black text-sm mr-2"><i class="fas fa-user-edit"></i> @((ticket.TicketHistories.Where(a => a.TicketId == ticket.Id).ToList()).Count) Changes </a>
                                                     </div>
 
                                                 </div>
@@ -469,9 +482,9 @@ else
                                         Project Leader
 
                                         @if (projectManager is not null)
-                                            {
-                                                <b class="d-block">@(projectManager.FullName)</b>
-                                            }
+                                        {
+                                            <b class="d-block">@(projectManager.FullName)</b>
+                                        }
                                     </p>
                                 </div>
                             </div>
@@ -514,19 +527,25 @@ else
                                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                                 <input type="hidden" asp-for="@currentProject.Id" name="ProjectId">
                                 <div class="media-body ml-3">
-                                    <label>
-                                        Description
-                                        <input name="Description" type="text" class="form-control" />
-                                    </label>
-                                    <label class="btn btn-outline-secondary btn-sm">
-                                        Upload File
-                                    </label>
-                                </div>
-                                <div class="row">
-                                    <div class="col text-center">
-                                        <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+                                    <div class="row">
+                                        <div class="col-4">
+                                            <label>
+                                                Description
+
+                                            </label>
+                                            <input name="Description" type="text" class="form-control" />
+                                        </div>
+                                        <div class="col">
+                                            <br />
+                                            <input type="file" />
+                                        </div>
+                                        <div class="col">
+                                           <br />
+                                            <button type="submit" class="btn btn-sm btn-primary">Upload</button>
+                                        </div>
                                     </div>
                                 </div>
+
                             </form>
                         </div>
                         <div class="row clearfix">
@@ -537,11 +556,9 @@ else
                                     <div class="col-2">
                                         <div class="card">
                                             <div class="file">
-                                                <a asp-controller="ProjectAttachments" asp-action="Details" asp-route-id="@item.Id">
+                                                <a>
                                                     <div class="hover">
-                                                        <form asp-controller="ProjectAttachments" asp-action="Delete" asp-route-id="@item.Id" method="get">
-                                                            <button type="submit" class="btn btn-icon btn-danger"><i class="fa fa-trash"></i> </button>
-                                                        </form>
+                                                        <button  class="btn btn-icon btn-danger"><i class="fa fa-trash"></i> </button>
 
                                                     </div>
                                                     <div class="icon">
@@ -554,7 +571,8 @@ else
                                                 </a>
                                             </div>
                                         </div>
-                                    </div>}
+                                    </div>
+                                 }
                             }
 
                         </div>

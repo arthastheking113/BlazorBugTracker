@@ -46,7 +46,33 @@ namespace BlazorBugTracker.Services
             }
             return returnRole;
         }
+        public string ReturnUserRole2(CustomUser user)
+        {
+            var roleId = _dbContext.UserRoles.FirstOrDefault(s => s.UserId == user.Id);
+            var returnRole = "Not In Role";
+            if (roleId is null)
+            {
+                returnRole = _dbContext.Roles.FirstOrDefault(s => s.Id == roleId.ToString()).Name;
+            }
+            return returnRole;
+        }
+        public string ReturnUserRole3(CustomUser user)
+        {
+            var roleId = _dbContext.UserRoles.Where(s => s.UserId == user.Id).ToList();
+            var returnRole = "Not In Role";
+            if (roleId is null)
+            {
+                foreach (var item in roleId)
+                {
+                    returnRole = "";
+                    var role = _dbContext.Roles.FirstOrDefault(s => s.Id == item.ToString()).Name;
+                    returnRole += $"{role},";
+                }
+                returnRole.Remove(returnRole.Length - 1);
 
+            }
+            return returnRole;
+        }
         public IEnumerable<IdentityRole> NonDemoRoles()
         {
             var roles = _dbContext.Roles;

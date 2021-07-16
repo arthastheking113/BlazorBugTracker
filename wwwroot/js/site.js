@@ -136,6 +136,7 @@ function enableTable() {
             "responsive": true,
             "autoWidth": false,
             "paging": true,
+            "ordering": true,
             "searching": true,
         });
         $('#example2').DataTable({

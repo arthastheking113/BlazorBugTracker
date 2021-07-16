@@ -17,6 +17,9 @@ namespace BlazorBugTracker.Services
 
         public Task<string> ReturnUserRole(CustomUser user);
 
+        public string ReturnUserRole2(CustomUser user);
+
+        public string ReturnUserRole3(CustomUser user);
         public Task<bool> RemoveUserFromRoleAsync(CustomUser user, string role);
 
         public Task<IEnumerable<CustomUser>> UsersInRoleAsync(string role);

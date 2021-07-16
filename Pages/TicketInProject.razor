@@ -1,10 +1,10 @@
-﻿@page "/ticket"
+﻿@page "/project/{ProjectId}/ticket"
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Http
 @using Microsoft.EntityFrameworkCore
 @using BlazorBugTracker.Services
 @using Microsoft.AspNetCore.Identity.UI.Services
-@inject IEmailSender _emailSender  
+@inject IEmailSender _emailSender
 @inject ICustomRoleService _roleService
 @inject ICustomProjectService _projectService
 @inject IHttpContextAccessor _httpContextAccessor
@@ -13,7 +13,7 @@
 @inject ApplicationDbContext _context
 @inject IJSRuntime JSRuntime
 @inject ISessionStorageService sessionStorage
-@inject ICustomHistoryService _customHistoryService 
+@inject ICustomHistoryService _customHistoryService
 
 @if (ItemList is null)
 {
@@ -42,12 +42,19 @@ else
 
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-4">
+                        <div class="col-6">
                             @if (!IsNewUser)
                             {
-                                <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#exampleModal">
+                                <a href="/ticket" class="btn btn-outline-dark" data-toggle="modal" data-target="#exampleModal">
+                                    <span class="iconify" data-icon="ion:arrow-back-circle-sharp" data-inline="true"></span> Back To All Ticket
+                                </a>
+                                <a href="/project/details/@ProjectId" class="btn btn-outline-primary" data-toggle="modal" data-target="#exampleModal">
+                                    <span class="iconify" data-icon="ion:arrow-back-circle-sharp" data-inline="true"></span> Back To Project
+                                </a>
+                                <button type="button" class="btn btn-outline-success" data-toggle="modal" data-target="#exampleModal">
                                     <i class="fas fa-plus-square"></i> Create New Ticket
                                 </button>
+
 
                             }
 
@@ -618,6 +625,8 @@ else
 
 
 @code {
+    [Parameter]
+    public string ProjectId { get; set; }
     public Models.CustomUser user = new();
     public bool IsInRoleAdmin;
     public bool IsDeveloper;
@@ -904,13 +913,13 @@ else
         }
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override void  OnInitialized()
     {
         GetData();
     }
 
 
-    public void  GetData()
+    public void GetData()
     {
         ItemList = _context.Ticket
             .Include(t => t.Attachments)
@@ -921,7 +930,7 @@ else
             .Include(t => t.Project)
             .Include(t => t.Status)
             .Include(t => t.TicketHistories)
-            .Include(t => t.TicketType).ToList();
+            .Include(t => t.TicketType).Where(t => t.ProjectId == Convert.ToInt32(ProjectId)).ToList();
 
         TicketTypeList = _context.TicketType.ToList();
         TicketPriorityList = _context.Priority.ToList();

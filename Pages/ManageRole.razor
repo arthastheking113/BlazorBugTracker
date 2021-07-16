@@ -1,8 +1,154 @@
 ﻿@page "/manage/role"
 
+@using BlazorBugTracker.Data
+@using BlazorBugTracker.Services
+@using Microsoft.AspNetCore.Identity
+@inject ApplicationDbContext _context 
+@inject UserManager<CustomUser> _userManager
+@inject ICustomRoleService _roleService 
 
-<h3>ManageRole</h3>
+<div class="row">
+    <div class="col">
+        <div class="card">
+            <div class="card-header bg-dark">
+                <h3 class="card-title">Manage Role</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <form asp-action="ManageRole" method="post">
+
+                            <div class="row">
+                                <div class="col">
+                                    <div class="card card-default">
+                                        <div class="card-body" style="padding:0;">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="form-control bg-dark"> Select Role </label>
+                                                        <br />
+                                                        <RadzenListBox AllowFiltering="true" AllowClear="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value=@RoleSelected Data=@Roles TextProperty="Name" ValueProperty="Id"
+                                                          TValue="string"    Placeholder="Select Role..."   Style="height:400px;width:100%" />
+                                                    </div>
+                                                </div>
+                                                <!-- /.col -->
+                                                <div class="col-md-6 ">
+                                                    <div class="form-group">
+                                                        <label class="form-control bg-dark"> Select Users </label>
+                                                        <br />
+                                                        <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" TValue="IEnumerable<string>" Multiple="true" Data=@UserList
+                                                            Change=@(args => OnChangeSelectUser(args))     Placeholder="Select Users..." TextProperty="FullName" ValueProperty="Id"  Style="height:400px;width:100%" />
+
+                                                    </div>
+                                                    <!-- /.form-group -->
+                                                </div>
+                                                <!-- /.col -->
+                                            </div>
+                                            <!-- /.row -->
+                                        </div>
+                                        <!-- /.card-body -->
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="row">
+                                <div class="col">
+                                    <button type="submit" class="btn btn-secondary form-control">Add</button>
+                                </div>
+                            </div>
+
+                        </form>
+                    </div>
+                    <div class="col-md">
+
+                        <div class="card">
+                            <div class="card-header bg-dark">
+                                <h3 class="card-title">All Projects</h3>
+                                <div class="card-tools">
+                                    <div class="input-group input-group-sm">
+                                        <input type="text" class="form-control" placeholder="Search Users/Roles" id="searchUserRole">
+                                        <div class="input-group-append">
+                                            <div class="btn btn-primary">
+                                                <i class="fas fa-search"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-striped projects table-hover" id="viewUserRole">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                User Name
+                                            </th>
+                                            <th>
+                                                Roles
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var user in UserList)
+                                        {
+                                            var roles = _roleService.ReturnUserRole3(user).Split(",").ToList();
+                                            <tr>
+                                                <td>
+                                                    @user.FullName
+                                                </td>
+                                                <td>
+                                                    @foreach (var item in roles)
+                                                    {
+                                                        <div class="row">
+                                                            @item
+                                                        </div>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+                        <!-- /.card -->
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
 @code {
+    public List<Models.CustomUser> UserList = new();
+    public List<IdentityRole> Roles = new();
+    public List<string> UserSelected = new();
+    public string RoleSelected;
+    protected override void OnInitialized()
+    {
+        GetData();
+    }
+
+
+    public void GetData()
+    {
+        UserList = _context.Users.ToList();
+        Roles = _context.Roles.ToList();
+    }
+
+
+    public void OnChangeSelectUser(object value)
+    {
+        var str = value is IEnumerable<object> ? string.Join(", ", (IEnumerable<object>)value) : value;
+        if (str is not null)
+        {
+            var users = str.ToString().Split(",").ToList();
+            UserSelected = users;
+        }
+    }
+
 
 }
