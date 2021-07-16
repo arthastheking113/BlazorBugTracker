@@ -7,18 +7,18 @@
 @inject UserManager<CustomUser> _userManager
 @inject ICustomRoleService _roleService
 @inject ICustomProjectService _projectService
-<div class="container-fluid" style="padding-left:10%;padding-right:10%;">
+<div class="container-fluid" >
     <div class="shadow-lg mb-5 bg-white rounded">
         <div class="row">
-            <div class="col">
-                <div class="card">
+            <div class="col pl-0 pr-0">
+                <div class="card mb-0">
                     <div class="card-header bg-dark">
                         <h3 class="card-title">Manager User Project</h3>
                     </div>
                     <div class="card-body">
                         <form asp-controller="Projects" asp-action="ManagerUserProject" method="post">
                             <div class="row">
-                                <div class="col p-3">
+                                <div class="col-md p-3">
                                     <div class="row">
                                         <div class="col">
                                             Project
@@ -29,7 +29,7 @@
                                         <div class="col">
                                             <div class="form-group">
                                                 <RadzenListBox AllowFiltering="true" AllowClear="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value=@ProjectSelected Data=@ProjectList TextProperty="Name" ValueProperty="Id"
-                                                               TValue="string" Placeholder="Select Role..." Style="height:400px;width:100%" />
+                                                               TValue="int" Placeholder="Select Project..." Style="height:600px;width:100%" />
                                             </div>
 
 
@@ -37,7 +37,7 @@
 
                                     </div>
                                 </div>
-                                <div class="col  p-3">
+                                <div class="col-md  p-3">
                                     <div class="row">
                                         <div class="col">
                                             Project Manager
@@ -47,15 +47,13 @@
                                     <div class="row">
                                         <div class="col">
                                             <div class="form-group">
-                                                <select class="form-control select2bs4" style="width: 100%;" name="ProjectManagerId"></select>
+                                                <RadzenListBox AllowFiltering="true" AllowClear="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value=@ProjectManagerSelected Data=@ProjectManagerList TextProperty="FullName" ValueProperty="Id"
+                                                               TValue="string" Placeholder="Select Project Manager..." Style="height:600px;width:100%" />
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-
-                            </div>
-                            <div class="row">
-                                <div class="col p-3">
+                                <div class="col-md p-3">
                                     <div class="row">
                                         <div class="col">
                                             Developers
@@ -68,10 +66,12 @@
                                                 <div class="card-body" style="padding:0;">
                                                     <div class="row">
                                                         <div class="col-12">
-                                                            <div class="form-group">
+                                                           
 
-                                                                <select class="duallistbox" size="15" multiple="multiple" name="DevelopersId"></select>
-                                                            </div>
+                                                                <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" TValue="IEnumerable<string>" Multiple="true" Data=@DeveloperList
+                                                                               Change=@(args => OnChangeSelectDeveloper(args)) Placeholder="Select Developer..." TextProperty="FullName" ValueProperty="Id" Style="height:600px;width:100%" />
+
+                                                          
                                                             <!-- /.form-group -->
                                                         </div>
                                                         <!-- /.col -->
@@ -84,7 +84,7 @@
 
                                     </div>
                                 </div>
-                                <div class="col p-3">
+                                <div class="col-md p-3">
                                     <div class="row">
                                         <div class="col">
                                             Submitters
@@ -97,10 +97,12 @@
                                                 <div class="card-body" style="padding:0;">
                                                     <div class="row">
                                                         <div class="col-12">
-                                                            <div class="form-group">
+                                                         
 
-                                                                <select class="duallistbox" size="15" multiple="multiple" name="SubmittersId"></select>
-                                                            </div>
+                                                                <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" TValue="IEnumerable<string>" Multiple="true" Data=@SubmitterList
+                                                                               Change=@(args => OnChangeSelectSubmitter(args)) Placeholder="Select Submitter..." TextProperty="FullName" ValueProperty="Id" Style="height:600px;width:100%" />
+
+                                                           
                                                             <!-- /.form-group -->
                                                         </div>
                                                         <!-- /.col -->
@@ -114,10 +116,11 @@
                                     </div>
                                 </div>
                             </div>
+
                             <div class="row">
                                 <div class="col text-center">
                                     <input type="submit" class="btn btn-secondary" value="         Save         " />
-                                    <a asp-controller="Projects" asp-action="ManagerUserProject" class="btn btn-secondary">Cancel</a>
+                                    <a asp-controller="Projects" asp-action="ManagerUserProject" class="btn text-white btn-secondary">Cancel</a>
                                 </div>
                             </div>
                         </form>
@@ -136,7 +139,15 @@
     public List<Models.CustomUser> ProjectManagerList = new();
     public List<Models.Project> ProjectList = new();
     public List<IdentityRole> RoleList = new();
-    public int ProjectSelected
+    public List<string> DeveloperSelected = new();
+    public List<string> SubmitterSelected = new();
+    public int ProjectSelected;
+    public string ProjectManagerSelected;
+
+    protected override void OnInitialized()
+    {
+        GetData();
+    }
 
     public void GetData()
     {
@@ -154,5 +165,26 @@
         ProjectManagerList = ProjectManagerList.Distinct().ToList();
 
     }
+
+    public void OnChangeSelectDeveloper(object value)
+    {
+        var str = value is IEnumerable<object> ? string.Join(", ", (IEnumerable<object>)value) : value;
+        if (str is not null)
+        {
+            var users = str.ToString().Split(",").ToList();
+            DeveloperSelected = users;
+        }
+    }
+
+    public void OnChangeSelectSubmitter(object value)
+    {
+        var str = value is IEnumerable<object> ? string.Join(", ", (IEnumerable<object>)value) : value;
+        if (str is not null)
+        {
+            var users = str.ToString().Split(",").ToList();
+            SubmitterSelected = users;
+        }
+    }
+
 
 }
