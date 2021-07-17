@@ -50,9 +50,9 @@ namespace BlazorBugTracker.Services
         {
             var roleId = _dbContext.UserRoles.FirstOrDefault(s => s.UserId == user.Id);
             var returnRole = "Not In Role";
-            if (roleId is null)
+            if (roleId is not null)
             {
-                returnRole = _dbContext.Roles.FirstOrDefault(s => s.Id == roleId.ToString()).Name;
+                returnRole = _dbContext.Roles.FirstOrDefault(s => s.Id == roleId.RoleId).Name;
             }
             return returnRole;
         }
@@ -60,12 +60,12 @@ namespace BlazorBugTracker.Services
         {
             var roleId = _dbContext.UserRoles.Where(s => s.UserId == user.Id).ToList();
             var returnRole = "Not In Role";
-            if (roleId is null)
+            if (roleId is not null)
             {
                 foreach (var item in roleId)
                 {
                     returnRole = "";
-                    var role = _dbContext.Roles.FirstOrDefault(s => s.Id == item.ToString()).Name;
+                    var role = _dbContext.Roles.FirstOrDefault(s => s.Id == item.RoleId).Name;
                     returnRole += $"{role},";
                 }
                 returnRole.Remove(returnRole.Length - 1);

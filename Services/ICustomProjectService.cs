@@ -14,9 +14,9 @@ namespace BlazorBugTracker.Services
 
         public Task<IEnumerable<CustomUser>> UserNotInProjectAsync(int projectId);
 
-        public Task AddUserToProjectAsync(string userId, int projectId);
+        public void AddUserToProject(List<string> userId, int projectId);
 
-        public Task RemoveUserFromProjectAsync(string userId, int projectId);
+        public void RemoveUserFromProject(string userId, int projectId);
 
         public Task<IEnumerable<Project>> ListUserProjectAsync(string userId);
 

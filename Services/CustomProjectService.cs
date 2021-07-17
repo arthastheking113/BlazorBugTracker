@@ -26,32 +26,43 @@ namespace BlazorBugTracker.Services
             _contextAccessor = contextAccessor;
             _roleService = roleService;
         }
-        public async Task AddUserToProjectAsync(string userId, int projectId)
+        public void AddUserToProject(List<string> userIdList, int projectId)
         {
             try
             {
-                if (!IsUserOnProject(userId, projectId))
+                List<CustomUser> UserInProjectList = new();
+                Project project = _context.Project.FirstOrDefault(p => p.Id == projectId);
+                UserInProjectList = project.CustomUsers.ToList();
+                foreach (var userId in userIdList)
                 {
-                    CustomUser user = await _userManager.FindByIdAsync(userId);
-                    if ( await _roleService.IsUserInRoleAsync(user, Roles.ProjectManager.ToString()))
+                    if (!IsUserOnProject(userId, projectId))
                     {
-                        var oldManager = ProjectManagerOnProject(projectId);
-                        if (oldManager != null)
+
+                        CustomUser user = _context.Users.FirstOrDefault(u => u.Id == userId);
+                        var IsUserInRole = _roleService.ReturnUserRole3(user);
+                        if (IsUserInRole.Contains(Roles.ProjectManager.ToString()))
                         {
-                            await RemoveUserFromProjectAsync(oldManager.Id, projectId);
+                            var oldManager = ProjectManagerOnProject(projectId);
+                            if (oldManager != null)
+                            {
+                                RemoveUserFromProject(oldManager.Id, projectId);
+                            }
                         }
+                        UserInProjectList.Add(user);
                     }
-                    Project project = await _context.Project.FindAsync(projectId);
-                    try
-                    {
-                        project.CustomUsers.Add(user);
-                        await _context.SaveChangesAsync();
-                    }
-                    catch(Exception)
-                    {
-                        throw;
-                    }
+
                 }
+
+                try
+                {
+                    project.CustomUsers = UserInProjectList;
+                    _context.SaveChanges();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"*** ERROR *** - Error Adding user to project - message:{ex.Message}");
+                }
+
             }
             catch(Exception ex)
             {
@@ -116,18 +127,18 @@ namespace BlazorBugTracker.Services
             return manager;
         }
 
-        public async Task RemoveUserFromProjectAsync(string userId, int projectId)
+        public void  RemoveUserFromProject(string userId, int projectId)
         {
             try
             {
                 if (IsUserOnProject(userId, projectId))
                 {
-                    CustomUser user = await _userManager.FindByIdAsync(userId);
-                    Project project = await _context.Project.FindAsync(projectId);
+                    CustomUser user = _context.Users.FirstOrDefault(u => u.Id == userId);
+                    Project project = _context.Project.FirstOrDefault(u => u.Id == projectId);
                     try
                     {
                         project.CustomUsers.Remove(user);
-                        await _context.SaveChangesAsync();
+                        _context.SaveChanges();
                     }
                     catch (Exception)
                     {

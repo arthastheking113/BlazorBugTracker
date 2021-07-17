@@ -6,7 +6,7 @@
 @inject ApplicationDbContext _context 
 @inject UserManager<CustomUser> _userManager
 @inject ICustomRoleService _roleService 
-
+@inject IJSRuntime JSRuntime
 <div class="row">
     <div class="col">
         <div class="card">
@@ -16,7 +16,7 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-4">
-                        <form asp-action="ManageRole" method="post">
+                        <EditForm Model="manageRole" OnValidSubmit="SubmitForm" >
 
                             <div class="row">
                                 <div class="col">
@@ -58,7 +58,7 @@
                                 </div>
                             </div>
 
-                        </form>
+                        </EditForm>
                     </div>
                     <div class="col-md">
 
@@ -127,6 +127,9 @@
     public List<IdentityRole> Roles = new();
     public List<string> UserSelected = new();
     public string RoleSelected;
+
+    public Models.ManageRole manageRole = new();
+
     protected override void OnInitialized()
     {
         GetData();
@@ -139,6 +142,34 @@
         Roles = _context.Roles.ToList();
     }
 
+    public async Task SubmitForm()
+    {
+        try
+        {
+            foreach (var id in UserSelected)
+            {
+                var user = _context.Users.FirstOrDefault(u => u.Id == id);
+                var isUserInRole = _context.UserRoles.FirstOrDefault(r => r.UserId == id && r.RoleId == RoleSelected);
+                if (isUserInRole is null)
+                {
+                    var userRole = _roleService.ReturnUserRole3(user).Split(",").ToList();
+                    foreach (var roles in userRole)
+                    {
+                        await _roleService.RemoveUserFromRoleAsync(user, roles);
+                    }
+                    await _roleService.AddUserToRoleAsync(user, RoleSelected);
+                }
+            }
+            UserSelected = new();
+            RoleSelected = null;
+            await JSRuntime.InvokeVoidAsync("success", null);
+        }
+        catch(Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+        }
+
+    }
 
     public void OnChangeSelectUser(object value)
     {
