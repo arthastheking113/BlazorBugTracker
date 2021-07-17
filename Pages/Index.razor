@@ -1,7 +1,46 @@
 ﻿@page "/"
-
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<CustomUser> _userManager
+@inject SignInManager<CustomUser> _signInManager
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor _httpContextAccessor
+@inject IImageService _imageService
+@inject ISessionStorageService sessionStorage
+@inject ICustomRoleService _roleService
 <h1>Hello, world!</h1>
 
 Welcome to your new app.
 
 <SurveyPrompt Title="How is Blazor working for you?" />
+
+
+@code{
+    public Models.CustomUser user = new();
+    public bool IsInRoleAdmin;
+    public bool IsDeveloper;
+    public bool IsSubmitter;
+    public bool IsProjectManager;
+    public bool IsNewUser;
+    protected override async Task OnInitializedAsync()
+    {
+        if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+        {
+            await GetData();
+        }
+
+    }
+
+
+    public async Task GetData()
+    {
+        var currrentUser = _httpContextAccessor.HttpContext.User;
+        user = await _userManager.GetUserAsync(currrentUser);
+        IsInRoleAdmin = await _userManager.IsInRoleAsync(user, Roles.Admin.ToString());
+        IsDeveloper = await _userManager.IsInRoleAsync(user, Roles.Developer.ToString());
+        IsNewUser = await _userManager.IsInRoleAsync(user, Roles.NewUser.ToString());
+        IsSubmitter = await _userManager.IsInRoleAsync(user, Roles.Submitter.ToString());
+        IsProjectManager = await _userManager.IsInRoleAsync(user, Roles.ProjectManager.ToString());
+
+    }
+}

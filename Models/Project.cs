@@ -11,11 +11,14 @@ namespace BlazorBugTracker.Models
     {
         public int Id { get; set; }
         [Display(Name = "Name")]
+        [Required]
         public string Name { get; set; }
+        [Required]
         public string Description { get; set; }
         public DateTimeOffset Created { get; set; }
 
         [Display(Name = "Company")]
+        [Required]
         public int CompanyId { get; set; }
         public virtual Company Company { get; set; }
 

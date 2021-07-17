@@ -7,168 +7,330 @@
 @inject IHttpContextAccessor _httpContextAccessor
 @inject UserManager<CustomUser> _userManager
 @using BlazorBugTracker.Data
+@using System.IO
+@inject IImageService _imageService
 @inject ApplicationDbContext _context
 @inject IJSRuntime JSRuntime
 @inject ISessionStorageService sessionStorage
-<!-- Main content -->
-<section class="content">
-    <div class="card">
-        <div class="card-header bg-dark">
-            Project
-        </div>
-        <div class="row">
-            <div class="col-3">
-                <form asp-controller="Projects" asp-action="Create" method="post">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">Create New Project</h3>
-                        </div>
-                        <div class="card-body">
-                            @if (IsInRoleAdmin || IsProjectManager)
-                            {
-                                <div class="form-group">
-                                    <label class="control-label">Project Name</label>
-                                    <input name="Name" class="form-control" required />
-                                </div>
-                                <div class="form-group">
-                                    <label class="control-label">Description</label>
-                                    <textarea name="Description" class="form-control" rows="4" required></textarea>
-                                </div>
-
-                                <div class="form-group">
-                                    <label class="control-label">Upload Image</label>
-                                    <input type="file" name="image" />
-                                </div>
-                                <a asp-controller="Projects" asp-action="Index" class="btn btn-secondary">Cancel</a>
-
-                                <input type="submit" value="Create new Project" class="btn btn-success float-left mr-2">
-                            }
-                            else
-                            {
-                                <div class="form-group">
-                                    <label class="control-label">Project Name</label>
-                                    <input name="Name" class="form-control" disabled />
-                                </div>
-                                <div class="form-group">
-                                    <label class="control-label">Description</label>
-                                    <textarea name="Description" class="form-control" rows="4" disabled></textarea>
-                                </div>
-
-                                <div class="form-group">
-                                    <label class="control-label">Upload Image</label>
-                                    <input type="file" name="image" disabled />
-                                </div>
 
 
-                                <input type="submit" disabled value="Create new Project" class="btn btn-success float-left mr-2">
-                            }
+@if (user is null || ItemList is null)
+{
+    <div class="loader">Loading...</div>
+}
+else
+{
 
-
-
-
-                        </div>
-                        <!-- /.card-body -->
-                    </div>
-                    <!-- /.card -->
-                </form>
+    <!-- Main content -->
+    <section class="content">
+        <div class="card">
+            <div class="card-header bg-dark">
+                Project
             </div>
+            <div class="row">
 
+                <div class="col">
+                    <div class="table-responsive">
+                        <!-- Default box -->
+                        <div class="card">
 
-            <div class="col-9">
-                <div class="table-responsive">
-                    <!-- Default box -->
-                    <div class="card">
-
-                        <div class="card-header">
-                            <h3 class="card-title">All Projects</h3>
-                            <div class="card-tools">
-                                <div class="input-group input-group-sm">
-                                    <input type="text" class="form-control" placeholder="Search Projects" id="searchProject">
-                                    <div class="input-group-append">
-                                        <div class="btn btn-primary">
-                                            <i class="fas fa-search"></i>
+                            <div class="card-header">
+                                <h3 class="card-title">All Projects</h3>
+                                <div class="card-tools">
+                                    <div class="input-group input-group-sm">
+                                        <input type="text" class="form-control" placeholder="Search Projects" id="searchProject">
+                                        <div class="input-group-append">
+                                            <div class="btn btn-primary">
+                                                <i class="fas fa-search"></i>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-striped table-hover" id="viewProject">
-                                    <thead>
-                                        <tr>
-                                            <th>
-                                                Name
-                                            </th>
-                                            <th>
-                                                Description
-                                            </th>
-                                            <th>
-                                                Created
-                                            </th>
-                                            <th>
-                                                Company
-                                            </th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (var item in ItemList)
-                                        {
-                                            <tr>
-                                                <td>
-                                                    @item.Name
-                                                </td>
-                                                <td>
-                                                    @item.Description
-                                                </td>
-                                                <td>
-                                                    @item.Created.ToString("dddd, dd MMMM yyyy")
-                                                </td>
-                                                <td>
-                                                    @item.Company.Name
-                                                </td>
+                            <div class="card-body">
+                                @if (IsInRoleAdmin)
+                                {
+                                    <div class="row">
+                                        <div class="col">
+                                            <button type="button" class="btn btn-outline-success" @onclick="OpenCreateDialog">
+                                                <i class="fas fa-plus-square"></i> Create New Project
+                                            </button>
 
-                                                <td class="project-actions text-right">
-                                                    <div class="btn-group-vertical">
-                                                        <a class="btn btn-primary btn-sm mb-1" href="/project/details/@item.Id"><i class="fas fa-folder"></i> View</a>
-                                                        @if (IsInRoleAdmin || IsProjectManager)
-                                                        {
+                                        </div>
+                                    </div>
+                                    <br />
+                                }
+                                <div class="row">
+                                    <div class="col">
+                                        <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true"
+                                                        FilterMode="FilterMode.Simple" PageSize="5" AllowPaging="true" AllowSorting="true" Data="@ItemList" TItem="Models.Project" ColumnWidth="100%"
+                                                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                                        LogicalFilterOperator="LogicalFilterOperator.Or">
+                                            <Columns>
+                                                <RadzenDataGridColumn TItem="Models.Project" Title="Id" Width="50px">
+                                                    <Template Context="data">
+                                                        <p>
+                                                            #@data.Id
+                                                        </p>
+                                                    </Template>
+                                                </RadzenDataGridColumn>
+                                                <RadzenDataGridColumn TItem="Models.Project" Width="300px" Property="Name" Title="Name" />
+
+                                                <RadzenDataGridColumn TItem="Models.Project" Property="Description" Title="Description" />
+                                                <RadzenDataGridColumn TItem="Models.Project" Property="Created" Width="170px" Title="Created">
+                                                    <Template Context="data">
+                                                        <p>
+                                                            @data.Created.ToString("dd MMMM yyyy - hh:mm tt")
+                                                        </p>
+                                                    </Template>
+                                                </RadzenDataGridColumn>
+                                                <RadzenDataGridColumn TItem="Models.Project" Property="Company" Width="100px" Title="Company">
+                                                    <Template Context="data">
+                                                        <p>
+                                                            @data.Company.Name
+                                                        </p>
+                                                    </Template>
+                                                </RadzenDataGridColumn>
+                                                <RadzenDataGridColumn TItem="Models.Project" Width="90px">
+                                                    <Template Context="data">
+                                                        <div class="btn-group-vertical">
+                                                            <a class="btn btn-primary btn-sm mb-1" href="/project/details/@data.Id"><i class="fas fa-folder"></i> View</a>
+                                                            <a class="btn btn-info text-white btn-sm mb-1" @onclick="() => OpenEditDialog(data.Id)"><i class="fas fa-pencil-alt"></i> Edit</a>
+                                                            @if (IsInRoleAdmin || IsProjectManager)
+                                                            {
+                                                                <button type="button" class="btn btn-danger btn-sm mb-1" @onclick="() => OpenDeleteDialog(data.Id)">
+                                                                    <i class="fas fa-trash"></i> Delete
+                                                                </button>
+                                                            }
+                                                        </div>
 
 
-                                                            <!-- Button trigger modal -->
-                                                            <button type="button" class="btn btn-info btn-sm mb-1" data-toggle="modal" data-target="#exampleModal2-@item.Id">
-                                                                <i class="fas fa-pencil-alt"></i> Edit
-                                                            </button>
-                                                            <!-- Button trigger modal -->
-                                                            <button type="button" class="btn btn-danger btn-sm mb-1" data-toggle="modal" data-target="#exampleModal-@item.Id">
-                                                                <i class="fas fa-trash"></i> Delete
-                                                            </button>
+                                                    </Template>
+                                                </RadzenDataGridColumn>
 
-                                                        }
-                                                    </div>
-                                                  
+                                            </Columns>
+                                        </RadzenDataGrid>
 
-                                                </td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
+                                    </div>
+                                </div>
+
                             </div>
-
+                            <!-- /.card-body -->
                         </div>
-                        <!-- /.card-body -->
+                        <!-- /.card -->
                     </div>
-                    <!-- /.card -->
-                </div>
 
+                </div>
             </div>
         </div>
-    </div>
-</section>
-<!-- /.content -->
+    </section>
+    <!-- /.content -->
+
+}
+
+
+
+
+<ModalDialog @ref="_createDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             Width="_editModalWidth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>Create New Project</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col">
+                    <EditForm Model="newItem" OnValidSubmit="Add">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="row">
+                            <div class="col">
+                                <img class="img-fluid" src="@_imageService.DecodeFile(newItem.ImageData, newItem.ContentType)" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Project Name</label>
+                            <input @bind="newItem.Name" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Description</label>
+                            <textarea @bind="newItem.Description" class="form-control" rows="4" required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label">Upload Image</label>
+                            <InputFile OnChange="@LoadFilesNew" />
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Company</label>
+                            <RadzenDropDown AllowClear="true" TValue="int" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                            @bind-Value="newItem.CompanyId" Placeholder="Select Company..." Data=@CompanyList TextProperty="Name" ValueProperty="Id" />
+
+                        </div>
+
+                        <input type="submit" value="Create new Project" class="btn btn-outline-success btn-block">
+
+
+                    </EditForm>
+                    <br />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelCreateDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
+
+
+<ModalDialog @ref="_editDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             Width="_editModalWidth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>Edit Project #@currentItem.Id</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col">
+                    <EditForm Model="currentItem" OnValidSubmit="Edit">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="row">
+                            <div class="col">
+                                <img class="img-fluid" src="@_imageService.DecodeFile(currentItem.ImageData, currentItem.ContentType)" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Project Name</label>
+                            <input @bind="currentItem.Name" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Description</label>
+                            <textarea @bind="currentItem.Description" class="form-control" rows="4" required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label">Upload Image</label>
+                            <InputFile OnChange="@LoadFilesEdit" />
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Company</label>
+                            <RadzenDropDown AllowClear="true" TValue="int" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                            @bind-Value="currentItem.CompanyId" Placeholder="Select Company..." Data=@CompanyList TextProperty="Name" ValueProperty="Id" />
+
+                        </div>
+
+                        <br />
+                        <div class="row">
+                            <div class="col">
+                                <button type="submit" class="btn btn-primary btn-block">Accept Changes</button>
+                            </div>
+                        </div>
+                    </EditForm>
+                    <br />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelEditDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
+
+
+<ModalDialog @ref="_deleteDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             Width="_editModalWidth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>Delete Project #@currentItem.Id</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col">
+                    <EditForm Model="currentItem" OnValidSubmit="Delete">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="row">
+                            <div class="col">
+                                <img class="img-fluid" src="@_imageService.DecodeFile(currentItem.ImageData, currentItem.ContentType)" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Project Name</label>
+                            <input readonly @bind="currentItem.Name" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Description</label>
+                            <textarea readonly @bind="currentItem.Description" class="form-control" rows="4" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Company</label>
+                            <RadzenDropDown AllowClear="true" TValue="int" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                            @bind-Value="currentItem.CompanyId" Placeholder="Select Company..." Data=@CompanyList TextProperty="Name" ValueProperty="Id" />
+
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <button type="submit" class="btn btn-danger btn-block">Delete</button>
+                            </div>
+                        </div>
+                    </EditForm>
+                    <br />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelDeleteDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
+
+
+
 
 @code {
+
+
+    //Fully customized dialog
+    private double _overlayOpacity = 0.3;
+    private double _modalMinHeight = 100;
+    private double _editModalWidth;
+    private double _modalMinWitdth = 100;
+    private bool _modalAnimate = true;
+    private bool _modalCloseOnClick = true;
+    private bool _modalCloseOnEsc = true;
+    private bool _modalFocus = true;
+    private bool _modalCentered = true;
+    private bool _modalShowClose = true;
+
+    private ModalDialog _createDialog;
+    private ModalDialog _editDialog;
+    private ModalDialog _deleteDialog;
+
     public Models.CustomUser user = new();
     public bool IsInRoleAdmin;
     public bool IsDeveloper;
@@ -176,6 +338,160 @@
     public bool IsProjectManager;
     public bool IsNewUser;
     public List<Models.Project> ItemList = new();
+    public List<Models.Company> CompanyList = new();
+    public Models.Project newItem = new();
+    public Models.Project currentItem = new();
+    private async Task OpenCreateDialog()
+    {
+        newItem = new();
+        await _createDialog.Open();
+    }
+    private async Task CancelCreateDialog()
+    {
+        newItem = new();
+        await _createDialog.Close();
+    }
+    private async Task OpenEditDialog(int id)
+    {
+        currentItem = ItemList.FirstOrDefault(i => i.Id == id);
+        await _editDialog.Open();
+    }
+    private async Task CancelEditDialog()
+    {
+        currentItem = new();
+        await _editDialog.Close();
+    }
+    private async Task OpenDeleteDialog(int id)
+    {
+        currentItem = ItemList.FirstOrDefault(i => i.Id == id);
+
+        await _deleteDialog.Open();
+    }
+    private async Task CancelDeleteDialog()
+    {
+        currentItem = new();
+        await _deleteDialog.Close();
+    }
+
+    private async Task LoadFilesNew(InputFileChangeEventArgs e)
+    {
+        IBrowserFile imgFile = e.File;
+        var buffers = new byte[imgFile.Size];
+        await imgFile.OpenReadStream().ReadAsync(buffers);
+        newItem.ImageData = buffers.ToArray();
+        newItem.ContentType = imgFile.ContentType;
+
+
+        //using var stream = new MemoryStream();
+        //var file = e.File;
+        //var OpenSteam = file.OpenReadStream();
+        //await OpenSteam.CopyToAsync(stream);
+
+        //newItem.ImageData = stream.ToArray();
+        //newItem.ContentType = e.File.ContentType;
+
+    }
+    private async Task LoadFilesEdit(InputFileChangeEventArgs e)
+    {
+        IBrowserFile imgFile = e.File;
+        var buffers = new byte[imgFile.Size];
+        await imgFile.OpenReadStream().ReadAsync(buffers);
+        currentItem.ImageData = buffers.ToArray();
+        currentItem.ContentType = imgFile.ContentType;
+
+
+
+        //using var stream = new MemoryStream();
+        //var file = e.File;
+        //var OpenSteam = file.OpenReadStream();
+        //await OpenSteam.CopyToAsync(stream);
+
+        //currentItem.ImageData = stream.ToArray();
+        //currentItem.ContentType = e.File.ContentType;
+
+    }
+    public async Task Add()
+    {
+        try
+        {
+            newItem.Created = DateTime.Now;
+            _context.Add(newItem);
+            _context.SaveChanges();
+            await GetData();
+            await CancelCreateDialog();
+
+            await JSRuntime.InvokeVoidAsync("success", null);
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+        }
+    }
+    public async Task Edit()
+    {
+        try
+        {
+            _context.Update(currentItem);
+            _context.SaveChanges();
+            await GetData();
+            await CancelEditDialog();
+
+            await JSRuntime.InvokeVoidAsync("success", null);
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+        }
+    }
+    public async Task Delete()
+    {
+        try
+        {
+            var ticketList = _context.Ticket.Include(t => t.Attachments).Include(t => t.Comments).Include(t => t.TicketHistories).Where(t => t.ProjectId == currentItem.Id).ToList();
+            //delete ticket of this project
+            foreach (var ticket in ticketList)
+            {
+                //delete all attachments in 1 ticket
+                foreach (var attachment in ticket.Attachments)
+                {
+                    _context.Attachment.Remove(attachment);
+                    _context.SaveChanges();
+                }
+                //delete all comment in 1 ticket
+                foreach (var comment in ticket.Comments)
+                {
+                    _context.Comment.Remove(comment);
+                    _context.SaveChanges();
+                }
+                //delete all History in 1 ticket
+                foreach (var history in ticket.TicketHistories)
+                {
+                    _context.TicketHistory.Remove(history);
+                    _context.SaveChanges();
+                }
+                _context.Ticket.Remove(ticket);
+                _context.SaveChanges();
+            }
+            //you don't need to do this foreach loop
+            foreach (var projectAttachment in currentItem.Attachments)
+            {
+                _context.ProjectAttachment.Remove(projectAttachment);
+                _context.SaveChanges();
+            }
+
+            _context.Project.Remove(currentItem);
+            _context.SaveChanges();
+            await GetData();
+            await CancelDeleteDialog();
+
+            await JSRuntime.InvokeVoidAsync("success", null);
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+        }
+    }
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -185,26 +501,32 @@
 
     public async Task GetData()
     {
+        var currrentUser = _httpContextAccessor.HttpContext.User;
+        user = await _userManager.GetUserAsync(currrentUser);
+        IsInRoleAdmin = await _roleService.IsUserInRoleAsync(user, Roles.Admin.ToString());
+        IsDeveloper = await _roleService.IsUserInRoleAsync(user, Roles.Developer.ToString());
+        IsNewUser = await _roleService.IsUserInRoleAsync(user, Roles.NewUser.ToString());
+        IsSubmitter = await _roleService.IsUserInRoleAsync(user, Roles.Submitter.ToString());
+        IsProjectManager = await _roleService.IsUserInRoleAsync(user, Roles.ProjectManager.ToString());
         ItemList = _context.Project.Include(p => p.Company).Include(p => p.Attachments).Include(p => p.CustomUsers).ToList();
-        user = await sessionStorage.GetItemAsync<CustomUser>("user");
-        IsInRoleAdmin = await sessionStorage.GetItemAsync<bool>("IsInRoleAdmin");
-        IsDeveloper = await sessionStorage.GetItemAsync<bool>("IsDeveloper");
-        IsNewUser = await sessionStorage.GetItemAsync<bool>("IsNewUser");
-        IsSubmitter = await sessionStorage.GetItemAsync<bool>("IsSubmitter");
-        IsProjectManager = await sessionStorage.GetItemAsync<bool>("IsProjectManager");
+        CompanyList = _context.Company.ToList();
+
+
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        user = await sessionStorage.GetItemAsync<CustomUser>("user");
-        IsInRoleAdmin = await sessionStorage.GetItemAsync<bool>("IsInRoleAdmin");
-        IsDeveloper = await sessionStorage.GetItemAsync<bool>("IsDeveloper");
-        IsNewUser = await sessionStorage.GetItemAsync<bool>("IsNewUser");
-        IsSubmitter = await sessionStorage.GetItemAsync<bool>("IsSubmitter");
-        IsProjectManager = await sessionStorage.GetItemAsync<bool>("IsProjectManager");
+        //user = await sessionStorage.GetItemAsync<CustomUser>("user");
+        //IsInRoleAdmin = await sessionStorage.GetItemAsync<bool>("IsInRoleAdmin");
+        //IsDeveloper = await sessionStorage.GetItemAsync<bool>("IsDeveloper");
+        //IsNewUser = await sessionStorage.GetItemAsync<bool>("IsNewUser");
+        //IsSubmitter = await sessionStorage.GetItemAsync<bool>("IsSubmitter");
+        //IsProjectManager = await sessionStorage.GetItemAsync<bool>("IsProjectManager");
         if (firstRender)
         {
-            await JSRuntime.InvokeVoidAsync("enableTable", null);
+            //await JSRuntime.InvokeVoidAsync("enableTable", null);
+            _editModalWidth = await JSRuntime.InvokeAsync<int>("ScreenWidth", null);
+            _editModalWidth = _editModalWidth * 0.5;
         }
     }
 }

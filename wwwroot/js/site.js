@@ -83,7 +83,9 @@ function display_ct() {
     document.getElementById('ct').innerText = x.toLocaleTimeString("en-us", options);
     display_c();  
 }
-
+function ScreenWidth() {
+    return screen.width;
+}
 function success() {
     Swal.fire({
         position: 'center',

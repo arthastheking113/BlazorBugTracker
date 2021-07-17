@@ -16,7 +16,7 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-4">
-                        <EditForm Model="manageRole" OnValidSubmit="SubmitForm" >
+                        <EditForm Model="manageRole" OnValidSubmit="AddUserToRole" >
 
                             <div class="row">
                                 <div class="col">
@@ -142,7 +142,7 @@
         Roles = _context.Roles.ToList();
     }
 
-    public async Task SubmitForm()
+    public async Task AddUserToRole()
     {
         try
         {
@@ -173,10 +173,10 @@
 
     public void OnChangeSelectUser(object value)
     {
-        var str = value is IEnumerable<object> ? string.Join(", ", (IEnumerable<object>)value) : value;
+        var str = value is IEnumerable<object> ? string.Join(",", (IEnumerable<object>)value) : value;
         if (str is not null)
         {
-            var users = str.ToString().Split(",").ToList();
+            var users = str.ToString().Replace(" ", "").Split(",").ToList();
             UserSelected = users;
         }
     }

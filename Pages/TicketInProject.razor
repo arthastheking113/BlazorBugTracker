@@ -41,143 +41,145 @@ else
                 </div>
 
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-6">
-                            @if (!IsNewUser)
-                            {
-                                <a href="/ticket" class="btn btn-outline-dark" data-toggle="modal" data-target="#exampleModal">
+                    @if (!IsNewUser)
+                    {
+                        <div class="row">
+                            <div class="col">
+                                <a href="/ticket" class="btn btn-outline-dark mr-1" >
                                     <span class="iconify" data-icon="ion:arrow-back-circle-sharp" data-inline="true"></span> Back To All Ticket
                                 </a>
-                                <a href="/project/details/@ProjectId" class="btn btn-outline-primary" data-toggle="modal" data-target="#exampleModal">
+                                <a href="/project/details/@ProjectId" class="btn btn-outline-primary ml-1 mr-1" >
                                     <span class="iconify" data-icon="ion:arrow-back-circle-sharp" data-inline="true"></span> Back To Project
                                 </a>
-                                <button type="button" class="btn btn-outline-success" data-toggle="modal" data-target="#exampleModal">
+                                <button @onclick="OpenCreateDialog" type="button" class="btn btn-outline-success ml-1" >
                                     <i class="fas fa-plus-square"></i> Create New Ticket
                                 </button>
 
+                            </div>
+                        </div>
+                       <br/>
+
+
+                    }
+                    <div class="row">
+                        <div class="col">
+                            @if (ItemList is not null)
+                            {
+                                <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true"
+                                                FilterMode="FilterMode.Simple" PageSize="5" AllowPaging="true" AllowSorting="true" Data="@ItemList" TItem="Models.Ticket" ColumnWidth="100%"
+                                                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                                LogicalFilterOperator="LogicalFilterOperator.Or">
+                                    <Columns>
+                                        <RadzenDataGridColumn TItem="Models.Ticket" Title="Id" Width="50px">
+                                            <Template Context="data">
+                                                <p>
+                                                    #@data.Id
+                                                </p>
+                                            </Template>
+                                        </RadzenDataGridColumn>
+                                        <RadzenDataGridColumn TItem="Models.Ticket" Property="Name" Title="Name" />
+
+                                        <RadzenDataGridColumn TItem="Models.Ticket" Property="Description" Title="Description" />
+                                        <RadzenDataGridColumn TItem="Models.Ticket" Property="Created" Title="Created">
+                                            <Template Context="data">
+                                                <p>
+                                                    @data.Created.ToString("dd MMMM yyyy - hh:mm tt")
+                                                </p>
+                                            </Template>
+                                        </RadzenDataGridColumn>
+                                        <RadzenDataGridColumn TItem="Models.Ticket" Property="Updated" Title="Updated">
+                                            <Template Context="data">
+                                                <p>
+                                                    @data.Updated.ToString("dd MMMM yyyy - hh:mm tt")
+                                                </p>
+                                            </Template>
+                                        </RadzenDataGridColumn>
+                                        <RadzenDataGridColumn TItem="Models.Ticket" Property="Developer" Title="Updated">
+                                            <Template Context="data">
+                                                @if (data.Developer is not null)
+                                                {
+                                                    <p>@data.Developer.FullName</p>
+                                                }
+                                            </Template>
+                                        </RadzenDataGridColumn>
+                                        <RadzenDataGridColumn TItem="Models.Ticket" Property="Ownner" Title="Ownner">
+                                            <Template Context="data">
+                                                @if (data.Ownner is not null)
+                                                {
+                                                    <p>@data.Ownner.FullName</p>
+                                                }
+                                            </Template>
+                                        </RadzenDataGridColumn>
+                                        <RadzenDataGridColumn TItem="Models.Ticket" Property="Project" Title="Project">
+                                            <Template Context="data">
+                                                @if (data.Project is not null)
+                                                {
+                                                    <p>@data.Project.Name</p>
+                                                }
+                                            </Template>
+                                        </RadzenDataGridColumn>
+                                        <RadzenDataGridColumn TItem="Models.Ticket" Property="IsAssigned" Width="70px" Title="Assign?">
+                                            <Template Context="data">
+                                                @if (data.IsAssigned)
+                                                {
+                                                    <p>Y</p>
+                                                }
+                                                else
+                                                {
+                                                    <p>N</p>
+                                                }
+                                            </Template>
+                                        </RadzenDataGridColumn>
+                                        <RadzenDataGridColumn TItem="Models.Ticket" Width="100px" Property="Status" Title="Status">
+                                            <Template Context="data">
+                                                @if (data.Status is not null)
+                                                {
+                                                    <p>@data.Status.Name</p>
+                                                }
+                                            </Template>
+                                        </RadzenDataGridColumn>
+                                        <RadzenDataGridColumn TItem="Models.Ticket" Width="100px" Property="Priority" Title="Priority">
+                                            <Template Context="data">
+                                                @if (data.Priority is not null)
+                                                {
+                                                    <p>@data.Priority.Name</p>
+                                                }
+                                            </Template>
+                                        </RadzenDataGridColumn>
+                                        <RadzenDataGridColumn TItem="Models.Ticket" Property="TicketType" Title="Type">
+                                            <Template Context="data">
+                                                @if (data.TicketType is not null)
+                                                {
+                                                    <p>@data.TicketType.Name</p>
+                                                }
+                                            </Template>
+                                        </RadzenDataGridColumn>
+                                        <RadzenDataGridColumn TItem="Models.Ticket" Width="90px">
+                                            <Template Context="data">
+                                                <div class="btn-group-vertical">
+                                                    <a class="btn btn-primary btn-sm mb-1" href="/ticket/details/@data.Id"><i class="fas fa-folder"></i> View</a>
+                                                    <a class="btn btn-info text-white btn-sm mb-1" @onclick="() => OpenEditDialog(data.Id)"><i class="fas fa-pencil-alt"></i> Edit</a>
+                                                    @if (IsInRoleAdmin || IsProjectManager)
+                                                    {
+                                                        <button type="button" class="btn btn-danger btn-sm mb-1" @onclick="() => OpenDeleteDialog(data.Id)">
+                                                            <i class="fas fa-trash"></i> Delete
+                                                        </button>
+                                                    }
+                                                </div>
+
+
+                                            </Template>
+                                        </RadzenDataGridColumn>
+
+                                    </Columns>
+                                </RadzenDataGrid>
 
                             }
 
+
                         </div>
                     </div>
-                    @if (ItemList is not null)
-                    {
-                        <table id="viewTicket" class="table table-striped table-hover">
-                            <thead>
-                                <tr>
-                                    <th>
-                                        Id
-                                    </th>
-                                    <th>
-                                        Name
-                                    </th>
-                                    <th>
-                                        Description
-                                    </th>
-                                    <th>
-                                        Created
-                                    </th>
-                                    <th>
-                                        Updated
-                                    </th>
-                                    <th>
-                                        Developer
-                                    </th>
-                                    <th>
-                                        Ownner
-                                    </th>
-                                    <th>
-                                        Project
-                                    </th>
-                                    <th>
-                                        IsAssigned
-                                    </th>
-                                    <th>
-                                        Status
-                                    </th>
-                                    <th>
-                                        Priority
-                                    </th>
-                                    <th>
-                                        TicketType
-                                    </th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var item in ItemList)
-                                {
-                                    var id = item.Id;
-                                    <tr>
-                                        <td>
-                                            #@item.Id
-                                        </td>
-                                        <td>
-                                            @item.Name
-                                        </td>
-                                        <td>
-                                            @item.Description
-                                        </td>
-                                        <td>
-                                            @item.Created.ToString("dd MMMM yyyy - hh:mm tt")
-                                        </td>
-                                        <td>
-                                            @item.Updated.ToString("dd MMMM yyyy - hh:mm tt")
-                                        </td>
-                                        <td>
-                                            @if (item.Developer is not null)
-                                            {
-                                                @item.Developer.FullName
-                                            }
-
-                                        </td>
-                                        <td>
-                                            @if (item.Ownner is not null)
-                                            {
-                                                @item.Ownner.FullName
-                                            }
-                                        </td>
-                                        <td>
-                                            @item.Project.Name
-                                        </td>
-                                        <td>
-                                            @item.IsAssigned
-                                        </td>
-                                        <td>
-                                            @item.Status.Name
-                                        </td>
-                                        <td>
-                                            @item.Priority.Name
-                                        </td>
-                                        <td>
-                                            @item.TicketType.Name
-                                        </td>
-                                        <td class="project-actions text-right">
-                                            <div class="btn-group-vertical">
-                                                <a class="btn btn-primary btn-sm mb-1" href="/ticket/details/@item.Id"><i class="fas fa-folder"></i> View</a>
-                                                <a class="btn btn-info btn-sm mb-1" @onclick="() => OpenEditDialog(id)"><i class="fas fa-pencil-alt"></i> Edit</a>
-
-                                                @if (IsInRoleAdmin || IsProjectManager)
-                                                {
-
-                                                    <!-- Button trigger modal -->
-                                                    <button type="button" class="btn btn-danger btn-sm mb-1" @onclick="() => OpenDeleteDialog(id)">
-                                                        <i class="fas fa-trash"></i> Delete
-                                                    </button>
-
-
-
-                                                }
-                                            </div>
-                                            
-
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    }
-
+                   
                 </div>
             </div>
         </div>
@@ -816,7 +818,7 @@ else
 
 
             CancelCreateDialog();
-            GetData();
+            await GetData();
             await JSRuntime.InvokeVoidAsync("success", null);
         }
         catch (Exception ex)
@@ -850,7 +852,7 @@ else
             await _customHistoryService.AddHistoryAsync(oldTicket, newTicket, userId);
 
 
-            GetData();
+            await GetData();
             CancelEditDialog();
             await JSRuntime.InvokeVoidAsync("success", null);
 
@@ -901,7 +903,7 @@ else
             await _context.SaveChangesAsync();
 
 
-            GetData();
+            await GetData();
             CancelDeleteDialog();
             await JSRuntime.InvokeVoidAsync("success", null);
 
@@ -913,13 +915,13 @@ else
         }
     }
 
-    protected override void  OnInitialized()
+    protected override async Task  OnInitializedAsync()
     {
-        GetData();
+        await GetData();
     }
 
 
-    public void GetData()
+    public async Task GetData()
     {
         ItemList = _context.Ticket
             .Include(t => t.Attachments)
@@ -938,21 +940,26 @@ else
         OwnerList = _context.Users.ToList();
         ProjectList = _context.Project.ToList();
         DeveloperList = _context.Users.ToList();
-
+        var currrentUser = _httpContextAccessor.HttpContext.User;
+        user = await _userManager.GetUserAsync(currrentUser);
+        IsInRoleAdmin = await _roleService.IsUserInRoleAsync(user, Roles.Admin.ToString());
+        IsDeveloper = await _roleService.IsUserInRoleAsync(user, Roles.Developer.ToString());
+        IsNewUser = await _roleService.IsUserInRoleAsync(user, Roles.NewUser.ToString());
+        IsSubmitter = await _roleService.IsUserInRoleAsync(user, Roles.Submitter.ToString());
+        IsProjectManager = await _roleService.IsUserInRoleAsync(user, Roles.ProjectManager.ToString());
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        user = await sessionStorage.GetItemAsync<CustomUser>("user");
-        IsInRoleAdmin = await sessionStorage.GetItemAsync<bool>("IsInRoleAdmin");
-        IsDeveloper = await sessionStorage.GetItemAsync<bool>("IsDeveloper");
-        IsNewUser = await sessionStorage.GetItemAsync<bool>("IsNewUser");
-        IsSubmitter = await sessionStorage.GetItemAsync<bool>("IsSubmitter");
-        IsProjectManager = await sessionStorage.GetItemAsync<bool>("IsProjectManager");
+        //user = await sessionStorage.GetItemAsync<CustomUser>("user");
+        //IsInRoleAdmin = await sessionStorage.GetItemAsync<bool>("IsInRoleAdmin");
+        //IsDeveloper = await sessionStorage.GetItemAsync<bool>("IsDeveloper");
+        //IsNewUser = await sessionStorage.GetItemAsync<bool>("IsNewUser");
+        //IsSubmitter = await sessionStorage.GetItemAsync<bool>("IsSubmitter");
+        //IsProjectManager = await sessionStorage.GetItemAsync<bool>("IsProjectManager");
         if (firstRender)
         {
-            await JSRuntime.InvokeVoidAsync("enableTable", null);
+            //await JSRuntime.InvokeVoidAsync("enableTable", null);
         }
-        StateHasChanged();
     }
 }

@@ -19,7 +19,7 @@
 @inject ICustomHistoryService _customHistoryService
 @inject NavigationManager NavigationManager
 @using System.IO
-@if (currentTicket.Name is null || user.FullName is null)
+@if (currentTicket.Name is null || user is null)
 {
     <div class="loader">Loading...</div>
 }
@@ -134,7 +134,8 @@ else
 
 
 
-                            <a class="btn btn-secondary ml-1" href="/ticket"><span class="iconify" data-icon="ion:arrow-back-circle-sharp" data-inline="true"></span> Back to List</a>
+                            <a class="btn btn-secondary mr-1 ml-1" href="/ticket"><span class="iconify" data-icon="ion:arrow-back-circle-sharp" data-inline="true"></span> Back to List</a>
+                            <a class="btn btn-info ml-1" href="/ticket"> <i class="fas fa-tasks"></i> Back to Project</a>
                         </div>
                     </div>
                 </div>
@@ -980,16 +981,24 @@ else
         OwnerList = _context.Users.ToList();
         ProjectList = _context.Project.ToList();
         DeveloperList = _context.Users.ToList();
+
+        var currrentUser = _httpContextAccessor.HttpContext.User;
+        user = await _userManager.GetUserAsync(currrentUser);
+        IsInRoleAdmin = await _userManager.IsInRoleAsync(user, Roles.Admin.ToString());
+        IsDeveloper = await _userManager.IsInRoleAsync(user, Roles.Developer.ToString());
+        IsNewUser = await _userManager.IsInRoleAsync(user, Roles.NewUser.ToString());
+        IsSubmitter = await _userManager.IsInRoleAsync(user, Roles.Submitter.ToString());
+        IsProjectManager = await _userManager.IsInRoleAsync(user, Roles.ProjectManager.ToString());
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        user = await sessionStorage.GetItemAsync<CustomUser>("user");
-        IsInRoleAdmin = await sessionStorage.GetItemAsync<bool>("IsInRoleAdmin");
-        IsDeveloper = await sessionStorage.GetItemAsync<bool>("IsDeveloper");
-        IsNewUser = await sessionStorage.GetItemAsync<bool>("IsNewUser");
-        IsSubmitter = await sessionStorage.GetItemAsync<bool>("IsSubmitter");
-        IsProjectManager = await sessionStorage.GetItemAsync<bool>("IsProjectManager");
+        //user = await sessionStorage.GetItemAsync<CustomUser>("user");
+        //IsInRoleAdmin = await sessionStorage.GetItemAsync<bool>("IsInRoleAdmin");
+        //IsDeveloper = await sessionStorage.GetItemAsync<bool>("IsDeveloper");
+        //IsNewUser = await sessionStorage.GetItemAsync<bool>("IsNewUser");
+        //IsSubmitter = await sessionStorage.GetItemAsync<bool>("IsSubmitter");
+        //IsProjectManager = await sessionStorage.GetItemAsync<bool>("IsProjectManager");
         if (firstRender)
         {
             await JSRuntime.InvokeVoidAsync("enableTable", null);

@@ -39,198 +39,17 @@ else
             <div class="card-header">
                 <div class="row">
                     <div class="col">
-                        <a class="btn text-white btn-secondary"> <i class="fas fa-arrow-circle-left"></i> Back</a>
-                        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#exampleModal">
+                        <a class="btn btn-outline-secondary mr-1"> <i class="fas fa-arrow-circle-left"></i> Back</a>
+                        <button type="button" class="btn btn-outline-success mr-1 ml-1" >
                             <i class="fas fa-plus-square"></i> Create New Ticket
                         </button>
-                        <button class="btn btn-info"><i class="fas fa-pencil-alt"></i> Edit Project</button>
-
-                        <!-- Modal -->
-                        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="exampleModalLabel">Create New Ticket #</h5>
-                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <form asp-controller="Tickets" asp-action="Create" method="post">
-                                        <div class="modal-body">
-                                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                                            <div class="form-group">
-                                                <label class="control-label">Name</label>
-                                                <input name="Name" class="form-control" required />
-
-                                            </div>
-                                            <div class="form-group">
-                                                <label class="control-label">Description</label>
-                                                <input name="Description" class="form-control" required />
-
-                                            </div>
-                                            <input type="hidden" class="form-control" name="projectId" value="@currentProject.Id" />
-                                            @if (!IsDeveloper)
-                                            {
-                                                <div class="form-group form-check">
-                                                    <label class="form-check-label">
-                                                        <input class="form-check-input" name="IsAssigned" type="checkbox" value="true" /> Assigned?
-                                                    </label>
-                                                </div>
-
-                                                <div class="form-group">
-                                                    <label name="DeveloperId" class="control-label">Developer</label>
-                                                    <select name="DeveloperId" class="form-control" required></select>
-                                                </div>
-                                            }
-
-
-                                            @if (!IsInRoleAdmin || !IsProjectManager)
-                                            {
-                                                <div class="form-group">
-                                                    <label name="StatusId" class="control-label">Status</label>
-                                                    <select name="StatusId" class="form-control" asp-items="ViewBag.StatusId"></select>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label name="PriorityId" class="control-label">Priority</label>
-                                                    <select name="PriorityId" class="form-control" asp-items="ViewBag.PriorityId"></select>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label name="TicketTypeId" class="control-label">Ticket Type</label>
-                                                    <select name="TicketTypeId" class="form-control" asp-items="ViewBag.TicketTypeId"></select>
-                                                </div>
-                                            }
-                                        </div>
-                                        <div class="modal-footer">
-
-                                            <button type="submit" class="btn btn-primary">Create</button>
-                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-
 
 
                         @if (IsInRoleAdmin || IsProjectManager)
                         {
-
-                            <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#exampleModal2">
-                                <i class="fas fa-tasks"></i> Create New Projects
-                            </button>
-
-                            <!-- Modal -->
-                            <div class="modal fade" id="exampleModal2" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel2" aria-hidden="true">
-                                <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="exampleModalLabel2">Create New Project</h5>
-                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                <span aria-hidden="true">&times;</span>
-                                            </button>
-                                        </div>
-                                        <form asp-controller="Projects" asp-action="Create" method="post">
-                                            <div class="modal-body">
-                                                <div class="form-group">
-                                                    <label asp-for="Name" class="control-label"></label>
-                                                    <input name="Name" class="form-control" required />
-                                                </div>
-                                                <div class="form-group">
-                                                    <label asp-for="Description" class="control-label"></label>
-                                                    <textarea name="Description" class="form-control" rows="4" required></textarea>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label class="control-label">Upload Image</label>
-                                                    <input type="file" name="image" />
-                                                </div>
-
-                                            </div>
-                                            <div class="modal-footer">
-
-                                                <button type="submit" class="btn btn-primary">Create</button>
-                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-
-                            @*<a class="btn btn-secondary" asp-controller="Projects" asp-action="Edit" asp-route-id="@currentProject.Id" method="get"><i class="fas fa-edit"></i> Edit Project</a>*@
-
-
-
-                            <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#exampleModal3">
-                                <i class="fas fa-edit"></i> Edit Project
-                            </button>
-
-                            <!-- Modal -->
-                            <div class="modal fade" id="exampleModal3" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel3" aria-hidden="true">
-                                <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="exampleModalLabel3">Edit Project</h5>
-                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                <span aria-hidden="true">&times;</span>
-                                            </button>
-                                        </div>
-                                        <form asp-controller="Projects" asp-action="Edit" method="post" enctype="multipart/form-data">
-                                            <div class="modal-body">
-                                                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                                                <input type="hidden" asp-for="Id" />
-                                                <div class="form-group">
-                                                    <label class="control-label">Upload Image</label>
-                                                    <input type="file" name="image" />
-                                                </div>
-                                                <div class="form-group">
-                                                    <label asp-for="Name" class="control-label"></label>
-                                                    <input asp-for="Name" class="form-control" required />
-                                                    <span asp-validation-for="Name" class="text-danger"></span>
-                                                </div>
-                                                <input type="hidden" asp-for="Created" class="form-control" />
-                                                <div class="form-group">
-                                                    <label asp-for="Description" class="control-label"></label>
-                                                    <textarea asp-for="Description" class="form-control" rows="4" required></textarea>
-                                                    <span asp-validation-for="Description" class="text-danger"></span>
-                                                </div>
-                                                @if (currentProject.ImageData != null && currentProject.ContentType != null)
-                                                {
-                                                    <input type="hidden" name="imageData" value="@Convert.ToBase64String(currentProject.ImageData)" class="form-control" />
-                                                    <input type="hidden" name="contentType" value="@currentProject.ContentType" class="form-control" />
-                                                }
-
-
-                                                @if (IsInRoleAdmin)
-                                                {
-                                                    <div class="form-group">
-                                                        <label asp-for="CompanyId" class="control-label"></label>
-                                                        <select asp-for="CompanyId" class="form-control" asp-items="ViewBag.CompanyId"></select>
-                                                        <span asp-validation-for="CompanyId" class="text-danger"></span>
-                                                    </div>
-                                                }
-                                                else
-                                                {
-                                                    <input type="hidden" asp-for="CompanyId" class="form-control">
-                                                }
-
-
-
-
-                                            </div>
-                                            <div class="modal-footer">
-
-                                                <button type="submit" class="btn btn-primary">Create</button>
-                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-
-
-
-                            <a class="btn btn-secondary" asp-controller="Tickets" asp-action="Index" method="get"><i class="fas fa-ticket-alt"></i> View All Tickets On System</a>
+                            <button class="btn btn-outline-info mr-1 ml-1"><i class="fas fa-pencil-alt"></i> Edit Project</button>
                         }
-
+                        <a class="btn btn-outline-primary ml-1" href="/ticket"><i class="fas fa-ticket-alt"></i> View All Tickets On System</a>
 
                     </div>
                     <div class="col text-right">
@@ -604,14 +423,14 @@ else
     public bool IsNewUser;
     public DateTime currentTime;
 
-    protected override void  OnInitialized()
+    protected override async Task  OnInitializedAsync()
     {
-        GetData();
+        await GetData();
     }
 
 
 
-    public void GetData()
+    public async Task GetData()
     {
         currentProject = _context.Project
             .Include(p => p.Attachments)
@@ -642,15 +461,24 @@ else
         developerOnProject = (_projectService.DeveloperOnProject(currentProject.Id)).ToList();
 
         submitterOnProject = (_projectService.SubmitterOnProject(currentProject.Id)).ToList();
+
+
+        var currrentUser = _httpContextAccessor.HttpContext.User;
+        user = await _userManager.GetUserAsync(currrentUser);
+        IsInRoleAdmin = await _userManager.IsInRoleAsync(user, Roles.Admin.ToString());
+        IsDeveloper = await _userManager.IsInRoleAsync(user, Roles.Developer.ToString());
+        IsNewUser = await _userManager.IsInRoleAsync(user, Roles.NewUser.ToString());
+        IsSubmitter = await _userManager.IsInRoleAsync(user, Roles.Submitter.ToString());
+        IsProjectManager = await _userManager.IsInRoleAsync(user, Roles.ProjectManager.ToString());
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        user = await sessionStorage.GetItemAsync<CustomUser>("user");
-        IsInRoleAdmin = await sessionStorage.GetItemAsync<bool>("IsInRoleAdmin");
-        IsDeveloper = await sessionStorage.GetItemAsync<bool>("IsDeveloper");
-        IsNewUser = await sessionStorage.GetItemAsync<bool>("IsNewUser");
-        IsSubmitter = await sessionStorage.GetItemAsync<bool>("IsSubmitter");
-        IsProjectManager = await sessionStorage.GetItemAsync<bool>("IsProjectManager");
+        //user = await sessionStorage.GetItemAsync<CustomUser>("user");
+        //IsInRoleAdmin = await sessionStorage.GetItemAsync<bool>("IsInRoleAdmin");
+        //IsDeveloper = await sessionStorage.GetItemAsync<bool>("IsDeveloper");
+        //IsNewUser = await sessionStorage.GetItemAsync<bool>("IsNewUser");
+        //IsSubmitter = await sessionStorage.GetItemAsync<bool>("IsSubmitter");
+        //IsProjectManager = await sessionStorage.GetItemAsync<bool>("IsProjectManager");
     }
 
 }

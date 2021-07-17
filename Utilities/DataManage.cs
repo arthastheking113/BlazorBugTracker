@@ -94,7 +94,8 @@ namespace BlazorBugTracker.Utilities
                 {
                     new Company() { Name = "Apple", Description = "This is default Company Apple"},
                     new Company() { Name = "Tesla", Description = "This is default Company Tesla"},
-                    new Company() { Name = "Netflix", Description = "This is default Company Netflix"}
+                    new Company() { Name = "Netflix", Description = "This is default Company Netflix"},
+                    new Company() { Name = "Temporary Company", Description = "This is Temporary Company for Deleted Company User"}
                 };
                 var dbCompanies = context.Company.Select(c => c.Name).ToList();
                 await context.Company.AddRangeAsync(defaltcompanies.Where(c => !dbCompanies.Contains(c.Name)));

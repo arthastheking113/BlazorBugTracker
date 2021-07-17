@@ -1,7 +1,16 @@
 ﻿@page "/company"
 @inject IJSRuntime JSRuntime
+@using BlazorBugTracker.Services
+@using Microsoft.AspNetCore.Identity
 @using BlazorBugTracker.Data
-@inject ApplicationDbContext _context 
+@inject ApplicationDbContext _context
+@using Microsoft.AspNetCore.Http
+@using Microsoft.EntityFrameworkCore
+@inject ICustomRoleService _roleService
+@inject ICustomProjectService _projectService
+@inject IHttpContextAccessor _httpContextAccessor
+@inject UserManager<CustomUser> _userManager
+@inject NavigationManager NavigationManager
 <section class="content">
     <div class="card">
         <div class="card-header bg-dark">
@@ -9,34 +18,8 @@
         </div>
         <br />
         <div class="row">
-            <div class="col-4">
-                <form asp-controller="Companies" asp-action="Create" method="post">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">Add a New Company</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="form-group">
-                                <label class="control-label">Company Name</label>
-                                <input name="Name" class="form-control" required />
-                            </div>
-                            <div class="form-group">
-                                <label class="control-label">Description</label>
-                                <textarea name="Description" class="form-control" rows="4" required></textarea>
-                            </div>
 
-                            <a asp-controller="Projects" asp-action="Index" class="btn btn-secondary">Cancel</a>
-                            <input type="submit" value="Add new Company" class="btn btn-success float-left mr-2">
-
-                        </div>
-                        <!-- /.card-body -->
-                    </div>
-                    <!-- /.card -->
-                </form>
-            </div>
-
-
-            <div class="col-8">
+            <div class="col">
                 <!-- Default box -->
                 <div class="card">
                     <div class="card-header">
@@ -53,110 +36,53 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <table class="table table-striped projects table-hover" id="viewCompany">
-                            <thead>
-                                <tr>
-                                    <th>
-                                        Name
-                                    </th>
-                                    <th>
-                                        Description
-                                    </th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var item in ItemList)
-                                {
-                                    <tr>
-                                        <td>
-                                            @item.Name
-                                        </td>
-                                        <td>
-                                            @item.Description
-                                        </td>
-                                        <td class="project-actions text-right">
-                                            <!-- Button trigger modal -->
-                                            <button type="button" class="btn btn-info btn-sm mb-1" data-toggle="modal" data-target="#exampleModal2-1">
-                                                <i class="fas fa-pencil-alt"></i> Edit
-                                            </button>
+                        <div class="row">
+                            <div class="col">
+                                <button type="button" class="btn btn-outline-success" @onclick="OpenCreateDialog">
+                                    <i class="fas fa-plus-square"></i> Create New Company
+                                </button>
 
-                                            <!-- Modal -->
-                                            <div class="modal fade" id="exampleModal2-1" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel2-1" aria-hidden="true">
-                                                <div class="modal-dialog modal-dialog-centered" role="document">
-                                                    <div class="modal-content">
-                                                        <div class="modal-body p-0">
-                                                            <form asp-action="Edit" method="post">
-                                                                <div class="card card-primary  mb-0">
-                                                                    <div class="card-header">
-                                                                        <h3 class="card-title">Edit Company</h3>
-                                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                            <span aria-hidden="true">&times;</span>
-                                                                        </button>
-                                                                    </div>
-                                                                    <div class="card-body text-left">
-                                                                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                                                                        <input type="hidden" name="Id" value="1" />
-                                                                        <div class="form-group">
-                                                                            <label class="control-label"></label>
-                                                                            <input name="Name" value="dasdsa" class="form-control" />
-                                                                        </div>
-                                                                        <div class="form-group">
-                                                                            <label class="control-label"></label>
-                                                                            <input name="Description" value="dsadasdasd" class="form-control" />
-                                                                        </div>
+                            </div>
+                        </div>
+                        <br />
+                        <div class="row">
+                            <div class="col">
+                                <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true"
+                                                FilterMode="FilterMode.Simple" PageSize="5" AllowPaging="true" AllowSorting="true" Data="@ItemList" TItem="Models.Company" ColumnWidth="100%"
+                                                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                                LogicalFilterOperator="LogicalFilterOperator.Or">
+                                    <Columns>
+                                        <RadzenDataGridColumn TItem="Models.Company" Title="Id" Width="50px">
+                                            <Template Context="data">
+                                                <p>
+                                                    #@data.Id
+                                                </p>
+                                            </Template>
+                                        </RadzenDataGridColumn>
+                                        <RadzenDataGridColumn TItem="Models.Company" Width="200px" Property="Name" Title="Name" />
 
-                                                                        <div class="form-group">
-                                                                            <input type="submit" value="Save" class="btn btn-success float-left mr-2">
-                                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                                                        </div>
+                                        <RadzenDataGridColumn TItem="Models.Company" Property="Description" Title="Description" />
 
-                                                                    </div>
-                                                                    <!-- /.card-body -->
-                                                                </div>
-                                                                <!-- /.card -->
-                                                            </form>
-                                                        </div>
-                                                    </div>
+                                        <RadzenDataGridColumn TItem="Models.Company" Width="90px">
+                                            <Template Context="data">
+                                                <div class="btn-group-vertical">
+                                                    <a class="btn btn-info text-white btn-sm mb-1" @onclick="() => OpenEditDialog(data.Id)"><i class="fas fa-pencil-alt"></i> Edit</a>
+
+                                                    <button type="button" class="btn btn-danger btn-sm mb-1" @onclick="() => OpenDeleteDialog(data.Id)">
+                                                        <i class="fas fa-trash"></i> Delete
+                                                    </button>
+
                                                 </div>
-                                            </div>
 
 
+                                            </Template>
+                                        </RadzenDataGridColumn>
 
-                                            <!-- Button trigger modal -->
-                                            <button type="button" class="btn btn-danger btn-sm mb-1" data-toggle="modal" data-target="#exampleModal-2">
-                                                <i class="fas fa-trash"></i> Delete
-                                            </button>
+                                    </Columns>
+                                </RadzenDataGrid>
+                            </div>
+                        </div>
 
-                                            <!-- Modal -->
-                                            <div class="modal fade" id="exampleModal-2" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel-2" aria-hidden="true">
-                                                <div class="modal-dialog modal-dialog-centered" role="document">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title" id="exampleModalLabel-2">Delete Company</h5>
-                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                <span aria-hidden="true">&times;</span>
-                                                            </button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <p class="text-danger text-left">Are you sure you want to delete company 2 ?</p>
-                                                            <form asp-action="Delete" method="post">
-                                                                <input type="hidden" name="Id" value="2" />
-                                                                <input type="submit" value="Yes, I want to Delete" class="btn btn-danger mr-2">
-                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">No, I don't</button>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                        </td>
-                                    </tr>
-
-                                }
-
-                            </tbody>
-                        </table>
                     </div>
                     <!-- /.card-body -->
                 </div>
@@ -168,19 +94,344 @@
 <!-- /.content -->
 
 
+<ModalDialog @ref="_createDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             Width="_editModalWidth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>Create New Company</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col">
+                    <EditForm Model="newItem" OnValidSubmit="Add">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <div class="form-group">
+                            <label class="control-label">Project Name</label>
+                            <input @bind="newItem.Name" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Description</label>
+                            <textarea @bind="newItem.Description" class="form-control" rows="4" required></textarea>
+                        </div>
+
+
+
+                        <input type="submit" value="Create new Project" class="btn btn-outline-success btn-block">
+
+
+                    </EditForm>
+                    <br />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelCreateDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
+
+
+<ModalDialog @ref="_editDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             Width="_editModalWidth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>Edit Company #@currentItem.Id</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col">
+                    <EditForm Model="currentItem" OnValidSubmit="Edit">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <div class="form-group">
+                            <label class="control-label">Project Name</label>
+                            <input @bind="currentItem.Name" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Description</label>
+                            <textarea @bind="currentItem.Description" class="form-control" rows="4" required></textarea>
+                        </div>
+
+
+
+                        <br />
+                        <div class="row">
+                            <div class="col">
+                                <button type="submit" class="btn btn-primary btn-block">Accept Changes</button>
+                            </div>
+                        </div>
+                    </EditForm>
+                    <br />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelEditDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
+
+
+<ModalDialog @ref="_deleteDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             Width="_editModalWidth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>Delete Company #@currentItem.Id</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col">
+                    <EditForm Model="currentItem" OnValidSubmit="Delete">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <div class="form-group">
+                            <label class="control-label">Project Name</label>
+                            <input readonly @bind="currentItem.Name" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Description</label>
+                            <textarea readonly @bind="currentItem.Description" class="form-control" rows="4" required></textarea>
+                        </div>
+                      
+                        <div class="row">
+                            <div class="col">
+                                <button type="submit" class="btn btn-danger btn-block">Delete</button>
+                            </div>
+                        </div>
+                    </EditForm>
+                    <br />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelDeleteDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
+
+
+
 
 @code {
-    public List<Models.Company> ItemList = new();
 
-    protected override void OnInitialized()
+
+    //Fully customized dialog
+    private double _overlayOpacity = 0.3;
+    private double _modalMinHeight = 100;
+    private double _editModalWidth;
+    private double _modalMinWitdth = 100;
+    private bool _modalAnimate = true;
+    private bool _modalCloseOnClick = true;
+    private bool _modalCloseOnEsc = true;
+    private bool _modalFocus = true;
+    private bool _modalCentered = true;
+    private bool _modalShowClose = true;
+
+    private ModalDialog _createDialog;
+    private ModalDialog _editDialog;
+    private ModalDialog _deleteDialog;
+
+    public Models.Company newItem = new();
+    public Models.Company currentItem = new();
+
+    public List<Models.Company> ItemList = new();
+    public Models.CustomUser user = new();
+    public bool IsInRoleAdmin;
+    public bool IsDeveloper;
+    public bool IsSubmitter;
+    public bool IsProjectManager;
+    public bool IsNewUser;
+    protected override async Task OnInitializedAsync()
     {
-        GetData();
+        var currrentUser = _httpContextAccessor.HttpContext.User;
+        if (currrentUser.Identity.IsAuthenticated)
+        {
+            user = await _userManager.GetUserAsync(currrentUser);
+            IsInRoleAdmin = await _roleService.IsUserInRoleAsync(user, Roles.Admin.ToString());
+            if (!IsInRoleAdmin)
+            {
+                NavigationManager.NavigateTo("/accessdenied");
+            }
+            else
+            {
+                await GetData();
+            }
+
+        }
+
     }
 
+    private async Task OpenCreateDialog()
+    {
+        newItem = new();
+        await _createDialog.Open();
+    }
+    private async Task CancelCreateDialog()
+    {
+        newItem = new();
+        await _createDialog.Close();
+    }
+    private async Task OpenEditDialog(int id)
+    {
+        currentItem = ItemList.FirstOrDefault(i => i.Id == id);
+        await _editDialog.Open();
+    }
+    private async Task CancelEditDialog()
+    {
+        currentItem = new();
+        await _editDialog.Close();
+    }
+    private async Task OpenDeleteDialog(int id)
+    {
+        currentItem = ItemList.FirstOrDefault(i => i.Id == id);
 
-    public void GetData()
+        await _deleteDialog.Open();
+    }
+    private async Task CancelDeleteDialog()
+    {
+        currentItem = new();
+        await _deleteDialog.Close();
+    }
+
+    public async Task Add()
+    {
+        try
+        {
+            _context.Add(newItem);
+            _context.SaveChanges();
+
+            await GetData();
+            await CancelCreateDialog();
+
+            await JSRuntime.InvokeVoidAsync("success", null);
+
+        }
+        catch(Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+        }
+    }
+    public async Task Edit()
+    {
+        try
+        {
+            _context.Update(currentItem);
+            _context.SaveChanges();
+
+            await GetData();
+            await CancelEditDialog();
+
+            await JSRuntime.InvokeVoidAsync("success", null);
+
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+        }
+    }
+    public async Task Delete()
+    {
+        try
+        {
+            var projectList = _context.Project.Include(p => p.Attachments).Where(p => p.CompanyId == currentItem.Id).ToList();
+            // delete project of company
+            foreach (var project in projectList)
+            {
+                var ticketList = _context.Ticket.Include(t => t.Attachments).Include(t => t.Comments).Include(t => t.TicketHistories).Where(t => t.ProjectId == project.Id).ToList();
+                //delete ticket of this project
+                foreach (var ticket in ticketList)
+                {
+                    //delete all attachments in 1 ticket
+                    foreach (var attachment in ticket.Attachments)
+                    {
+                        _context.Attachment.Remove(attachment);
+                        _context.SaveChanges();
+                    }
+                    //delete all comment in 1 ticket
+                    foreach (var comment in ticket.Comments)
+                    {
+                        _context.Comment.Remove(comment);
+                        _context.SaveChanges();
+                    }
+                    //delete all History in 1 ticket
+                    foreach (var history in ticket.TicketHistories)
+                    {
+                        _context.TicketHistory.Remove(history);
+                        _context.SaveChanges();
+                    }
+                    _context.Ticket.Remove(ticket);
+                    _context.SaveChanges();
+                }
+                //you don't need to do this foreach loop
+                foreach (var projectAttachment in project.Attachments)
+                {
+                    _context.ProjectAttachment.Remove(projectAttachment);
+                    _context.SaveChanges();
+                }
+
+                _context.Project.Remove(project);
+                _context.SaveChanges();
+            }
+
+            var listUser = _context.Users.Where(u => u.CompanyId == currentItem.Id).ToList();
+            var temporaryCompanyId = _context.Company.FirstOrDefault(c => c.Name == "Temporary Company").Id;
+            foreach (var user in listUser)
+            {
+                user.CompanyId = temporaryCompanyId;
+                _context.Users.Update(user);
+                _context.SaveChanges();
+            }
+            //delete company
+            _context.Company.Remove(currentItem);
+             _context.SaveChanges();
+            await GetData();
+            await CancelDeleteDialog();
+
+            await JSRuntime.InvokeVoidAsync("success", null);
+
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+        }
+    }
+
+    public async Task GetData()
     {
         ItemList = _context.Company.ToList();
+
+        IsDeveloper = await _roleService.IsUserInRoleAsync(user, Roles.Developer.ToString());
+        IsNewUser = await _roleService.IsUserInRoleAsync(user, Roles.NewUser.ToString());
+        IsSubmitter = await _roleService.IsUserInRoleAsync(user, Roles.Submitter.ToString());
+        IsProjectManager = await _roleService.IsUserInRoleAsync(user, Roles.ProjectManager.ToString());
     }
 
 
@@ -188,7 +439,9 @@
     {
         if (firstRender)
         {
-            await JSRuntime.InvokeVoidAsync("enableTable", null);
+            //await JSRuntime.InvokeVoidAsync("enableTable", null);
+            _editModalWidth = await JSRuntime.InvokeAsync<int>("ScreenWidth", null);
+            _editModalWidth = _editModalWidth * 0.5;
         }
     }
 }

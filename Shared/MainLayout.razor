@@ -4,10 +4,13 @@
 @inject UserManager<CustomUser> _userManager
 @inject SignInManager<CustomUser> _signInManager
 @using Microsoft.AspNetCore.Http
+@using BlazorBugTracker.Data 
+@using Microsoft.EntityFrameworkCore 
 @inject IHttpContextAccessor _httpContextAccessor
 @inject IImageService _imageService
 @inject ISessionStorageService sessionStorage
 @inject ICustomRoleService _roleService
+@inject ApplicationDbContext _context 
 <header>
     <nav class="main-header navbar navbar-expand navbar-white navbar-light">
         <!-- Left navbar links -->
@@ -43,7 +46,6 @@
         <!-- Right navbar links -->
         <ul class="navbar-nav mr-auto">
             <!-- Messages Dropdown Menu -->
-
             <li class="nav-item dropdown">
                 <a class="nav-link" data-toggle="dropdown" href="#">
                     <i class="far fa-comments"></i>
@@ -81,33 +83,89 @@
             <li class="nav-item dropdown">
                 <a class="nav-link" data-toggle="dropdown" href="#">
                     <i class="far fa-bell"></i>
-
-                    <span class="badge badge-warning navbar-badge">3</span>
-
+                    @if ((welcomeNotificationList.Count + notificationList.Count) != 0)
+                    {
+                <span class="badge badge-warning navbar-badge">@(welcomeNotificationList.Count + notificationList.Count)</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge-warning navbar-badge"></span>
+                    }
                 </a>
                 <div class="dropdown-menu dropdown-menu-xl dropdown-menu-right">
-
-                    <span class="dropdown-item dropdown-header">2 Notifications</span>
-
+                    @if ((welcomeNotificationList.Count + notificationList.Count) != 0)
+                    {
+                    <span class="dropdown-item dropdown-header">@(welcomeNotificationList.Count + notificationList.Count) Notifications</span>
+                    }
 
 
                     <div class="dropdown-divider"></div>
+                    @foreach (var item in notificationList)
+                    {
 
-                    <a class="dropdown-item">
-                        <i class="fas fa-file mr-2"></i> qwew
-                        <span class="float-right text-muted text-sm">1/2/20121</span>
-                    </a>
-                    <br />
-                    <div class="dropdown-divider"></div>
+                        var timeSpan2 = currentTime.Subtract(item.Created);
+                        var eslapseSecond2 = timeSpan2.Seconds;
+                        var eslapseMinute2 = timeSpan2.Minutes;
+                        var eslapseHours2 = timeSpan2.Hours;
+                        var eslapseDate2 = timeSpan2.Days;
+                        string commentdate2;
+                        if (eslapseDate2 >= 1)
+                        {
+                            commentdate2 = eslapseDate2.ToString() + " Days Ago";
 
+                        }
+                        else if (eslapseHours2 >= 1)
+                        {
+                            commentdate2 = eslapseHours2.ToString() + " Hours Ago";
+                        }
+                        else if (eslapseMinute2 >= 1)
+                        {
+                            commentdate2 = eslapseMinute2.ToString() + " Minutes Ago";
+                        }
+                        else
+                        {
+                            commentdate2 = eslapseSecond2.ToString() + " Seconds Ago";
+                        }
+                        <a asp-controller="Notifications" asp-action="Details" asp-route-id="@item.Id" class="dropdown-item">
+                            <i class="fas fa-file mr-2"></i> @item.Name
+                            <span class="float-right text-muted text-sm">@commentdate2</span>
+                        </a>
+                        <br />
+                        <div class="dropdown-divider"></div>
+                    }
+                    @foreach (var item in welcomeNotificationList)
+                    {
 
-                    <a class="dropdown-item">
-                        <i class="fas fa-file mr-2"></i> sad
-                        <span class="float-right text-muted text-sm">1/1/2021</span>
-                    </a>
-                    <br />
-                    <div class="dropdown-divider"></div>
+                        var timeSpan2 = currentTime.Subtract(item.Created);
+                        var eslapseSecond2 = timeSpan2.Seconds;
+                        var eslapseMinute2 = timeSpan2.Minutes;
+                        var eslapseHours2 = timeSpan2.Hours;
+                        var eslapseDate2 = timeSpan2.Days;
+                        string commentdate2;
+                        if (eslapseDate2 >= 1)
+                        {
+                            commentdate2 = eslapseDate2.ToString() + " Days Ago";
 
+                        }
+                        else if (eslapseHours2 >= 1)
+                        {
+                            commentdate2 = eslapseHours2.ToString() + " Hours Ago";
+                        }
+                        else if (eslapseMinute2 >= 1)
+                        {
+                            commentdate2 = eslapseMinute2.ToString() + " Minutes Ago";
+                        }
+                        else
+                        {
+                            commentdate2 = eslapseSecond2.ToString() + " Seconds Ago";
+                        }
+                        <a asp-controller="WelcomeNotifications" asp-action="Details" asp-route-id="@item.Id" class="dropdown-item">
+                            <i class="fas fa-file mr-2"></i> @item.Name
+                            <span class="float-right text-muted text-sm">@commentdate2</span>
+                        </a>
+                        <br />
+                        <div class="dropdown-divider"></div>
+                    }
                     <a asp-controller="Notifications" asp-action="Index" class="dropdown-item dropdown-footer">See All Notifications</a>
                 </div>
             </li>
@@ -278,12 +336,11 @@
 
 @code{
 
+
     public Models.CustomUser user = new();
-    public bool IsInRoleAdmin;
-    public bool IsDeveloper;
-    public bool IsSubmitter;
-    public bool IsProjectManager;
-    public bool IsNewUser;
+    public List<Models.Notification> notificationList = new();
+    public List<Models.WelcomeNotification> welcomeNotificationList = new();
+    public DateTime currentTime;
     public string time;
 
     protected override async Task OnInitializedAsync()
@@ -302,38 +359,45 @@
         else
         {
             var currrentUser = _httpContextAccessor.HttpContext.User;
-            user = await _userManager.GetUserAsync(currrentUser);
-            IsInRoleAdmin = await _roleService.IsUserInRoleAsync(user, Roles.Admin.ToString());
-            IsDeveloper = await _roleService.IsUserInRoleAsync(user, Roles.Developer.ToString());
-            IsNewUser = await _roleService.IsUserInRoleAsync(user, Roles.NewUser.ToString());
-            IsSubmitter = await _roleService.IsUserInRoleAsync(user, Roles.Submitter.ToString());
-            IsProjectManager = await _roleService.IsUserInRoleAsync(user, Roles.ProjectManager.ToString());
-
-
+            user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
+            currentTime = DateTime.Now;
+            GetNotificationAndInbox();
+            GetTime();
         }
 
-        GetTime();
 
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await sessionStorage.SetItemAsync("user", user);
-        await sessionStorage.SetItemAsync("IsInRoleAdmin", IsInRoleAdmin);
-        await sessionStorage.SetItemAsync("IsDeveloper", IsDeveloper);
-        await sessionStorage.SetItemAsync("IsNewUser", IsNewUser);
-        await sessionStorage.SetItemAsync("IsSubmitter", IsSubmitter);
-        await sessionStorage.SetItemAsync("IsProjectManager", IsProjectManager);
+        //await sessionStorage.SetItemAsync("user", user);
+        //await sessionStorage.SetItemAsync("IsInRoleAdmin", IsInRoleAdmin);
+        //await sessionStorage.SetItemAsync("IsDeveloper", IsDeveloper);
+        //await sessionStorage.SetItemAsync("IsNewUser", IsNewUser);
+        //await sessionStorage.SetItemAsync("IsSubmitter", IsSubmitter);
+        //await sessionStorage.SetItemAsync("IsProjectManager", IsProjectManager);
 
         while (true)
         {
             await Task.Delay(1000);
             GetTime();
             StateHasChanged();
+
         }
     }
     public void GetTime()
     {
         time = DateTime.Now.ToString("dddd, dd MMMM yyyy - HH:mm:ss");
     }
+
+    public void GetNotificationAndInbox()
+    {
+        notificationList = new();
+        welcomeNotificationList = new();
+        notificationList = _context.Notification.Include(n => n.Sender).Include(n => n.Recipient).Where(n => n.RecipientId == user.Id && !n.IsViewed).ToList();
+        welcomeNotificationList = _context.WelcomeNotification.Include(n => n.Sender).Include(n => n.Recipient).Where(n => n.RecipientId == user.Id && !n.IsViewed).ToList();
+
+    }
+
+
 }

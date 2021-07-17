@@ -18,7 +18,7 @@
                         <h3 class="card-title">Manager User Project</h3>
                     </div>
                     <div class="card-body">
-                        <EditForm Model="userProject" OnValidSubmit="SubmitForm" >
+                        <EditForm Model="userProject" OnValidSubmit="AddUserToProject" >
                             <div class="row">
                                 <div class="col-md p-3">
                                     <div class="row">
@@ -31,7 +31,7 @@
                                         <div class="col">
                                             <div class="form-group">
                                                 <RadzenListBox AllowFiltering="true" AllowClear="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value=@ProjectSelected Data=@ProjectList TextProperty="Name" ValueProperty="Id"
-                                                               TValue="int" Placeholder="Select Project..." Style="height:400px;width:100%" />
+                                                      Change="@(args => OnChangeSelectProjet(args))"         TValue="int" Placeholder="Select Project..." Style="height:300px;width:100%" />
                                             </div>
 
 
@@ -50,7 +50,7 @@
                                         <div class="col">
                                             <div class="form-group">
                                                 <RadzenListBox AllowFiltering="true" AllowClear="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value=@ProjectManagerSelected Data=@ProjectManagerList TextProperty="FullName" ValueProperty="Id"
-                                                               TValue="string" Placeholder="Select Project Manager..." Style="height:400px;width:100%" />
+                                                               TValue="string" Placeholder="Select Project Manager..." Style="height:300px;width:100%" />
                                             </div>
                                         </div>
                                     </div>
@@ -70,8 +70,8 @@
                                                         <div class="col-12">
                                                            
 
-                                                                <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" TValue="IEnumerable<string>" Multiple="true" Data=@DeveloperList
-                                                                               Change=@(args => OnChangeSelectDeveloper(args)) Placeholder="Select Developer..." TextProperty="FullName" ValueProperty="Id" Style="height:400px;width:100%" />
+                                                                <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value="DeveloperSelected" TValue="List<string>" Multiple="true" Data=@DeveloperList
+                                                                               Change=@(args => OnChangeSelectDeveloper(args)) Placeholder="Select Developer..." TextProperty="FullName" ValueProperty="Id" Style="height:300px;width:100%" />
 
                                                           
                                                             <!-- /.form-group -->
@@ -101,8 +101,8 @@
                                                         <div class="col-12">
                                                          
 
-                                                                <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" TValue="IEnumerable<string>" Multiple="true" Data=@SubmitterList
-                                                                               Change=@(args => OnChangeSelectSubmitter(args)) Placeholder="Select Submitter..." TextProperty="FullName" ValueProperty="Id" Style="height:400px;width:100%" />
+                                                                <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"  @bind-Value="SubmitterSelected" TValue="List<string>" Multiple="true" Data=@SubmitterList
+                                                                               Change=@(args => OnChangeSelectSubmitter(args)) Placeholder="Select Submitter..." TextProperty="FullName" ValueProperty="Id" Style="height:300px;width:100%" />
 
                                                            
                                                             <!-- /.form-group -->
@@ -126,7 +126,7 @@
                                 </div>
                             </div>
                         </EditForm>
-
+                        <br />
                         <div class="row">
                             <div class="col">
                                 <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true"
@@ -231,7 +231,7 @@
 
 
     }
-    public async Task SubmitForm()
+    public async Task AddUserToProject()
     {
         try
         {
@@ -281,6 +281,19 @@
 
 
     }
+
+    public void OnChangeSelectProjet(object value)
+    {
+        var str = value is IEnumerable<object> ? string.Join(",", (IEnumerable<object>)value) : value;
+        ProjectSelected = Convert.ToInt32(str.ToString());
+        var projectManagerOnProject = _projectService.ProjectManagerOnProject(ProjectSelected);
+        ProjectManagerSelected = projectManagerOnProject.Id;
+        var DeveloperOnProject = _projectService.DeveloperOnProject(ProjectSelected).ToList().Select(d => d.Id).ToList();
+        DeveloperSelected = DeveloperOnProject;
+        var SubmitterOnProject = _projectService.SubmitterOnProject(ProjectSelected).ToList().Select(d => d.Id).ToList();
+        SubmitterSelected = SubmitterOnProject;
+    }
+
 
     public void OnChangeSelectDeveloper(object value)
     {
