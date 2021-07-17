@@ -3,6 +3,7 @@
 @using BlazorBugTracker.Data
 @using BlazorBugTracker.Services
 @using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore 
 @inject IJSRuntime JSRuntime 
 @inject ApplicationDbContext _context
 @inject UserManager<CustomUser> _userManager
@@ -203,7 +204,7 @@
         SubmitterList = new();
         ProjectManagerList = new();
         AllUser = _context.Users.ToList();
-        ProjectList = _context.Project.ToList();
+        ProjectList = _context.Project.Include(p => p.CustomUsers).ToList();
         RoleList = _context.Roles.ToList();
         var DeveloperRoleId = RoleList.FirstOrDefault(r => r.Name == Roles.Developer.ToString()).Id;
         var DeveloperListId = _context.UserRoles.Where(r => r.RoleId == DeveloperRoleId).ToList();
@@ -234,18 +235,39 @@
     {
         try
         {
-            var currentlyOnProject = _projectService.UserOnProject(ProjectSelected);
-            foreach (var user in currentlyOnProject)
+
+            List<Models.CustomUser> UserToAdd = new();
+            Models.Project project = ProjectList.FirstOrDefault(p => p.Id == ProjectSelected);
+            foreach (var user in project.CustomUsers)
             {
-                _projectService.RemoveUserFromProject(user.Id, ProjectSelected);
+                project.CustomUsers.Remove(user);
             }
-            _projectService.AddUserToProject(ProjectManagerSelected.Split(",").ToList(), ProjectSelected);
+            var ProjectManagerToAdd = AllUser.FirstOrDefault(p => p.Id == ProjectManagerSelected);
+            UserToAdd.Add(ProjectManagerToAdd);
 
-            _projectService.AddUserToProject(DeveloperSelected, ProjectSelected);
+            foreach (var developer in DeveloperSelected)
+            {
+                var user = AllUser.FirstOrDefault(u => u.Id == developer);
 
-   
-            _projectService.AddUserToProject(SubmitterSelected, ProjectSelected);
-     
+                UserToAdd.Add(user);
+
+
+            }
+            foreach (var submitter in SubmitterSelected)
+            {
+                var user = AllUser.FirstOrDefault(u => u.Id == submitter);
+
+                UserToAdd.Add(user);
+
+
+            }
+
+
+            project.CustomUsers = UserToAdd.Distinct().ToList();
+            _context.Update(project);
+            _context.SaveChanges();
+
+
             ProjectManagerSelected = null;
             DeveloperSelected = new();
             SubmitterSelected = new();
@@ -265,7 +287,8 @@
         var str = value is IEnumerable<object> ? string.Join(", ", (IEnumerable<object>)value) : value;
         if (str is not null)
         {
-            var users = str.ToString().Split(",").ToList();
+            var develop = str.ToString().Replace(" ", "");
+            var users = develop.Split(",").ToList();
             DeveloperSelected = users;
         }
     }
@@ -275,7 +298,8 @@
         var str = value is IEnumerable<object> ? string.Join(", ", (IEnumerable<object>)value) : value;
         if (str is not null)
         {
-            var users = str.ToString().Split(",").ToList();
+            var submit = str.ToString().Replace(" ", "");
+            var users = submit.Split(",").ToList();
             SubmitterSelected = users;
         }
     }

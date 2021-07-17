@@ -32,13 +32,14 @@ namespace BlazorBugTracker.Services
             {
                 List<CustomUser> UserInProjectList = new();
                 Project project = _context.Project.FirstOrDefault(p => p.Id == projectId);
+                var AllUser = _context.Users.ToList();
                 UserInProjectList = project.CustomUsers.ToList();
                 foreach (var userId in userIdList)
                 {
                     if (!IsUserOnProject(userId, projectId))
                     {
 
-                        CustomUser user = _context.Users.FirstOrDefault(u => u.Id == userId);
+                        CustomUser user = AllUser.FirstOrDefault(u => u.Id == userId);
                         var IsUserInRole = _roleService.ReturnUserRole3(user);
                         if (IsUserInRole.Contains(Roles.ProjectManager.ToString()))
                         {
