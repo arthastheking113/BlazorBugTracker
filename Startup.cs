@@ -76,7 +76,7 @@ namespace BlazorBugTracker
 
 
             services.AddScoped<ICustomHistoryService, CustomHistoryService>();
-            services.AddScoped<BlazorBugTracker.Pages.Ticket>();
+    
 
             services.AddScoped<ICustomFileService, CustomFileService>();
             services.AddScoped<ICustomNotificationService, CustomNotificationService>();
