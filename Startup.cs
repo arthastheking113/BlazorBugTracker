@@ -17,6 +17,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -79,7 +81,7 @@ namespace BlazorBugTracker
             services.AddScoped<ICustomFileService, CustomFileService>();
             services.AddScoped<ICustomNotificationService, CustomNotificationService>();
             services.AddScoped<IListDeveloperAndProject, ListDeveloperandProject>();
-
+            services.AddScoped<HubConnectionBuilder, HubConnectionBuilder>();
             services.AddScoped<DialogService>();
             services.AddScoped<NotificationService>();
             services.AddScoped<TooltipService>();
@@ -87,11 +89,18 @@ namespace BlazorBugTracker
             services.AddCssEvents();
             services.AddJsInteropExtensions();
             services.AddBlazoredSessionStorage();
+            services.AddSignalR();
+            services.AddResponseCompression(opts =>
+            {
+                opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+                    new[] { "application/octet-stream" });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseResponseCompression();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -116,6 +125,7 @@ namespace BlazorBugTracker
             {
                 endpoints.MapControllers();
                 endpoints.MapBlazorHub();
+                endpoints.MapHub<ChatHub>(ChatHub.HubUrl);
                 endpoints.MapFallbackToPage("/_Host");
             });
         }
