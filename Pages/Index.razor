@@ -1,18 +1,458 @@
 ﻿@page "/"
-@inject NavigationManager NavigationManager
 @using Microsoft.AspNetCore.Identity
-@inject UserManager<CustomUser> _userManager
-@inject SignInManager<CustomUser> _signInManager
 @using Microsoft.AspNetCore.Http
-@inject IHttpContextAccessor _httpContextAccessor
-@inject IImageService _imageService
-@inject ISessionStorageService sessionStorage
+@using Microsoft.EntityFrameworkCore
+@using BlazorBugTracker.Services
+@using Microsoft.AspNetCore.Identity.UI.Services
+@inject IEmailSender _emailSender
 @inject ICustomRoleService _roleService
-<h1>Hello, world!</h1>
+@inject ICustomProjectService _projectService
+@inject IHttpContextAccessor _httpContextAccessor
+@inject UserManager<CustomUser> _userManager
+@using BlazorBugTracker.Data
+@inject ApplicationDbContext _context
+@inject IJSRuntime JSRuntime
+@inject ISessionStorageService sessionStorage
+@inject ICustomHistoryService _customHistoryService
+@if (ItemList is null || user is null)
+{
+    <div class="loader">Loading...</div>
+}
+else
+{
+    <div class="container-fluid">
+        <div class="row mt-2">
+            @if (IsInRoleAdmin || IsProjectManager)
+            {
+                <div class="col-8">
+                    <div class="card">
+                        <div class="card-header bg-dark">
+                            <h5 class="card-title">Quick Management Action</h5>
+                        </div>
+                        <div class="card-body" style="padding-right:10px">
+                            <button type="button" class="btn btn-secondary pb-2 mb-2" data-toggle="modal" data-target="#exampleModal1">
+                                <i class="fas fa-plus-square"></i> Create New Ticket
+                            </button>
 
-Welcome to your new app.
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+                            <button type="button" class="btn btn-secondary pb-2 mb-2" data-toggle="modal" data-target="#exampleModal2">
+                                <i class="fas fa-plus-circle"></i> Create New Project
+                            </button>
+
+
+                            <a asp-controller="Projects" asp-action="Index" class="btn btn-secondary pb-2 mb-2"><i class="fas fa-tasks"></i> View Projects </a>
+
+                            <a asp-controller="Home" asp-action="ManageRole" class="btn btn-secondary pb-2 mb-2"><i class="fas fa-people-arrows"></i> Role's Management </a>
+
+                            <a asp-controller="Projects" asp-action="ManagerUserProject" class="btn btn-secondary pb-2 mb-2"><i class="fas fa-user-edit"></i> Project User Management</a>
+
+                            <button type="button" class="btn btn-secondary pb-2 mb-2" data-toggle="modal" data-target="#exampleModal3">
+                                <i class="fas fa-location-arrow"></i> Create a Invite Ticket
+                            </button>
+
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-4">
+                    <div class="card">
+                        <div class="card-header bg-dark">
+                            <h5 class="card-title">Quick Inbox and Notification Action</h5>
+                        </div>
+                        <div class="card-body">
+                            <a asp-controller="Inboxes" asp-action="Create" class="btn btn-secondary pb-2 mb-2"><i class="fas fa-plus-square"></i> Compose New Inbox</a>
+                            <a asp-controller="Inboxes" asp-action="Index" class="btn btn-secondary pb-2 mb-2"><i class="far fa-comments"></i> View My Inbox</a>
+                            <a asp-controller="Notifications" asp-action="Index" class="btn btn-secondary pb-2 mb-2"><i class="far fa-bell"></i> View My Notifications</a>
+
+                        </div>
+                    </div>
+                </div>
+
+            }
+            else if (IsSubmitter)
+            {
+                <div class="col">
+                    <div class="card">
+                        <div class="card-header bg-dark">
+                            <h5 class="card-title">Quick Management Action</h5>
+                        </div>
+                        <div class="card-body" style="padding-right:10px">
+                            <button type="button" class="btn btn-secondary pb-2 mb-2" data-toggle="modal" data-target="#exampleModal1">
+                                <i class="fas fa-plus-square"></i> Create New Ticket
+                            </button>
+
+
+                            <a asp-controller="Tickets" asp-action="Index" class="btn btn-secondary pb-2 mb-2"><i class="nav-icon fas fa-ticket-alt"></i> View All Tickets</a>
+
+                            <button type="button" class="btn btn-secondary pb-2 mb-2" data-toggle="modal" data-target="#exampleModal3">
+                                <i class="fas fa-location-arrow"></i> Create a Invite Ticket
+                            </button>
+
+
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card">
+                        <div class="card-header bg-dark">
+                            <h5 class="card-title">Quick Inbox and Notification Action</h5>
+                        </div>
+                        <div class="card-body">
+                            <a asp-controller="Inboxes" asp-action="Create" class="btn btn-secondary pb-2 mb-2"><i class="fas fa-plus-square"></i> Compose New Inbox</a>
+                            <a asp-controller="Inboxes" asp-action="Index" class="btn btn-secondary pb-2 mb-2"><i class="far fa-comments"></i> View My Inbox</a>
+                            <a asp-controller="Notifications" asp-action="Index" class="btn btn-secondary pb-2 mb-2"><i class="far fa-bell"></i> View My Notifications</a>
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (IsDeveloper)
+            {
+                <div class="col">
+                    <div class="card">
+                        <div class="card-header bg-dark">
+                            <h5 class="card-title">Quick Management Action</h5>
+                        </div>
+                        <div class="card-body" style="padding-right:10px">
+                            <button type="button" class="btn btn-secondary pb-2 mb-2" data-toggle="modal" data-target="#exampleModal1">
+                                <i class="fas fa-plus-square"></i> Create New Ticket
+                            </button>
+
+
+                            <a asp-controller="Tickets" asp-action="Index" class="btn btn-secondary pb-2 mb-2"><i class="nav-icon fas fa-ticket-alt"></i> View All Tickets</a>
+                            <button type="button" class="btn btn-secondary pb-2 mb-2" data-toggle="modal" data-target="#exampleModal3">
+                                <i class="fas fa-location-arrow"></i> Create a Invite Ticket
+                            </button>
+
+
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card">
+                        <div class="card-header bg-dark">
+                            <h5 class="card-title">Quick Inbox and Notification Action</h5>
+                        </div>
+                        <div class="card-body">
+                            <a asp-controller="Inboxes" asp-action="Create" class="btn btn-secondary pb-2 mb-2"><i class="fas fa-plus-square"></i> Compose New Inbox</a>
+                            <a asp-controller="Inboxes" asp-action="Index" class="btn btn-secondary pb-2 mb-2"><i class="far fa-comments"></i> View My Inbox</a>
+                            <a asp-controller="Notifications" asp-action="Index" class="btn btn-secondary pb-2 mb-2"><i class="far fa-bell"></i> View My Notifications</a>
+                        </div>
+                    </div>
+                </div>
+
+            }
+            else
+            {
+                <div class="col">
+                    <div class="card">
+                        <div class="card-header bg-dark">
+                            <h5 class="card-title">Quick Inbox and Notification Action</h5>
+                        </div>
+                        <div class="card-body">
+                            <a asp-controller="Inboxes" asp-action="Create" class="btn btn-secondary pb-2 mb-2"><i class="fas fa-plus-square"></i> Compose New Inbox</a>
+                            <a asp-controller="Inboxes" asp-action="Index" class="btn btn-secondary pb-2 mb-2"><i class="far fa-comments"></i> View My Inbox</a>
+                            <a asp-controller="Notifications" asp-action="Index" class="btn btn-secondary pb-2 mb-2"><i class="far fa-bell"></i> View My Notifications</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <!-- DONUT CHART -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">Works Overview</h3>
+                    </div>
+                    <br />
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col ml-2">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-percentage"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Works Process</span>
+                                        <span class="info-box-number">
+                                            23
+                                            <small>%</small>
+                                        </span>
+                                    </div>
+                                    <!-- /.info-box-content -->
+                                </div>
+                                <!-- /.info-box -->
+                            </div>
+                            <div class="col ml-2">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-exclamation"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Un-Assign Tickets</span>
+                                        <span class="info-box-number">
+                                            1002
+                                            <small>Tickets</small>
+                                        </span>
+                                    </div>
+                                    <!-- /.info-box-content -->
+                                </div>
+                                <!-- /.info-box -->
+                            </div>
+                            <div class="col ml-2">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-lime elevation-1"><i class="fas fa-file-alt"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">New Tickets In Last 7 Days</span>
+                                        <span class="info-box-number">
+                                            323
+                                            <small>Tickets</small>
+                                        </span>
+                                    </div>
+                                    <!-- /.info-box-content -->
+                                </div>
+                                <!-- /.info-box -->
+                            </div>
+                            <div class="col ml-2">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-cyan elevation-1"><i class="fas fa-check-circle"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Tickets Resolved In Last 7 Days</span>
+                                        <span class="info-box-number">
+                                            565
+                                            <small>Tickets</small>
+                                        </span>
+                                    </div>
+                                    <!-- /.info-box-content -->
+                                </div>
+                                <!-- /.info-box -->
+                            </div>
+
+
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <div class="card-body">
+                                <div class="info-box mb-3 bg-warning">
+                                    <span class="info-box-icon"><i class="fas fa-tasks"></i></span>
+
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Projects</span>
+                                        <span class="info-box-number">2323</span>
+                                    </div>
+                                    <!-- /.info-box-content -->
+                                </div>
+                                <!-- /.info-box -->
+                                <div class="info-box mb-3 bg-success">
+                                    <span class="info-box-icon"><i class="fas fa-ticket-alt"></i></span>
+
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Tickets</span>
+                                        <span class="info-box-number">1726</span>
+                                    </div>
+
+                                    <!-- /.info-box-content -->
+                                </div>
+                                <!-- /.info-box -->
+                                <div class="info-box mb-3 bg-danger">
+                                    <span class="info-box-icon"><i class="fas fa-users"></i></span>
+
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">User</span>
+                                        <span class="info-box-number">32</span>
+                                    </div>
+                                    <!-- /.info-box-content -->
+                                </div>
+
+
+                                <!-- /.info-box -->
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card-body">
+                                <RadzenChart>
+                                    <RadzenDonutSeries Data="@TicketTypeChart" CategoryProperty="TicketCategory" ValueProperty="NumberOfTicket">
+                                       
+                                    </RadzenDonutSeries>
+                                </RadzenChart>
+                                <p class="text-center">
+                                    <strong>Tickets By Type</strong>
+                                </p>
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+                        <div class="col">
+                            <div class="card-body">
+                                <RadzenChart>
+                                    <RadzenDonutSeries Data="@TicketStatusChart" CategoryProperty="TicketCategory" ValueProperty="NumberOfTicket">
+    
+                                    </RadzenDonutSeries>
+                                </RadzenChart>
+                                <p class="text-center">
+                                    <strong>Tickets By Status</strong>
+                                </p>
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+                        <div class="col">
+                            <div class="card-body">
+                                <RadzenChart>
+                                    <RadzenDonutSeries Data="@TicketPriorityChart" CategoryProperty="TicketCategory" ValueProperty="NumberOfTicket">
+
+                                    </RadzenDonutSeries>
+                                </RadzenChart>
+                                <p class="text-center">
+                                    <strong>Tickets By Priority</strong>
+                                </p>
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+                    </div>
+
+
+                </div>
+                <!-- /.card -->
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header bg-dark">
+                        <h5 class="card-title">My Tickets</h5>
+                    </div>
+                    <div class="card-header">
+                        <h3 class="card-title">Manage All of my Tickets</h3>
+                        <div class="card-tools">
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control" placeholder="Search Ticket" id="myInputHomeField">
+                                <div class="input-group-append">
+                                    <div class="btn btn-primary">
+                                        <i class="fas fa-search"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.card-tools -->
+                    </div>
+                    <!-- /.card-header -->
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true"
+                                        FilterMode="FilterMode.Simple" PageSize="5" AllowPaging="true" AllowSorting="true" Data="@ItemList" TItem="Models.Ticket" ColumnWidth="100%"
+                                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                        LogicalFilterOperator="LogicalFilterOperator.Or">
+                            <Columns>
+                                <RadzenDataGridColumn TItem="Models.Ticket" Title="Id" Width="50px">
+                                    <Template Context="data">
+                                        <p>
+                                            #@data.Id
+                                        </p>
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="Models.Ticket" Property="Name" Title="Name" />
+
+                                <RadzenDataGridColumn TItem="Models.Ticket" Property="Description" Title="Description" />
+                                <RadzenDataGridColumn TItem="Models.Ticket" Property="Created" Title="Created">
+                                    <Template Context="data">
+                                        <p>
+                                            @data.Created.ToString("dd MMMM yyyy - hh:mm tt")
+                                        </p>
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="Models.Ticket" Property="Updated" Title="Updated">
+                                    <Template Context="data">
+                                        <p>
+                                            @data.Updated.ToString("dd MMMM yyyy - hh:mm tt")
+                                        </p>
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="Models.Ticket" Property="Developer" Title="Updated">
+                                    <Template Context="data">
+                                        @if (data.Developer is not null)
+                                        {
+                                            <p>@data.Developer.FullName</p>
+                                        }
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="Models.Ticket" Property="Ownner" Title="Ownner">
+                                    <Template Context="data">
+                                        @if (data.Ownner is not null)
+                                        {
+                                            <p>@data.Ownner.FullName</p>
+                                        }
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="Models.Ticket" Property="Project" Title="Project">
+                                    <Template Context="data">
+                                        @if (data.Project is not null)
+                                        {
+                                            <p>@data.Project.Name</p>
+                                        }
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="Models.Ticket" Property="IsAssigned" Width="70px" Title="Assign?">
+                                    <Template Context="data">
+                                        @if (data.IsAssigned)
+                                        {
+                                            <p>Y</p>
+                                        }
+                                        else
+                                        {
+                                            <p>N</p>
+                                        }
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="Models.Ticket" Width="100px" Property="Status" Title="Status">
+                                    <Template Context="data">
+                                        @if (data.Status is not null)
+                                        {
+                                            <p>@data.Status.Name</p>
+                                        }
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="Models.Ticket" Width="100px" Property="Priority" Title="Priority">
+                                    <Template Context="data">
+                                        @if (data.Priority is not null)
+                                        {
+                                            <p>@data.Priority.Name</p>
+                                        }
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="Models.Ticket" Property="TicketType" Title="Type">
+                                    <Template Context="data">
+                                        @if (data.TicketType is not null)
+                                        {
+                                            <p>@data.TicketType.Name</p>
+                                        }
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="Models.Ticket" Width="90px">
+                                    <Template Context="data">
+                                        <div class="btn-group-vertical">
+                                            <a class="btn btn-primary btn-sm mb-1" href="/ticket/details/@data.Id"><i class="fas fa-folder"></i> View</a>
+
+                                        </div>
+
+
+                                    </Template>
+                                </RadzenDataGridColumn>
+
+                            </Columns>
+                        </RadzenDataGrid>
+
+                    </div>
+                    <!-- ./card-body -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+
+
+
+
 
 
 @code{
@@ -22,6 +462,17 @@ Welcome to your new app.
     public bool IsSubmitter;
     public bool IsProjectManager;
     public bool IsNewUser;
+    public List<Models.ChartModel> TicketTypeChart = new();
+    public List<Models.ChartModel> TicketPriorityChart = new();
+    public List<Models.ChartModel> TicketStatusChart = new();
+    public List<Models.Ticket> ItemList = new();
+    public List<Models.Ticket> AllItemList = new();
+    public List<Models.TicketType> TicketTypeList = new();
+    public List<Models.Priority> TicketPriorityList = new();
+    public List<Models.Status> TicketStatusList = new();
+    public List<Models.Project> ProjectList = new();
+    public List<Models.CustomUser> DeveloperList = new();
+    public List<Models.CustomUser> OwnerList = new();
     protected override async Task OnInitializedAsync()
     {
         if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
@@ -42,5 +493,101 @@ Welcome to your new app.
         IsSubmitter = await _userManager.IsInRoleAsync(user, Roles.Submitter.ToString());
         IsProjectManager = await _userManager.IsInRoleAsync(user, Roles.ProjectManager.ToString());
 
+
+
+        AllItemList = _context.Ticket
+            .Include(t => t.Attachments)
+            .Include(t => t.Comments)
+            .Include(t => t.Developer)
+            .Include(t => t.Ownner)
+            .Include(t => t.Priority)
+            .Include(t => t.Project)
+            .Include(t => t.Status)
+            .Include(t => t.TicketHistories)
+            .Include(t => t.TicketType).ToList();
+        ItemList = AllItemList;
+
+        GetDataChart();
+
+        if (IsInRoleAdmin)
+        {
+
+        }
+        else if (IsProjectManager)
+        {
+            var allProject = _context.Project.ToList();
+            List<Models.Project> listProjectOfProjectManager = new List<Models.Project>();
+
+            foreach (var item in allProject)
+            {
+                var isUserOnProject = _projectService.IsUserOnProject(user.Id, item.Id);
+                if (isUserOnProject)
+                {
+                    listProjectOfProjectManager.Add(item);
+                }
+            }
+            List<Models.Ticket> projectManagerView = new List<Models.Ticket>();
+            foreach (var item in listProjectOfProjectManager)
+            {
+                foreach (var itemInTicket in ItemList)
+                {
+                    if (itemInTicket.ProjectId == item.Id)
+                    {
+                        projectManagerView.Add(itemInTicket);
+                    }
+                }
+            }
+            ItemList = projectManagerView;
+        }
+        else if (IsSubmitter)
+        {
+
+            ItemList = ItemList.Where(u => u.OwnnerId == user.Id).ToList();
+        }
+        else
+        {
+            ItemList = ItemList.Where(u => u.DeveloperId == user.Id).ToList();
+        }
+
     }
+
+    public void GetDataChart()
+    {
+        TicketTypeList = _context.TicketType.ToList();
+        TicketPriorityList = _context.Priority.ToList();
+        TicketStatusList = _context.Status.ToList();
+
+        TicketTypeChart = new();
+        TicketPriorityChart = new();
+        TicketStatusList = new();
+
+        foreach (var item in TicketTypeList)
+        {
+            ChartModel newTicketType = new ChartModel
+            {
+                TicketCategory = item.Name,
+                NumberOfTicket = AllItemList.Where(t => t.TicketTypeId == item.Id).ToList().Count
+            };
+            TicketTypeChart.Add(newTicketType);
+        }
+        foreach (var item in TicketPriorityList)
+        {
+            ChartModel newTicketPriority = new ChartModel
+            {
+                TicketCategory = item.Name,
+                NumberOfTicket = AllItemList.Where(t => t.PriorityId == item.Id).ToList().Count
+            };
+            TicketPriorityChart.Add(newTicketPriority);
+        }
+        foreach (var item in TicketStatusList)
+        {
+            ChartModel newTicketStatus = new ChartModel
+            {
+                TicketCategory = item.Name,
+                NumberOfTicket = AllItemList.Where(t => t.StatusId == item.Id).ToList().Count
+            };
+            TicketStatusChart.Add(newTicketStatus);
+        }
+    }
+
 }

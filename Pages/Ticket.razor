@@ -937,17 +937,6 @@ else
 
     public async Task  GetData()
     {
-        ItemList = _context.Ticket
-            .Include(t => t.Attachments)
-            .Include(t => t.Comments)
-            .Include(t => t.Developer)
-            .Include(t => t.Ownner)
-            .Include(t => t.Priority)
-            .Include(t => t.Project)
-            .Include(t => t.Status)
-            .Include(t => t.TicketHistories)
-            .Include(t => t.TicketType).ToList();
-
         TicketTypeList = _context.TicketType.ToList();
         TicketPriorityList = _context.Priority.ToList();
         TicketStatusList = _context.Status.ToList();
@@ -961,6 +950,58 @@ else
         IsNewUser = await _roleService.IsUserInRoleAsync(user, Roles.NewUser.ToString());
         IsSubmitter = await _roleService.IsUserInRoleAsync(user, Roles.Submitter.ToString());
         IsProjectManager = await _roleService.IsUserInRoleAsync(user, Roles.ProjectManager.ToString());
+
+
+        ItemList = _context.Ticket
+        .Include(t => t.Attachments)
+        .Include(t => t.Comments)
+        .Include(t => t.Developer)
+        .Include(t => t.Ownner)
+        .Include(t => t.Priority)
+        .Include(t => t.Project)
+        .Include(t => t.Status)
+        .Include(t => t.TicketHistories)
+        .Include(t => t.TicketType).ToList();
+        if (IsInRoleAdmin)
+        {
+            
+        }
+        else if (IsProjectManager)
+        {
+            var allProject = _context.Project.ToList();
+            List<Models.Project> listProjectOfProjectManager = new List<Models.Project>();
+
+            foreach (var item in allProject)
+            {
+                var isUserOnProject = _projectService.IsUserOnProject(user.Id, item.Id);
+                if (isUserOnProject)
+                {
+                    listProjectOfProjectManager.Add(item);
+                }
+            }
+            List<Models.Ticket> projectManagerView = new List<Models.Ticket>();
+            foreach (var item in listProjectOfProjectManager)
+            {
+                foreach (var itemInTicket in ItemList)
+                {
+                    if (itemInTicket.ProjectId == item.Id)
+                    {
+                        projectManagerView.Add(itemInTicket);
+                    }
+                }
+            }
+            ItemList = projectManagerView;
+        }
+        else if (IsSubmitter)
+        {
+
+            ItemList = ItemList.Where(u => u.OwnnerId == user.Id).ToList();
+        }
+        else
+        {
+            ItemList = ItemList.Where(u => u.DeveloperId == user.Id).ToList();
+        }
+
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

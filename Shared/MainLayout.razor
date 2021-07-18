@@ -347,14 +347,7 @@
     {
         if (!_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
         {
-            try
-            {
-                NavigationManager.NavigateTo("/Identity/Account/Login", true);
-            }
-            catch (Exception ex)
-            {
-
-            }
+            NavigationManager.NavigateTo("/Identity/Account/Login", true);
         }
         else
         {
