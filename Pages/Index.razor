@@ -157,6 +157,8 @@ else
                     </div>
                 </div>
             }
+
+
         </div>
 
         <div class="row">
@@ -174,10 +176,21 @@ else
                                     <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-percentage"></i></span>
                                     <div class="info-box-content">
                                         <span class="info-box-text">Works Process</span>
-                                        <span class="info-box-number">
-                                            23
-                                            <small>%</small>
-                                        </span>
+                                        @if (PresentOfWork != 0)
+                                        {
+                                            <span class="info-box-number">
+                                                @PresentOfWork.ToString("#.##")
+                                                <small>%</small>
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="info-box-number">
+                                                0
+                                                <small>%</small>
+                                            </span>
+                                        }
+
                                     </div>
                                     <!-- /.info-box-content -->
                                 </div>
@@ -189,7 +202,7 @@ else
                                     <div class="info-box-content">
                                         <span class="info-box-text">Un-Assign Tickets</span>
                                         <span class="info-box-number">
-                                            1002
+                                            @NumberOfUnAssignTicket
                                             <small>Tickets</small>
                                         </span>
                                     </div>
@@ -203,7 +216,7 @@ else
                                     <div class="info-box-content">
                                         <span class="info-box-text">New Tickets In Last 7 Days</span>
                                         <span class="info-box-number">
-                                            323
+                                            @TicketNewInPast7Day
                                             <small>Tickets</small>
                                         </span>
                                     </div>
@@ -217,7 +230,7 @@ else
                                     <div class="info-box-content">
                                         <span class="info-box-text">Tickets Resolved In Last 7 Days</span>
                                         <span class="info-box-number">
-                                            565
+                                            @TicketDoneInPast7Day
                                             <small>Tickets</small>
                                         </span>
                                     </div>
@@ -238,7 +251,7 @@ else
 
                                     <div class="info-box-content">
                                         <span class="info-box-text">Projects</span>
-                                        <span class="info-box-number">2323</span>
+                                        <span class="info-box-number">@ProjectList.Count</span>
                                     </div>
                                     <!-- /.info-box-content -->
                                 </div>
@@ -248,7 +261,7 @@ else
 
                                     <div class="info-box-content">
                                         <span class="info-box-text">Tickets</span>
-                                        <span class="info-box-number">1726</span>
+                                        <span class="info-box-number">@AllItemList.Count</span>
                                     </div>
 
                                     <!-- /.info-box-content -->
@@ -259,7 +272,7 @@ else
 
                                     <div class="info-box-content">
                                         <span class="info-box-text">User</span>
-                                        <span class="info-box-number">32</span>
+                                        <span class="info-box-number">@AllUser.Count</span>
                                     </div>
                                     <!-- /.info-box-content -->
                                 </div>
@@ -271,8 +284,12 @@ else
                         <div class="col">
                             <div class="card-body">
                                 <RadzenChart>
-                                    <RadzenDonutSeries Data="@TicketTypeChart" CategoryProperty="TicketCategory" ValueProperty="NumberOfTicket">
-                                       
+                                    <RadzenDonutSeries Data="@TicketTypeChart" Title="Number Of Ticket Type" CategoryProperty="TicketCategory" ValueProperty="NumberOfTicket">
+                                        <TitleTemplate>
+                                            <div class="rz-donut-content">
+                                                
+                                            </div>
+                                        </TitleTemplate>
                                     </RadzenDonutSeries>
                                 </RadzenChart>
                                 <p class="text-center">
@@ -284,8 +301,12 @@ else
                         <div class="col">
                             <div class="card-body">
                                 <RadzenChart>
-                                    <RadzenDonutSeries Data="@TicketStatusChart" CategoryProperty="TicketCategory" ValueProperty="NumberOfTicket">
-    
+                                    <RadzenDonutSeries Data="@TicketStatusChart" Title="Number Of Ticket Status" CategoryProperty="TicketCategory" ValueProperty="NumberOfTicket">
+                                        <TitleTemplate>
+                                            <div class="rz-donut-content">
+
+                                            </div>
+                                        </TitleTemplate>
                                     </RadzenDonutSeries>
                                 </RadzenChart>
                                 <p class="text-center">
@@ -297,8 +318,12 @@ else
                         <div class="col">
                             <div class="card-body">
                                 <RadzenChart>
-                                    <RadzenDonutSeries Data="@TicketPriorityChart" CategoryProperty="TicketCategory" ValueProperty="NumberOfTicket">
+                                    <RadzenDonutSeries Data="@TicketPriorityChart"  Title="Number Of Ticket Priority" CategoryProperty="TicketCategory" ValueProperty="NumberOfTicket">
+                                        <TitleTemplate>
+                                            <div class="rz-donut-content">
 
+                                            </div>
+                                        </TitleTemplate>
                                     </RadzenDonutSeries>
                                 </RadzenChart>
                                 <p class="text-center">
@@ -462,6 +487,17 @@ else
     public bool IsSubmitter;
     public bool IsProjectManager;
     public bool IsNewUser;
+    public int NumberOfTicketType;
+    public int NumberOfTicketPriority;
+    public int NumberOfTicketStatus;
+    public int NumberOfUnAssign;
+    public int TicketCloseId;
+    public decimal PresentOfWork;
+    public int NumberOfUnAssignTicket;
+    public int TicketNewInPast7Day;
+    public int TicketDoneInPast7Day;
+    public DateTime currentTime;
+    public List<Models.CustomUser> AllUser = new();
     public List<Models.ChartModel> TicketTypeChart = new();
     public List<Models.ChartModel> TicketPriorityChart = new();
     public List<Models.ChartModel> TicketStatusChart = new();
@@ -485,6 +521,7 @@ else
 
     public async Task GetData()
     {
+        currentTime = DateTime.Now;
         var currrentUser = _httpContextAccessor.HttpContext.User;
         user = await _userManager.GetUserAsync(currrentUser);
         IsInRoleAdmin = await _userManager.IsInRoleAsync(user, Roles.Admin.ToString());
@@ -493,7 +530,9 @@ else
         IsSubmitter = await _userManager.IsInRoleAsync(user, Roles.Submitter.ToString());
         IsProjectManager = await _userManager.IsInRoleAsync(user, Roles.ProjectManager.ToString());
 
-
+        AllUser = _context.Users.ToList();
+        ProjectList = _context.Project.ToList();
+        TicketCloseId = _context.Status.FirstOrDefault(t => t.Name == "Closed").Id;
 
         AllItemList = _context.Ticket
             .Include(t => t.Attachments)
@@ -506,6 +545,13 @@ else
             .Include(t => t.TicketHistories)
             .Include(t => t.TicketType).ToList();
         ItemList = AllItemList;
+
+        var number_of_close_ticket = AllItemList.Where(t => t.StatusId == TicketCloseId).ToList().Count;
+        PresentOfWork = number_of_close_ticket * 100 / AllItemList.Count;
+        NumberOfUnAssignTicket = AllItemList.Where(i => !i.IsAssigned).Count();
+        TicketNewInPast7Day = AllItemList.Where(t => t.Created >= currentTime.AddDays(-7)).ToList().Count;
+        TicketDoneInPast7Day = AllItemList.Where(t => t.Updated >= currentTime.AddDays(-7) && t.StatusId == TicketCloseId).ToList().Count;
+
 
         GetDataChart();
 
@@ -559,7 +605,7 @@ else
 
         TicketTypeChart = new();
         TicketPriorityChart = new();
-        TicketStatusList = new();
+        TicketStatusChart = new();
 
         foreach (var item in TicketTypeList)
         {
