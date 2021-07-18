@@ -126,7 +126,7 @@
                         {
                             commentdate2 = eslapseSecond2.ToString() + " Seconds Ago";
                         }
-                        <a asp-controller="Notifications" asp-action="Details" asp-route-id="@item.Id" class="dropdown-item">
+                        <a href="/notification" class="dropdown-item">
                             <i class="fas fa-file mr-2"></i> @item.Name
                             <span class="float-right text-muted text-sm">@commentdate2</span>
                         </a>
@@ -159,14 +159,14 @@
                         {
                             commentdate2 = eslapseSecond2.ToString() + " Seconds Ago";
                         }
-                        <a asp-controller="WelcomeNotifications" asp-action="Details" asp-route-id="@item.Id" class="dropdown-item">
+                        <a href="/notification" class="dropdown-item">
                             <i class="fas fa-file mr-2"></i> @item.Name
                             <span class="float-right text-muted text-sm">@commentdate2</span>
                         </a>
                         <br />
                         <div class="dropdown-divider"></div>
                     }
-                    <a asp-controller="Notifications" asp-action="Index" class="dropdown-item dropdown-footer">See All Notifications</a>
+                    <a href="/notification" class="dropdown-item dropdown-footer">See All Notifications</a>
                 </div>
             </li>
         </ul>

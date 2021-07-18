@@ -1,8 +1,347 @@
 ﻿@page "/notification"
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Http
+@using Microsoft.EntityFrameworkCore
+@using BlazorBugTracker.Services
+@using Microsoft.AspNetCore.Identity.UI.Services
+@inject IEmailSender _emailSender
+@inject ICustomRoleService _roleService
+@inject ICustomProjectService _projectService
+@inject IHttpContextAccessor _httpContextAccessor
+@inject UserManager<CustomUser> _userManager
+@using BlazorBugTracker.Data
+@inject ApplicationDbContext _context
+@inject IJSRuntime JSRuntime
+@inject ISessionStorageService sessionStorage
+@inject ICustomHistoryService _customHistoryService
+
+<div class="row">
 
 
-<h3>Notification</h3>
+
+    <div class="col">
+        <div class="card">
+            <div class="card-header bg-dark">
+                <h3 class="card-title">Notifications</h3>
+  
+            </div>
+            <div class="card-body">
+                <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true"
+                                FilterMode="FilterMode.Simple" PageSize="5" AllowPaging="true" AllowSorting="true" Data="@ItemList" TItem="Models.NotificationListModel" ColumnWidth="100%"
+                                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                LogicalFilterOperator="LogicalFilterOperator.Or">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="Models.NotificationListModel" Property="Name" Title="Name">
+                            <Template Context="data">
+                                @if (!data.IsViewed)
+                                {
+                                    <b >@data.Name</b>
+                                }
+                                else
+                                {
+                                    <span>@data.Name</span>
+                                }
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="Models.NotificationListModel" Property="Description" Title="Description">
+                            <Template Context="data">
+                                @if (!data.IsViewed)
+                                {
+                                    <b>@data.Description</b>
+                                }
+                                else
+                                {
+                                    <span>@data.Description</span>
+                                }
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="Models.NotificationListModel" Property="Created" Title="Created">
+                            <Template Context="data">
+                                @if (!data.IsViewed)
+                                {
+                                    <b>@data.Created.ToString("dd MMMM yyyy - hh:mm tt")</b>
+                                }
+                                else
+                                {
+                                    <span>@data.Created.ToString("dd MMMM yyyy - hh:mm tt")</span>
+                                }
+
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="Models.NotificationListModel" Property="Sender.FullName" Width="150px" Title="From" />
+                        <RadzenDataGridColumn TItem="Models.NotificationListModel" Property="Ticket" Width="70px" Title="Ticket ID">
+                            <Template Context="data">
+                                @if (data.Ticket is not null)
+                                {
+                                    @if (!data.IsViewed)
+                                    {
+                                        <b>@data.Ticket.Id</b>
+                                    }
+                                    else
+                                    {
+                                         <span>@data.Ticket.Id</span>
+                                    }
+                                }
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="Models.NotificationListModel" Property="Ticket" Title="Ticket">
+                            <Template Context="data">
+                                @if (data.Ticket is not null)
+                                {
+                                    @if (!data.IsViewed)
+                                    {
+                                        <b>@data.Ticket.Name</b>
+                                    }
+                                    else
+                                    {
+                                        <span>@data.Ticket.Name</span>
+                                    }
+                                }
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="Models.NotificationListModel" Property="Ticket" Title="Ticket Description">
+                            <Template Context="data">
+                                @if (data.Ticket is not null)
+                                {
+                                    @if (!data.IsViewed)
+                                    {
+                                        <b>@data.Ticket.Description</b>
+                                    }
+                                    else
+                                    {
+                                        <span>@data.Ticket.Description</span>
+                                    }
+                                }
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn Filterable="false" Sortable="false" Frozen="true" TItem="Models.NotificationListModel" Width="100px" Property="Ticket">
+                            <Template Context="data">
+                                <div class="btn-group-vertical">
+                                    <a class="btn text-white btn-primary btn-sm mb-1" @onclick="() => OpenViewDialog(data)"><i class="fas fa-folder"></i> View</a>
+                                </div>
+                            </Template>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+            </div>
+
+
+        </div>
+    </div>
+
+
+
+</div>
+<ModalDialog @ref="_viewDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>View #@currentItem.Name</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col">
+                    <EditForm Model="currentItem">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="row mb-3">
+                            <div class="col">
+                                Name
+                            </div>
+                            <div class="col">
+                                @currentItem.Name
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col">
+                                Description
+                            </div>
+                            <div class="col">
+                                @currentItem.Description
+                            </div>
+                        </div>
+                        @if (currentItem.Sender is not null)
+                        {
+                            <div class="row mb-3">
+                                <div class="col">
+                                    Sender
+                                </div>
+                                <div class="col">
+                                    @currentItem.Sender.FullName
+                                </div>
+                            </div>
+                        }
+
+                        @if (currentItem.Ticket is not null)
+                        {
+                            <div class="row mb-3">
+                                <div class="col">
+                                    Ticket Name
+                                </div>
+                                <div class="col">
+                                    @currentItem.Ticket.Name
+                                </div>
+                            </div>
+                        }
+                        @if (currentItem.Ticket is not null)
+                        {
+                            <div class="row mb-3">
+                                <div class="col">
+                                    Ticket Description
+                                </div>
+                                <div class="col">
+                                    @currentItem.Ticket.Description
+                                </div>
+                            </div>
+                            <hr />
+                            <div class="row">
+                                <div class="col text-center">
+                                    <a class="btn text-white btn-block btn-info" href="/ticket/details/@currentItem.TicketId"><i class="fas fa-eye"></i> View Ticket Details</a>
+                                </div>
+                            </div>
+                        }
+
+
+
+
+                    </EditForm>
+                    <br />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelViewDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
 
 @code {
+    public Models.CustomUser user = new();
+    public bool IsInRoleAdmin;
+    public bool IsDeveloper;
+    public bool IsSubmitter;
+    public bool IsProjectManager;
+    public bool IsNewUser;
+
+    //Fully customized dialog
+    private double _overlayOpacity = 0.3;
+    private double _modalMinHeight = 100;
+    private double _modalMinWitdth = 100;
+    private bool _modalAnimate = true;
+    private bool _modalCloseOnClick = true;
+    private bool _modalCloseOnEsc = true;
+    private bool _modalFocus = true;
+    private bool _modalCentered = true;
+    private bool _modalShowClose = true;
+
+
+    public List<Models.NotificationListModel> ItemList = new();
+    public List<Models.Notification> NotificationList = new();
+    public List<Models.WelcomeNotification> WelcomeNotificationList = new();
+    public Models.NotificationListModel currentItem = new();
+    private ModalDialog _viewDialog;
+
+    private async Task OpenViewDialog(Models.NotificationListModel notifi)
+    {
+        currentItem = notifi;
+        currentItem.IsViewed = true;
+        if (!currentItem.IsWelcome)
+        {
+            var notification = _context.Notification.FirstOrDefault(n => n.Id == currentItem.Id);
+            if (notification is not null)
+            {
+                notification.IsViewed = true;
+                _context.Update(notification);
+                _context.SaveChanges();
+            }
+
+        }
+        else
+        {
+            var notification = _context.WelcomeNotification.FirstOrDefault(n => n.Id == currentItem.Id);
+            if (notification is not null)
+            {
+                notification.IsViewed = true;
+                _context.Update(notification);
+                _context.SaveChanges();
+            }
+        }
+
+        await _viewDialog.Open();
+    }
+    private async Task CancelViewDialog()
+    {
+        currentItem = new();
+        await _viewDialog.Close();
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetData();
+    }
+
+    public async Task GetData()
+    {
+        var currrentUser = _httpContextAccessor.HttpContext.User;
+        user = await _userManager.GetUserAsync(currrentUser);
+        IsInRoleAdmin = await _roleService.IsUserInRoleAsync(user, Roles.Admin.ToString());
+        IsDeveloper = await _roleService.IsUserInRoleAsync(user, Roles.Developer.ToString());
+        IsNewUser = await _roleService.IsUserInRoleAsync(user, Roles.NewUser.ToString());
+        IsSubmitter = await _roleService.IsUserInRoleAsync(user, Roles.Submitter.ToString());
+        IsProjectManager = await _roleService.IsUserInRoleAsync(user, Roles.ProjectManager.ToString());
+
+        NotificationList = _context.Notification.Include(n => n.Ticket).Include(n => n.Recipient).Include(n => n.Sender).Where(n => n.RecipientId == user.Id).ToList();
+        WelcomeNotificationList = _context.WelcomeNotification.Include(n => n.Recipient).Include(n => n.Sender).Where(n => n.RecipientId == user.Id).ToList();
+
+        ItemList = new();
+        foreach (var item in NotificationList)
+        {
+            NotificationListModel newNotify = new NotificationListModel
+            {
+                Id = item.Id,
+                Description = item.Description,
+                Created = item.Created,
+                Name = item.Name,
+                RecipientId = item.RecipientId,
+                Recipient = item.Recipient,
+                SenderId = item.SenderId,
+                Sender = item.Sender,
+                IsViewed = item.IsViewed,
+                TicketId = item.TicketId,
+                Ticket = item.Ticket,
+                IsWelcome = false
+            };
+            ItemList.Add(newNotify);
+        }
+        foreach (var item in WelcomeNotificationList)
+        {
+            NotificationListModel newNotify = new NotificationListModel
+            {
+                Id = item.Id,
+                Description = item.Description,
+                Created = item.Created,
+                Name = item.Name,
+                RecipientId = item.RecipientId,
+                Recipient = item.Recipient,
+                SenderId = item.SenderId,
+                Sender = item.Sender,
+                IsViewed = item.IsViewed,
+                TicketId = 0,
+                Ticket = null,
+                IsWelcome = true
+            };
+            ItemList.Add(newNotify);
+        }
+
+    }
 
 }
