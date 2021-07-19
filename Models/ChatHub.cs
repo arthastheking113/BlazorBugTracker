@@ -14,6 +14,10 @@ namespace BlazorBugTracker.Models
         {
             await Clients.All.SendAsync("Broadcast", username, message);
         }
+        public async Task SendToUser(string userId, string message)
+        {
+            await Clients.User(userId).SendAsync(message);
+        }
 
         public override Task OnConnectedAsync()
         {

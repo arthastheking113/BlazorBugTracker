@@ -134,8 +134,8 @@ else
 
 
 
-                            <a class="btn btn-secondary mr-1 ml-1" href="/ticket"><span class="iconify" data-icon="ion:arrow-back-circle-sharp" data-inline="true"></span> Back to List</a>
-                            <a class="btn btn-info ml-1" href="/ticket"> <i class="fas fa-tasks"></i> Back to Project</a>
+                            <a class="btn btn-secondary mr-1 ml-1" href="/ticket"><span class="iconify" data-icon="ion:arrow-back-circle-sharp" data-inline="true"></span> Back to All Ticket</a>
+                            <a class="btn btn-info ml-1" href="/project/details/@currentTicket.ProjectId"> <i class="fas fa-tasks"></i> Back to Project</a>
                         </div>
                     </div>
                 </div>
@@ -147,14 +147,12 @@ else
                 </div>
                 <div class="card-body">
                     <div class="row ">
-                        <form asp-action="Create" asp-controller="TicketAttachments" enctype="multipart/form-data" method="post">
-                            <div asp-validation-summary="currentTicketOnly" class="text-danger"></div>
-                            <input type="hidden" asp-for="@currentTicket.Id" name="TicketId">
+                        <EditForm Model="newTicketAttachment" OnValidSubmit="AddNewAttachment">
                             <div class="media-body ml-3 ">
-                                <label>Description<input name="Description" type="text" class="form-control" required placeholder="Add Description..."></label>
+                                <label>Description<input @bind="newTicketAttachment.Description" class="form-control" required placeholder="Add Description..."></label>
                                 <label class="btn btn-outline-secondary btn-sm">
                                     Upload File
-                                    <input type="file" required />
+                                    <InputFile OnChange="@LoadFilesNew" />
                                 </label>
                             </div>
                             <div class="row">
@@ -162,9 +160,10 @@ else
                                     <button type="submit" class="btn btn-outline-secondary md-btn-flat">Upload</button>
                                 </div>
                             </div>
-                        </form>
+                        </EditForm>
                     </div>
                 </div>
+                <br />
                 <div class="card-body">
                     <div class="row">
 
@@ -174,27 +173,23 @@ else
                                 {
                                     foreach (var item in currentTicket.Attachments)
                                     {
+                                        var file = item;
                                         <div class="col-sm-2">
                                             <div class="card">
-                                                <div class="file">
-                                                    <a asp-controller="TicketAttachments" asp-action="Details" asp-route-id="@item.Id">
-                                                        <div class="hover">
-                                                            <EditForm Model="newTicketAttachment" OnValidSubmit="AddNewAttachment">
-                                                                <InputFile OnChange="@LoadFiles" />
-                                                                <button type="submit" class="btn btn-icon btn-danger">
-                                                                    <i class="fa fa-trash"></i>
-                                                                </button>
-                                                            </EditForm>
+                                                <div class="file" style="cursor:pointer;" @onclick="() => OpenViewAttachmentDialog(file)">
+                                                    <div class="hover">
+                                                        <button class="btn btn-icon btn-danger" @onclick="() => DeleteFileAttachment(file)">
+                                                            <i class="fa fa-trash"></i>
+                                                        </button>
 
-                                                        </div>
-                                                        <div class="icon">
-                                                            <img src="@_customFileService.GetFileIcon(item.FileName)" style="height:60px;width:60px" />
-                                                        </div>
-                                                        <div class="file-name">
-                                                            <p class="m-b-5 text-muted">@System.IO.Path.GetFileNameWithoutExtension(item.FileName)</p>
-                                                            <small>Size: @_customFileService.FormatFileSize(item.FileData.Length) <span class="date text-muted">@item.Created.ToString("dd MMMM yyyy - hh:mm tt")</span></small>
-                                                        </div>
-                                                    </a>
+                                                    </div>
+                                                    <div class="icon">
+                                                        <img src="@_customFileService.GetFileIcon(item.FileName)" style="height:60px;width:60px" />
+                                                    </div>
+                                                    <div class="file-name">
+                                                        <p class="m-b-5 text-muted">@System.IO.Path.GetFileNameWithoutExtension(item.FileName)</p>
+                                                        <small>Size: @_customFileService.FormatFileSize(item.FileData.Length) <span class="date text-muted">@item.Created.ToString("dd MMMM yyyy - hh:mm tt")</span></small>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -220,66 +215,36 @@ else
             <div class="card">
                 <div class="card-header bg-dark">
                     <h3 class="card-title">Ticket Histories (@(currentTicket.TicketHistories.Count))</h3>
-                    <div class="card-tools">
-                        <div class="input-group input-group-sm">
-                            <input type="text" class="form-control" placeholder="Search Histories" id="searchTicketHistory">
-                            <div class="input-group-append">
-                                <div class="btn btn-primary">
-                                    <i class="fas fa-search"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
                 <div class="card-body">
-                    <table class="table" id="tickethistory">
-                        <thead>
-                            <tr>
-                                <th>
-                                    Created
-                                </th>
-                                <th>
-                                    Property
-                                </th>
-                                <th>
-                                    Old Value
-                                </th>
-                                <th>
-                                    New Value
-                                </th>
-                                <th>
-                                    User
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if (currentTicket.TicketHistories.Count != 0)
-                            {
-                                foreach (var item in currentTicket.TicketHistories)
-                                {
-                                    <tr>
-                                        <td>
-                                            @item.Created.ToString("dddd dd MMMM yyyy hh:mm tt")
-                                        </td>
-                                        <td>
-                                            @item.Property
-                                        </td>
-                                        <td>
-                                            @item.OldValue
-                                        </td>
-                                        <td>
-                                            @item.NewValue
-                                        </td>
-                                        <td>
-                                            @item.CustomUser.FullName
-                                        </td>
+                    <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true"
+                                    FilterMode="FilterMode.Simple" PageSize="5" AllowPaging="true" AllowSorting="true" Data="@currentTicket.TicketHistories" TItem="Models.TicketHistory" ColumnWidth="100%"
+                                    FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                    LogicalFilterOperator="LogicalFilterOperator.Or">
+                        <Columns>
+                            <RadzenDataGridColumn TItem="Models.TicketHistory" Title="Created">
+                                <Template Context="data">
+                                    <p>
+                                        @data.Created.ToString("dddd dd MMMM - yyyy hh:mm tt")
+                                    </p>
+                                </Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn TItem="Models.TicketHistory" Property="Property" Title="Name" />
 
-                                    </tr>
-                                }
-                            }
+                            <RadzenDataGridColumn TItem="Models.TicketHistory" Property="OldValue" Title="Old Value" />
+                            <RadzenDataGridColumn TItem="Models.TicketHistory" Property="NewValue" Title="New Value" />
 
-                        </tbody>
-                    </table>
+                            <RadzenDataGridColumn TItem="Models.TicketHistory" Property="CustomUser" Title="User">
+                                <Template Context="data">
+                                    <p>
+                                        @data.CustomUser.FullName
+                                    </p>
+
+                                </Template>
+                            </RadzenDataGridColumn>
+
+                        </Columns>
+                    </RadzenDataGrid>
                 </div>
             </div>
 
@@ -710,6 +675,45 @@ else
 </ModalDialog>
 
 
+<ModalDialog @ref="_TicketAttachmentDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Width="_editModalWidth"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>View Attachment #@currentTicketAttachment.FileName</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col text-center">
+
+                    <div class="row mt-2">
+                        <div class="col">
+                            <embed src="@_imageService.DecodeFile(currentTicketAttachment.FileData, currentTicketAttachment.ContentType)" style="width:100%; height:700px;" />
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col">
+                            <a class="btn btn-block btn-secondary" href="@(_customFileService.ConvertByteArrayToFile(currentTicketAttachment.FileData,currentTicketAttachment.FileName))" download="@(currentTicketAttachment.FileName)">
+                                <i class="fas fa-file-download"></i> Download File
+                            </a>
+                        </div>
+                    </div>
+                    <br />
+                    <button class="btn btn-secondary btn-block" @onclick="CanceliewAttachmentDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
 
 
 
@@ -739,8 +743,9 @@ else
 
     //Fully customized dialog
     private double _overlayOpacity = 0.3;
-    private double _modalMinHeight = 100;
+    private double _modalMinHeight = 500;
     private double _modalMinWitdth = 100;
+    private double _editModalWidth;
     private bool _modalAnimate = true;
     private bool _modalCloseOnClick = true;
     private bool _modalCloseOnEsc = true;
@@ -748,6 +753,7 @@ else
     private bool _modalCentered = true;
     private bool _modalShowClose = true;
 
+    private ModalDialog _TicketAttachmentDialog;
     private ModalDialog _editDialog;
     private ModalDialog _deleteDialog;
 
@@ -759,7 +765,21 @@ else
         }
 
     }
-
+    public async Task OpenViewAttachmentDialog(Models.TicketAttachment file)
+    {
+        currentTicketAttachment = file;
+        await _TicketAttachmentDialog.Open();
+    }
+    public async Task CanceliewAttachmentDialog()
+    {
+        currentTicketAttachment = new();
+        await _TicketAttachmentDialog.Close();
+    }
+    public void DeleteFileAttachment(Models.TicketAttachment file)
+    {
+        _context.Remove(file);
+        _context.SaveChanges();
+    }
     private async Task OpenEditDialog()
     {
         await _editDialog.Open();
@@ -776,6 +796,17 @@ else
     private async Task CancelDeleteDialog()
     {
         await _deleteDialog.Close();
+    }
+    private async Task LoadFilesNew(InputFileChangeEventArgs e)
+    {
+        IBrowserFile imgFile = e.File;
+        var buffers = new byte[imgFile.Size];
+        await imgFile.OpenReadStream().ReadAsync(buffers);
+        newTicketAttachment.FileData = buffers.ToArray();
+        newTicketAttachment.ContentType = imgFile.ContentType;
+        newTicketAttachment.FileName = imgFile.Name;
+
+
     }
     public async Task Edit()
     {
@@ -866,18 +897,6 @@ else
         }
     }
 
-    private async Task LoadFiles(InputFileChangeEventArgs e)
-    {
-        using var stream = new MemoryStream();
-        var file = e.File;
-        var OpenSteam = file.OpenReadStream();
-        await OpenSteam.CopyToAsync(stream);
-
-        newTicketAttachment.FileData = stream.ToArray();
-        newTicketAttachment.ContentType = e.File.ContentType;
-        newTicketAttachment.FileName = e.File.Name;
-
-    }
 
     public async Task AddNewComment()
     {
@@ -947,6 +966,19 @@ else
                 };
                 _context.Notification.Add(notification);
                 _context.SaveChanges();
+
+                var id = int.Parse(TicketId);
+                currentTicket = _context.Ticket
+                     .Include(t => t.Ownner)
+                     .Include(t => t.Developer)
+                     .Include(t => t.Priority)
+                     .Include(t => t.Project)
+                     .Include(t => t.Status)
+                     .Include(t => t.TicketType)
+                     .Include(t => t.Attachments)
+                     .Include(t => t.Comments)
+                     .Include(t => t.TicketHistories).ThenInclude(t => t.CustomUser)
+                     .FirstOrDefault(m => m.Id == id);
 
                 await JSRuntime.InvokeVoidAsync("success", null);
             }

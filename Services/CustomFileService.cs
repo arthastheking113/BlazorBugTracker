@@ -24,9 +24,12 @@ namespace BlazorBugTracker.Services
 
         public string ConvertByteArrayToFile(byte[] fileData, string extension)
         {
-            string imageBase64Data = Convert.ToBase64String(fileData);
-            return string.Format($"data:image/{extension};base64,{imageBase64Data}");
-
+            if (fileData is not null)
+            {
+                string imageBase64Data = Convert.ToBase64String(fileData);
+                return string.Format($"data:image/{extension};base64,{imageBase64Data}");
+            }
+            return "";
         }
 
         public string GetFileIcon(string file)

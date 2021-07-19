@@ -17,6 +17,7 @@
 @using Microsoft.AspNetCore.Http
 @inject IHttpContextAccessor _httpContextAccessor
 @inject ISessionStorageService sessionStorage
+@inject IJSRuntime JSRuntime
 
 @if (currentProject is null)
 {
@@ -40,7 +41,7 @@ else
                 <div class="row">
                     <div class="col">
                         <a class="btn btn-outline-secondary mr-1"> <i class="fas fa-arrow-circle-left"></i> Back</a>
-                        <button type="button" class="btn btn-outline-success mr-1 ml-1" >
+                        <button type="button" class="btn btn-outline-success mr-1 ml-1">
                             <i class="fas fa-plus-square"></i> Create New Ticket
                         </button>
 
@@ -77,7 +78,7 @@ else
                                     </div>
                                     <!-- /.info-box -->
                                 </a>
-                     
+
                             </div>
                             <div class="col-12 col-sm-4">
                                 <a class="text-dark" href="/project/@currentProject.Id/ticket">
@@ -94,7 +95,7 @@ else
                                     </div>
                                     <!-- /.info-box -->
                                 </a>
-                    
+
                             </div>
                             <div class="col-12 col-sm-4">
                                 <a class="text-dark" href="/project/@currentProject.Id/ticket">
@@ -111,7 +112,7 @@ else
                                     </div>
                                     <!-- /.info-box -->
                                 </a>
-                                
+
                             </div>
                         </div>
                         <div class="row">
@@ -181,7 +182,7 @@ else
                                                         <span class="description">Shared publicly - @ticket.Created.ToString("dd MMMM yyyy - hh:mm tt")</span>
                                                     </div>
                                                     <!-- /.user-block -->
-                                                    <a class="text-dark" >
+                                                    <a class="text-dark">
                                                         @ticket.Description
                                                     </a>
 
@@ -213,7 +214,7 @@ else
                                                         <span class="username">
                                                             @if (ticket.DeveloperId != null && ticket.OwnnerId != null)
                                                             {
-                                                                <a href="/ticket/details/@ticket.Id">@(ticket.Ownner.FullName) - Create By @(_roleService.ReturnUserRole2(ticket.Ownner)) - Ticket #@(ticket.Id)</a> 
+                                                                <a href="/ticket/details/@ticket.Id">@(ticket.Ownner.FullName) - Create By @(_roleService.ReturnUserRole2(ticket.Ownner)) - Ticket #@(ticket.Id)</a>
                                                             }
                                                             else
                                                             {
@@ -308,33 +309,33 @@ else
                                 </div>
                             </div>
                             <div class="row">
-                                    <div class="col">
-                                        <p class="text-sm">
-                                            Developer
-                                            @if (developerOnProject.Count != 0)
+                                <div class="col">
+                                    <p class="text-sm">
+                                        Developer
+                                        @if (developerOnProject.Count != 0)
+                                        {
+                                            foreach (var developer in developerOnProject)
                                             {
-                                                foreach (var developer in developerOnProject)
-                                                {
-                                                    <b class="d-block">@(developer.FullName)</b>
-                                                }
+                                                <b class="d-block">@(developer.FullName)</b>
                                             }
+                                        }
 
-                                        </p>
-                                    </div>
-                                    <div class="col">
-                                        <p class="text-sm">
-                                            Submitter
-                                            @if (submitterOnProject.Count != 0)
-                                            {
-                                                foreach (var submitter in submitterOnProject)
-                                                {
-                                                    <b class="d-block">@(submitter.FullName)</b>
-                                                }
-                                            }
-
-                                        </p>
-                                    </div>
+                                    </p>
                                 </div>
+                                <div class="col">
+                                    <p class="text-sm">
+                                        Submitter
+                                        @if (submitterOnProject.Count != 0)
+                                        {
+                                            foreach (var submitter in submitterOnProject)
+                                            {
+                                                <b class="d-block">@(submitter.FullName)</b>
+                                            }
+                                        }
+
+                                    </p>
+                                </div>
+                            </div>
 
 
                         </div>
@@ -342,9 +343,7 @@ else
                         <h5 class="mt-5 text-muted">Project files</h5>
 
                         <div class="row">
-                            <form asp-action="Create" asp-controller="ProjectAttachments" enctype="multipart/form-data" method="post">
-                                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                                <input type="hidden" asp-for="@currentProject.Id" name="ProjectId">
+                            <EditForm Model="NewProjectAttachment" OnValidSubmit="UploadFileProjectAttachment">
                                 <div class="media-body ml-3">
                                     <div class="row">
                                         <div class="col-4">
@@ -352,46 +351,46 @@ else
                                                 Description
 
                                             </label>
-                                            <input name="Description" type="text" class="form-control" />
+                                            <input @bind="NewProjectAttachment.Description" class="form-control" />
                                         </div>
                                         <div class="col">
                                             <br />
-                                            <input type="file" />
+                                            <InputFile OnChange="@LoadFilesNew" />
                                         </div>
                                         <div class="col">
-                                           <br />
+                                            <br />
                                             <button type="submit" class="btn btn-sm btn-primary">Upload</button>
                                         </div>
                                     </div>
                                 </div>
 
-                            </form>
+                            </EditForm>
                         </div>
+                        <br />
                         <div class="row clearfix">
                             @if (currentProject.Attachments is not null)
                             {
                                 @foreach (var item in currentProject.Attachments)
                                 {
+                                    var file = item;
                                     <div class="col-2">
                                         <div class="card">
-                                            <div class="file">
-                                                <a>
-                                                    <div class="hover">
-                                                        <button  class="btn btn-icon btn-danger"><i class="fa fa-trash"></i> </button>
+                                            <div class="file" style="cursor:pointer" @onclick="() => OpenViewAttachmentDialog(file)">
+                                                <div class="hover">
+                                                    <button @onclick="() => DeleteFileAttachment(file)" class="btn btn-icon btn-danger"><i class="fa fa-trash"></i> </button>
 
-                                                    </div>
-                                                    <div class="icon">
-                                                        <img src="@_customFileService.GetFileIcon(item.FileName)" style="height:60px;width:60px" />
-                                                    </div>
-                                                    <div class="file-name">
-                                                        <p class="m-b-5 text-muted">@System.IO.Path.GetFileNameWithoutExtension(item.FileName)</p>
-                                                        <small>Size: @_customFileService.FormatFileSize(item.FileData.Length) <span class="date text-muted">@item.Created.ToString("MMM dd, yyyy")</span></small>
-                                                    </div>
-                                                </a>
+                                                </div>
+                                                <div class="icon">
+                                                    <img src="@_customFileService.GetFileIcon(item.FileName)" style="height:60px;width:60px" />
+                                                </div>
+                                                <div class="file-name">
+                                                    <p class="m-b-5 text-muted">@System.IO.Path.GetFileNameWithoutExtension(item.FileName)</p>
+                                                    <small>Size: @_customFileService.FormatFileSize(item.FileData.Length) <span class="date text-muted">@item.Created.ToString("MMM dd, yyyy")</span></small>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                 }
+                                }
                             }
 
                         </div>
@@ -404,9 +403,64 @@ else
 
     </section>
 }
+<ModalDialog @ref="_ProjectAttachmentDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Width="_editModalWidth"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>View Attachment #@CurrentProjectAttachment.FileName</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col text-center">
+
+                    <div class="row mt-2">
+                        <div class="col">
+                            <embed src="@_imageService.DecodeFile(CurrentProjectAttachment.FileData, CurrentProjectAttachment.ContentType)" style="width:100%; height:700px;" />
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col">
+                            <a class="btn btn-block btn-secondary" href="@(_customFileService.ConvertByteArrayToFile(CurrentProjectAttachment.FileData,CurrentProjectAttachment.FileName))" download="@(CurrentProjectAttachment.FileName)">
+                                <i class="fas fa-file-download"></i> Download File
+                            </a>
+                        </div>
+                    </div>
+                    <br />
+                    <button class="btn btn-secondary btn-block" @onclick="CanceliewAttachmentDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
 
 
 @code {
+    //Fully customized dialog
+    private double _overlayOpacity = 0.3;
+    private double _modalMinHeight = 500;
+    private double _modalMinWitdth = 100;
+    private double _editModalWidth;
+    private bool _modalAnimate = true;
+    private bool _modalCloseOnClick = true;
+    private bool _modalCloseOnEsc = true;
+    private bool _modalFocus = true;
+    private bool _modalCentered = true;
+    private bool _modalShowClose = true;
+
+
+    private ModalDialog _ProjectAttachmentDialog;
+
+
     [Parameter]
     public string ProjectId { get; set; }
     public Models.CustomUser user = new();
@@ -415,6 +469,8 @@ else
     public List<Models.Ticket> ticketInProject = new();
     public List<Models.CustomUser> developerOnProject = new();
     public List<Models.CustomUser> submitterOnProject = new();
+    public Models.ProjectAttachment NewProjectAttachment = new();
+    public Models.ProjectAttachment CurrentProjectAttachment = new();
     public int CloseId;
     public bool IsInRoleAdmin;
     public bool IsDeveloper;
@@ -423,12 +479,27 @@ else
     public bool IsNewUser;
     public DateTime currentTime;
 
-    protected override async Task  OnInitializedAsync()
+    public async Task OpenViewAttachmentDialog(Models.ProjectAttachment file)
+    {
+        CurrentProjectAttachment = file;
+        await _ProjectAttachmentDialog.Open();
+    }
+    public async Task CanceliewAttachmentDialog()
+    {
+        CurrentProjectAttachment = new();
+        await _ProjectAttachmentDialog.Close();
+    }
+
+    protected override async Task OnInitializedAsync()
     {
         await GetData();
     }
 
-
+    public void DeleteFileAttachment(Models.ProjectAttachment file)
+    {
+        _context.Remove(file);
+        _context.SaveChanges();
+    }
 
     public async Task GetData()
     {
@@ -471,6 +542,55 @@ else
         IsSubmitter = await _userManager.IsInRoleAsync(user, Roles.Submitter.ToString());
         IsProjectManager = await _userManager.IsInRoleAsync(user, Roles.ProjectManager.ToString());
     }
+
+    public async Task UploadFileProjectAttachment()
+    {
+        try
+        {
+            if (NewProjectAttachment.FileData == null || NewProjectAttachment.ContentType == null)
+            {
+                await JSRuntime.InvokeVoidAsync("errorProjectUpload", null);
+            }
+            else
+            {
+                NewProjectAttachment.ProjectId = currentProject.Id;
+                NewProjectAttachment.CustomUserId = user.Id;
+                NewProjectAttachment.Created = DateTime.Now;
+
+                _context.Add(NewProjectAttachment);
+                _context.SaveChanges();
+
+                currentProject = _context.Project
+                   .Include(p => p.Attachments)
+                   .Include(p => p.Company)
+                   .Include(p => p.CustomUsers)
+                   .Include(p => p.Tickets)
+                   .FirstOrDefault(p => p.Id == Convert.ToInt32(ProjectId));
+                NewProjectAttachment = new();
+
+                await JSRuntime.InvokeVoidAsync("success", null);
+            }
+
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+        }
+
+
+    }
+    private async Task LoadFilesNew(InputFileChangeEventArgs e)
+    {
+        IBrowserFile imgFile = e.File;
+        var buffers = new byte[imgFile.Size];
+        await imgFile.OpenReadStream().ReadAsync(buffers);
+        NewProjectAttachment.FileData = buffers.ToArray();
+        NewProjectAttachment.ContentType = imgFile.ContentType;
+        NewProjectAttachment.FileName = imgFile.Name;
+
+
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         //user = await sessionStorage.GetItemAsync<CustomUser>("user");
@@ -479,6 +599,10 @@ else
         //IsNewUser = await sessionStorage.GetItemAsync<bool>("IsNewUser");
         //IsSubmitter = await sessionStorage.GetItemAsync<bool>("IsSubmitter");
         //IsProjectManager = await sessionStorage.GetItemAsync<bool>("IsProjectManager");
+
+        _editModalWidth = await JSRuntime.InvokeAsync<int>("ScreenWidth", null);
+        _editModalWidth = _editModalWidth * 0.7;
+
     }
 
 }

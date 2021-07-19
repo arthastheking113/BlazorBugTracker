@@ -14,8 +14,8 @@ namespace BlazorBugTracker.Models
         public string Subject { get; set; }
         public bool IsSeen { get; set; }
 
-        public bool IsDeleted { get; set; }
-
+  
+        public bool IsReceiver { get; set; }
 
         [Display(Name = "Sent From")]
         public string SenderId { get; set; }
@@ -25,6 +25,10 @@ namespace BlazorBugTracker.Models
         public string ReceiverId { get; set; }
         public virtual CustomUser Receiver { get; set; }
 
-        public virtual ICollection<Reply> Replies { get; set; } = new HashSet<Reply>();
+
+        public string CustomUserId { get; set; }
+        public virtual CustomUser CustomUser { get; set; }
+
+
     }
 }

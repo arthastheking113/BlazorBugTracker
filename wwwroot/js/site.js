@@ -86,6 +86,24 @@ function display_ct() {
 function ScreenWidth() {
     return screen.width;
 }
+
+function focusTo(id) {
+    const element = document.getElementById(id);
+    element.focus();
+}
+//function scrollTo(id) {
+//    var objDiv = document.getElementById(id);
+//    objDiv.scrollTop = objDiv.scrollHeight;
+//}
+function errorProjectUpload() {
+    Swal.fire({
+        position: 'center',
+        icon: 'error',
+        title: 'Opp, Please upload a picture to continue!!!',
+        showConfirmButton: false,
+        timer: 1200
+    })
+}
 function success() {
     Swal.fire({
         position: 'center',

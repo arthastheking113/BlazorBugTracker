@@ -16,7 +16,7 @@ namespace BlazorBugTracker.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 63)
-                .HasAnnotation("ProductVersion", "5.0.7")
+                .HasAnnotation("ProductVersion", "5.0.8")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
             modelBuilder.Entity("BlazorBugTracker.Models.Comment", b =>
@@ -70,9 +70,11 @@ namespace BlazorBugTracker.Data.Migrations
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -106,6 +108,7 @@ namespace BlazorBugTracker.Data.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("FirstName")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
@@ -113,6 +116,7 @@ namespace BlazorBugTracker.Data.Migrations
                         .HasColumnType("bytea");
 
                     b.Property<string>("LastName")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
@@ -173,7 +177,10 @@ namespace BlazorBugTracker.Data.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<bool>("IsDeleted")
+                    b.Property<string>("CustomUserId")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsReceiver")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsSeen")
@@ -192,6 +199,8 @@ namespace BlazorBugTracker.Data.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CustomUserId");
 
                     b.HasIndex("ReceiverId");
 
@@ -320,7 +329,9 @@ namespace BlazorBugTracker.Data.Migrations
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.HasKey("Id");
 
@@ -344,12 +355,14 @@ namespace BlazorBugTracker.Data.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<byte[]>("ImageData")
                         .HasColumnType("bytea");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -396,48 +409,6 @@ namespace BlazorBugTracker.Data.Migrations
                     b.ToTable("ProjectAttachment");
                 });
 
-            modelBuilder.Entity("BlazorBugTracker.Models.Reply", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
-
-                    b.Property<DateTime>("Created")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<int>("InboxId")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsSeen")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Message")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ReceiverId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("SenderId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Subject")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("InboxId");
-
-                    b.HasIndex("ReceiverId");
-
-                    b.HasIndex("SenderId");
-
-                    b.ToTable("Reply");
-                });
-
             modelBuilder.Entity("BlazorBugTracker.Models.Status", b =>
                 {
                     b.Property<int>("Id")
@@ -446,7 +417,9 @@ namespace BlazorBugTracker.Data.Migrations
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.HasKey("Id");
 
@@ -592,7 +565,9 @@ namespace BlazorBugTracker.Data.Migrations
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.HasKey("Id");
 
@@ -808,6 +783,10 @@ namespace BlazorBugTracker.Data.Migrations
 
             modelBuilder.Entity("BlazorBugTracker.Models.Inbox", b =>
                 {
+                    b.HasOne("BlazorBugTracker.Models.CustomUser", "CustomUser")
+                        .WithMany()
+                        .HasForeignKey("CustomUserId");
+
                     b.HasOne("BlazorBugTracker.Models.CustomUser", "Receiver")
                         .WithMany()
                         .HasForeignKey("ReceiverId");
@@ -815,6 +794,8 @@ namespace BlazorBugTracker.Data.Migrations
                     b.HasOne("BlazorBugTracker.Models.CustomUser", "Sender")
                         .WithMany()
                         .HasForeignKey("SenderId");
+
+                    b.Navigation("CustomUser");
 
                     b.Navigation("Receiver");
 
@@ -908,29 +889,6 @@ namespace BlazorBugTracker.Data.Migrations
                     b.Navigation("CustomUser");
 
                     b.Navigation("Project");
-                });
-
-            modelBuilder.Entity("BlazorBugTracker.Models.Reply", b =>
-                {
-                    b.HasOne("BlazorBugTracker.Models.Inbox", "Inbox")
-                        .WithMany("Replies")
-                        .HasForeignKey("InboxId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("BlazorBugTracker.Models.CustomUser", "Receiver")
-                        .WithMany()
-                        .HasForeignKey("ReceiverId");
-
-                    b.HasOne("BlazorBugTracker.Models.CustomUser", "Sender")
-                        .WithMany()
-                        .HasForeignKey("SenderId");
-
-                    b.Navigation("Inbox");
-
-                    b.Navigation("Receiver");
-
-                    b.Navigation("Sender");
                 });
 
             modelBuilder.Entity("BlazorBugTracker.Models.Ticket", b =>
@@ -1105,11 +1063,6 @@ namespace BlazorBugTracker.Data.Migrations
             modelBuilder.Entity("BlazorBugTracker.Models.CustomUser", b =>
                 {
                     b.Navigation("Comments");
-                });
-
-            modelBuilder.Entity("BlazorBugTracker.Models.Inbox", b =>
-                {
-                    b.Navigation("Replies");
                 });
 
             modelBuilder.Entity("BlazorBugTracker.Models.Project", b =>

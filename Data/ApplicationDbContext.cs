@@ -26,7 +26,6 @@ namespace BlazorBugTracker.Data
         public DbSet<Company> Company { get; set; }
         public DbSet<Inbox> Inbox { get; set; }
         public DbSet<ProjectAttachment> ProjectAttachment { get; set; }
-        public DbSet<Reply> Reply { get; set; }
         public DbSet<InboxNotification> InboxNotification { get; set; }
         public DbSet<WelcomeNotification> WelcomeNotification { get; set; }
 

@@ -2230,7 +2230,7 @@ body {
 
 #frame #sidepanel #profile {
     width: 80%;
-    margin: 25px auto;
+    margin: 20px;
 }
 
 @media screen and (max-width: 735px) {
@@ -2684,10 +2684,11 @@ body {
 
 #frame #sidepanel #contacts ul li.contact .wrap .meta .name {
     font-weight: 600;
+    margin-bottom:0;
 }
 
 #frame #sidepanel #contacts ul li.contact .wrap .meta .preview {
-    margin: 5px 0 0 0;
+    margin: 5px 0 0 50px;
     padding: 0 0 1px;
     font-weight: 400;
     white-space: nowrap;
