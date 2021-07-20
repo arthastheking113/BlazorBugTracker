@@ -122,6 +122,15 @@ function error() {
         timer: 1200
     })
 }
+function errorUserExist() {
+    Swal.fire({
+        position: 'center',
+        icon: 'error',
+        title: 'Opp, This email have been used!!!',
+        showConfirmButton: false,
+        timer: 1200
+    })
+}
 function errorFileMissing() {
     Swal.fire({
         position: 'center',

@@ -1,0 +1,38 @@
+﻿@attribute [AllowAnonymous]
+@page "/AcceptInvite/UserId/{userId}/Code/{code}"
+@using BlazorBugTracker.Data
+@inject ApplicationDbContext _context
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<CustomUser> _signInManager
+
+@code {
+    [Parameter]
+    public string code { get; set; }
+    [Parameter]
+    public string userId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (userId is not null && code is not null)
+        {
+            var realGuid = Guid.Parse(code);
+            var invite = _context.Invite.FirstOrDefault(i => i.CompanyToken == realGuid && i.InviteeId == userId);
+            if (invite is null)
+            {
+                NavigationManager.NavigateTo("/");
+            }
+            if (invite.IsValid)
+            {
+                invite.IsValid = false;
+                _context.Update(invite);
+                _context.SaveChanges();
+                var user = _context.Users.FirstOrDefault(u => u.Id == userId);
+                await _signInManager.SignInAsync(user, isPersistent: false);
+                NavigationManager.NavigateTo("/");
+            }
+        }
+
+        NavigationManager.NavigateTo("/");
+    }
+}
