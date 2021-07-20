@@ -14,6 +14,13 @@
 @inject IJSRuntime JSRuntime
 @inject ISessionStorageService sessionStorage
 @inject ICustomHistoryService _customHistoryService
+@inject IImageService _imageService
+@using Microsoft.AspNetCore.Routing;
+@using Microsoft.AspNetCore.WebUtilities;
+@using System.Text.Encodings.Web;
+@using System.Text;
+@using System.Collections.Generic;
+@inject LinkGenerator _generator
 @if (ItemList is null || user is null)
 {
     <div class="loader">Loading...</div>
@@ -24,18 +31,18 @@ else
         <div class="row mt-2">
             @if (IsInRoleAdmin || IsProjectManager)
             {
-                <div class="col-8">
+                <div class="col">
                     <div class="card">
                         <div class="card-header bg-dark">
                             <h5 class="card-title">Quick Management Action</h5>
                         </div>
                         <div class="card-body" style="padding-right:10px">
-                            <button type="button" class="btn btn-secondary pb-2 mb-2">
+                            <button type="button" @onclick="OpenCreateTicketDialog" class="btn btn-secondary pb-2 mb-2">
                                 <i class="fas fa-plus-square"></i> Create New Ticket
                             </button>
 
 
-                            <button type="button" class="btn btn-secondary pb-2 mb-2">
+                            <button type="button" @onclick="OpenCreateProjectDialog" class="btn btn-secondary pb-2 mb-2">
                                 <i class="fas fa-plus-circle"></i> Create New Project
                             </button>
 
@@ -46,7 +53,7 @@ else
 
                             <a href="/manage/project/user" class="btn text-white btn-secondary pb-2 mb-2"><i class="fas fa-user-edit"></i> Project User Management</a>
 
-                            <button type="button" class="btn btn-secondary pb-2 mb-2" >
+                            <button type="button" @onclick="OpenInviteDialog" class="btn btn-secondary pb-2 mb-2">
                                 <i class="fas fa-location-arrow"></i> Create a Invite Ticket
                             </button>
 
@@ -55,19 +62,7 @@ else
                     </div>
                 </div>
 
-                <div class="col-4">
-                    <div class="card">
-                        <div class="card-header bg-dark">
-                            <h5 class="card-title">Quick Inbox and Notification Action</h5>
-                        </div>
-                        <div class="card-body">
-                            <a asp-controller="Inboxes" asp-action="Create" class="btn btn-secondary pb-2 mb-2"><i class="fas fa-plus-square"></i> Compose New Inbox</a>
-                            <a asp-controller="Inboxes" asp-action="Index" class="btn btn-secondary pb-2 mb-2"><i class="far fa-comments"></i> View My Inbox</a>
-                            <a asp-controller="Notifications" asp-action="Index" class="btn btn-secondary pb-2 mb-2"><i class="far fa-bell"></i> View My Notifications</a>
 
-                        </div>
-                    </div>
-                </div>
 
             }
             else if (IsSubmitter)
@@ -78,14 +73,14 @@ else
                             <h5 class="card-title">Quick Management Action</h5>
                         </div>
                         <div class="card-body" style="padding-right:10px">
-                            <button type="button" class="btn btn-secondary pb-2 mb-2">
+                            <button type="button" @onclick="OpenCreateTicketDialog" class="btn btn-secondary pb-2 mb-2">
                                 <i class="fas fa-plus-square"></i> Create New Ticket
                             </button>
 
 
                             <a href="/ticket" class="btn btn-secondary pb-2 mb-2"><i class="nav-icon fas fa-ticket-alt"></i> View All Tickets</a>
 
-                            <button type="button" class="btn btn-secondary pb-2 mb-2" >
+                            <button type="button" @onclick="OpenInviteDialog" class="btn btn-secondary pb-2 mb-2">
                                 <i class="fas fa-location-arrow"></i> Create a Invite Ticket
                             </button>
 
@@ -93,18 +88,7 @@ else
                         </div>
                     </div>
                 </div>
-                <div class="col">
-                    <div class="card">
-                        <div class="card-header bg-dark">
-                            <h5 class="card-title">Quick Inbox and Notification Action</h5>
-                        </div>
-                        <div class="card-body">
-                            <a asp-controller="Inboxes" asp-action="Create" class="btn btn-secondary pb-2 mb-2"><i class="fas fa-plus-square"></i> Compose New Inbox</a>
-                            <a asp-controller="Inboxes" asp-action="Index" class="btn btn-secondary pb-2 mb-2"><i class="far fa-comments"></i> View My Inbox</a>
-                            <a asp-controller="Notifications" asp-action="Index" class="btn btn-secondary pb-2 mb-2"><i class="far fa-bell"></i> View My Notifications</a>
-                        </div>
-                    </div>
-                </div>
+
             }
             else if (IsDeveloper)
             {
@@ -114,13 +98,13 @@ else
                             <h5 class="card-title">Quick Management Action</h5>
                         </div>
                         <div class="card-body" style="padding-right:10px">
-                            <button type="button" class="btn btn-secondary pb-2 mb-2" >
+                            <button type="button" @onclick="OpenCreateTicketDialog" class="btn btn-secondary pb-2 mb-2">
                                 <i class="fas fa-plus-square"></i> Create New Ticket
                             </button>
 
 
                             <a href="/ticket" class="btn btn-secondary pb-2 mb-2"><i class="nav-icon fas fa-ticket-alt"></i> View All Tickets</a>
-                            <button type="button" class="btn btn-secondary pb-2 mb-2" >
+                            <button type="button" class="btn btn-secondary pb-2 mb-2">
                                 <i class="fas fa-location-arrow"></i> Create a Invite Ticket
                             </button>
 
@@ -128,35 +112,10 @@ else
                         </div>
                     </div>
                 </div>
-                <div class="col">
-                    <div class="card">
-                        <div class="card-header bg-dark">
-                            <h5 class="card-title">Quick Inbox and Notification Action</h5>
-                        </div>
-                        <div class="card-body">
-                            <a asp-controller="Inboxes" asp-action="Create" class="btn btn-secondary pb-2 mb-2"><i class="fas fa-plus-square"></i> Compose New Inbox</a>
-                            <a asp-controller="Inboxes" asp-action="Index" class="btn btn-secondary pb-2 mb-2"><i class="far fa-comments"></i> View My Inbox</a>
-                            <a asp-controller="Notifications" asp-action="Index" class="btn btn-secondary pb-2 mb-2"><i class="far fa-bell"></i> View My Notifications</a>
-                        </div>
-                    </div>
-                </div>
+
 
             }
-            else
-            {
-                <div class="col">
-                    <div class="card">
-                        <div class="card-header bg-dark">
-                            <h5 class="card-title">Quick Inbox and Notification Action</h5>
-                        </div>
-                        <div class="card-body">
-                            <a asp-controller="Inboxes" asp-action="Create" class="btn btn-secondary pb-2 mb-2"><i class="fas fa-plus-square"></i> Compose New Inbox</a>
-                            <a asp-controller="Inboxes" asp-action="Index" class="btn btn-secondary pb-2 mb-2"><i class="far fa-comments"></i> View My Inbox</a>
-                            <a asp-controller="Notifications" asp-action="Index" class="btn btn-secondary pb-2 mb-2"><i class="far fa-bell"></i> View My Notifications</a>
-                        </div>
-                    </div>
-                </div>
-            }
+
 
 
         </div>
@@ -287,7 +246,7 @@ else
                                     <RadzenDonutSeries Data="@TicketTypeChart" Title="Number Of Ticket Type" CategoryProperty="TicketCategory" ValueProperty="NumberOfTicket">
                                         <TitleTemplate>
                                             <div class="rz-donut-content">
-                                                
+
                                             </div>
                                         </TitleTemplate>
                                     </RadzenDonutSeries>
@@ -318,7 +277,7 @@ else
                         <div class="col">
                             <div class="card-body">
                                 <RadzenChart>
-                                    <RadzenDonutSeries Data="@TicketPriorityChart"  Title="Number Of Ticket Priority" CategoryProperty="TicketCategory" ValueProperty="NumberOfTicket">
+                                    <RadzenDonutSeries Data="@TicketPriorityChart" Title="Number Of Ticket Priority" CategoryProperty="TicketCategory" ValueProperty="NumberOfTicket">
                                         <TitleTemplate>
                                             <div class="rz-donut-content">
 
@@ -477,7 +436,249 @@ else
 
 
 
+<ModalDialog @ref="_createTicketDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>Create New Ticket</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col">
+                    <EditForm Model="newTicketItem" OnValidSubmit="AddTicket">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="form-group">
+                            <label class="control-label">Name</label>
+                            <input class="form-control" @bind="newTicketItem.Name" />
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Description</label>
+                            <input class="form-control" @bind="newTicketItem.Description" />
+                        </div>
 
+                        <div class="form-group">
+                            <label class="control-label">Project</label>
+                            <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="newTicketItem.ProjectId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                            Placeholder="Select Project..." Data=@ProjectList TextProperty="Name" ValueProperty="Id" />
+
+                        </div>
+                        @if (IsInRoleAdmin || IsProjectManager)
+                        {
+
+
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label class="control-label">Developer</label>
+                                        <RadzenDropDown AllowClear="true" TValue="string" @bind-Value="newTicketItem.DeveloperId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                        Placeholder="Select Developer..." Data=@DeveloperList TextProperty="FullName" ValueProperty="Id" />
+
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label class="control-label">Owner</label>
+                                        <RadzenDropDown AllowClear="true" TValue="string" @bind-Value="newTicketItem.OwnnerId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                        Placeholder="Select Developer..." Data=@OwnerList TextProperty="FullName" ValueProperty="Id" />
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label class="control-label">Status</label>
+                                        <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="newTicketItem.StatusId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                        Placeholder="Select Ticket Status..." Data=@TicketStatusList TextProperty="Name" ValueProperty="Id" />
+
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label class="control-label">Priority</label>
+                                        <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="newTicketItem.PriorityId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                        Placeholder="Select Ticket Priority..." Data=@TicketPriorityList TextProperty="Name" ValueProperty="Id" />
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+
+                                    <div class="form-group">
+                                        <label class="control-label">Is Assigned?</label>
+
+                                        <RadzenSelectBar Style="width:100%;" @bind-Value="newTicketItem.IsAssigned" TValue="bool">
+                                            <Items>
+                                                <RadzenSelectBarItem Text="On" Value="true" />
+                                                <RadzenSelectBarItem Text="Off" Value="false" />
+                                            </Items>
+                                        </RadzenSelectBar>
+                                    </div>
+                                </div>
+                                <div class="col">
+
+                                    <div class="form-group">
+                                        <label class="control-label">TicketType</label>
+                                        <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="newTicketItem.TicketTypeId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                        Placeholder="Select Ticket Type..." Data=@TicketTypeList TextProperty="Name" ValueProperty="Id" />
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        }
+
+
+
+                        <br />
+                        <div class="row">
+                            <div class="col">
+                                <button type="submit" class="btn btn-success btn-block">Create</button>
+                            </div>
+                        </div>
+                    </EditForm>
+                    <br />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelCreateTicketDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
+
+
+<ModalDialog @ref="_createProjectDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             Width="_editModalWidth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>Create New Project</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col">
+                    <EditForm Model="newProjectItem" OnValidSubmit="AddProject">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="row">
+                            <div class="col">
+                                <img class="img-fluid" src="@_imageService.DecodeFile(newProjectItem.ImageData, newProjectItem.ContentType)" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Project Name</label>
+                            <input @bind="newProjectItem.Name" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Description</label>
+                            <textarea @bind="newProjectItem.Description" class="form-control" rows="4" required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label">Upload Image</label>
+                            <InputFile OnChange="@LoadFilesNew" />
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Company</label>
+                            <RadzenDropDown AllowClear="true" TValue="int" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                            @bind-Value="newProjectItem.CompanyId" Placeholder="Select Company..." Data=@CompanyList TextProperty="Name" ValueProperty="Id" />
+
+                        </div>
+
+                        <input type="submit" value="Create new Project" class="btn btn-outline-success btn-block">
+
+
+                    </EditForm>
+                    <br />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelCreateProjectDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
+
+
+<ModalDialog @ref="_createInviteDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             Width="_editModalWidth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>Create Invite Ticket</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col">
+                    <EditForm Model="newInvite" OnValidSubmit="SendInvite">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+   
+                        <div class="form-group">
+                            <label class="control-label">Email</label>
+                            <input class="form-control" @bind="newInvite.Email" type="email" placeholder="Enter your Email..." required />
+                        </div>
+                        @if (IsInRoleAdmin)
+                        {
+                            <div class="form-group">
+                                <label class="control-label">Company Name</label>
+                                <input name="CompanyName" class="form-control"@bind="newInvite.CompanyName" placeholder="Enter your company name..." required />
+                            </div>
+                        }
+
+
+                        @if (IsProjectManager || IsInRoleAdmin)
+                        {
+
+                            <div class="form-group">
+                                <label class="control-label">Assign Role</label>
+                                <RadzenDropDown AllowClear="true" TValue="string" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                @bind-Value="newInvite.Role" Placeholder="Select Role..." Data=@RoleList TextProperty="Name" ValueProperty="Name" />
+
+                            </div>
+                        }
+
+                        <br />
+                        <div class="row">
+                            <div class="col">
+                                <button type="submit" class="btn btn-outline-success btn-block">Send Invitaion</button>
+                            </div>
+                        </div>
+                    </EditForm>
+                    <br />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelInviteDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
 
 
 @code{
@@ -497,6 +698,30 @@ else
     public int TicketNewInPast7Day;
     public int TicketDoneInPast7Day;
     public DateTime currentTime;
+
+
+    //Fully customized dialog
+    private double _overlayOpacity = 0.3;
+    private double _modalMinHeight = 100;
+    private double _modalMinWitdth = 100;
+    private bool _modalAnimate = true;
+    private double _editModalWidth;
+    private bool _modalCloseOnClick = true;
+    private bool _modalCloseOnEsc = true;
+    private bool _modalFocus = true;
+    private bool _modalCentered = true;
+    private bool _modalShowClose = true;
+
+
+    private ModalDialog _createTicketDialog;
+    private ModalDialog _createProjectDialog;
+    private ModalDialog _createInviteDialog;
+    public Models.Ticket newTicketItem = new();
+    public Models.Project newProjectItem = new();
+    public Models.Invite newInvite = new();
+
+
+
     public List<Models.CustomUser> AllUser = new();
     public List<Models.ChartModel> TicketTypeChart = new();
     public List<Models.ChartModel> TicketPriorityChart = new();
@@ -507,8 +732,10 @@ else
     public List<Models.Priority> TicketPriorityList = new();
     public List<Models.Status> TicketStatusList = new();
     public List<Models.Project> ProjectList = new();
+    public List<Models.Company> CompanyList = new();
     public List<Models.CustomUser> DeveloperList = new();
     public List<Models.CustomUser> OwnerList = new();
+    public List<IdentityRole> RoleList = new();
     protected override async Task OnInitializedAsync()
     {
         if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
@@ -533,7 +760,8 @@ else
         AllUser = _context.Users.ToList();
         ProjectList = _context.Project.ToList();
         TicketCloseId = _context.Status.FirstOrDefault(t => t.Name == "Closed").Id;
-
+        CompanyList = _context.Company.ToList();
+        RoleList = _context.Roles.ToList();
         AllItemList = _context.Ticket
             .Include(t => t.Attachments)
             .Include(t => t.Comments)
@@ -597,6 +825,365 @@ else
 
     }
 
+
+
+    private async Task OpenCreateTicketDialog()
+    {
+        newTicketItem = new();
+        await _createTicketDialog.Open();
+    }
+    private async Task CancelCreateTicketDialog()
+    {
+
+        await _createTicketDialog.Close();
+    }
+    private async Task OpenCreateProjectDialog()
+    {
+        newProjectItem = new();
+        await _createProjectDialog.Open();
+    }
+    private async Task CancelCreateProjectDialog()
+    {
+
+        await _createProjectDialog.Close();
+    }
+    private async Task OpenInviteDialog()
+    {
+        newInvite = new();
+        await _createInviteDialog.Open();
+    }
+    private async Task CancelInviteDialog()
+    {
+
+        await _createInviteDialog.Close();
+    }
+    private async Task LoadFilesNew(InputFileChangeEventArgs e)
+    {
+        IBrowserFile imgFile = e.File;
+        var buffers = new byte[imgFile.Size];
+        await imgFile.OpenReadStream().ReadAsync(buffers);
+        newProjectItem.ImageData = buffers.ToArray();
+        newProjectItem.ContentType = imgFile.ContentType;
+
+
+        //using var stream = new MemoryStream();
+        //var file = e.File;
+        //var OpenSteam = file.OpenReadStream();
+        //await OpenSteam.CopyToAsync(stream);
+
+        //newItem.ImageData = stream.ToArray();
+        //newItem.ContentType = e.File.ContentType;
+
+    }
+    public async Task AddTicket()
+    {
+        try
+        {
+            newTicketItem.OwnnerId = user.Id;
+            newTicketItem.Created = DateTime.Now;
+            newTicketItem.Updated = newTicketItem.Created;
+            if (IsDeveloper || IsSubmitter)
+            {
+                newTicketItem.TicketTypeId = _context.TicketType.FirstOrDefault(t => t.Name == "UnAssign").Id;
+                newTicketItem.PriorityId = _context.Priority.FirstOrDefault(t => t.Name == "UnAssign").Id;
+                newTicketItem.StatusId = _context.Status.FirstOrDefault(t => t.Name == "UnAssign").Id;
+            }
+
+            _context.Add(newTicketItem);
+            _context.SaveChanges();
+
+
+            var currentClosedStatusId = _context.Status.FirstOrDefault(t => t.Name == "Closed").Id;
+            var projectName = _context.Project.FirstOrDefault(p => p.Id == newTicketItem.ProjectId).Name;
+            if (newTicketItem.IsAssigned == true && newTicketItem.StatusId != currentClosedStatusId)
+            {
+                Models.Notification notification = new Models.Notification
+                {
+                    Name = "New Ticket Assign",
+                    TicketId = newTicketItem.Id,
+                    Description = "You have a new ticket.",
+                    Created = DateTime.Now,
+                    SenderId = newTicketItem.OwnnerId,
+                    RecipientId = newTicketItem.DeveloperId
+                };
+                _context.Notification.Add(notification);
+                _context.SaveChanges();
+
+
+                string devEmail = (_context.Users.FirstOrDefault(u => u.Id == newTicketItem.DeveloperId)).Email;
+                string subject = "New Ticket Assignment";
+                string message = $"You have been Assigned a new ticket {newTicketItem.Name} about {newTicketItem.Description} for project: {projectName}";
+
+                await _emailSender.SendEmailAsync(devEmail, subject, message);
+
+            }
+            //access project name
+
+
+            //create notifocation for project manager on project through system notification and email
+            //notification when current user is submitter
+            if (IsSubmitter)
+            {
+                //notification for project manager on project
+                Models.Notification notification = new Models.Notification
+                {
+                    Name = "New Ticket is Created by Submitter",
+                    TicketId = newTicketItem.Id,
+                    Description = $"New Ticket #{newTicketItem.Id} is Created by Submitter in {projectName} and Waiting for being Assigned",
+                    Created = DateTime.Now,
+                    SenderId = newTicketItem.OwnnerId,
+                    RecipientId = (_projectService.ProjectManagerOnProject(newTicketItem.ProjectId)).Id
+                };
+                _context.Notification.Add(notification);
+                _context.SaveChanges();
+
+                //email to project manager about the notification
+                string PMEmail = (_projectService.ProjectManagerOnProject(newTicketItem.ProjectId)).Email;
+                string subject = "New Ticket Has Been Created by Submitter";
+                string message = $"A new ticket {newTicketItem.Name} has been created by Submitter {user.FullName} about {newTicketItem.Description} for project: {projectName}, and waiting approval from you.";
+
+                await _emailSender.SendEmailAsync(PMEmail, subject, message);
+
+                //notification to current user
+                Models.Notification notification2 = new Models.Notification
+                {
+                    Name = "You just Create a New Ticket",
+                    TicketId = newTicketItem.Id,
+                    Description = $"You just create a new ticket #{newTicketItem.Id} in project {projectName} and waiting for being Assigned",
+                    Created = DateTime.Now,
+                    SenderId = (_projectService.ProjectManagerOnProject(newTicketItem.ProjectId)).Id,
+                    RecipientId = newTicketItem.OwnnerId
+                };
+                _context.Notification.Add(notification2);
+                _context.SaveChanges();
+
+            }
+            //create notifocation for project manager on project through system notification and email
+            //notification when current user is developer
+            else if (IsDeveloper)
+            {
+                //send notication to project manager on project
+                Models.Notification notification = new Models.Notification
+                {
+                    Name = "New Ticket is Created by Developer",
+                    TicketId = newTicketItem.Id,
+                    Description = $"New Ticket #{newTicketItem.Id} is Created by Developer in {projectName} and Waiting for being Approve",
+                    Created = DateTime.Now,
+                    SenderId = newTicketItem.OwnnerId,
+                    RecipientId = (_projectService.ProjectManagerOnProject(newTicketItem.ProjectId)).Id
+                };
+                _context.Notification.Add(notification);
+                _context.SaveChanges();
+
+
+                string PMEmail = (_projectService.ProjectManagerOnProject(newTicketItem.ProjectId)).Email;
+                string subject = "New Ticket Has Been Created by Developer";
+                string message = $"A new ticket {newTicketItem.Name} has been created by Developer {user.FullName} about {newTicketItem.Description} for project: {projectName}, and waiting approval from you.";
+
+                await _emailSender.SendEmailAsync(PMEmail, subject, message);
+
+                Models.Notification notification2 = new Models.Notification
+                {
+                    Name = "You just Create a New Ticket",
+                    TicketId = newTicketItem.Id,
+                    Description = $"You just create a new ticket #{newTicketItem.Id} in project {projectName} and waiting for being Assigned",
+                    Created = DateTime.Now,
+                    SenderId = (_projectService.ProjectManagerOnProject(newTicketItem.ProjectId)).Id,
+                    RecipientId = newTicketItem.OwnnerId
+                };
+                _context.Notification.Add(notification2);
+                _context.SaveChanges();
+            }
+
+
+
+
+            CancelCreateTicketDialog();
+            await GetData();
+            await JSRuntime.InvokeVoidAsync("success", null);
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+
+        }
+    }
+
+    public async Task AddProject()
+    {
+        try
+        {
+            newProjectItem.Created = DateTime.Now;
+            _context.Add(newProjectItem);
+            _context.SaveChanges();
+            await GetData();
+            await CancelCreateProjectDialog();
+
+            await JSRuntime.InvokeVoidAsync("success", null);
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+        }
+    }
+    public async Task SendInvite()
+    {
+        var loginUser = user;
+        Models.Company company = new Models.Company();
+        if (IsInRoleAdmin)
+        {
+            company = new Models.Company
+            {
+                Name = newInvite.CompanyName,
+                Description = $"This is a temporary description for Company: {newInvite.CompanyName}, you can change this description anytime."
+            };
+            _context.Company.Add(company);
+            _context.SaveChanges();
+        }
+        else
+        {
+            company = _context.Company.FirstOrDefault(c => c.Id == loginUser.CompanyId);
+        }
+
+        newInvite.CompanyToken = Guid.NewGuid();
+        newInvite.CompanyId = company.Id;
+        var number_of_user_on_system = _context.Users.ToList().Count + 1;
+        CustomUser newUser = new CustomUser
+        {
+            FirstName = "Invite",
+            LastName = $"User #{number_of_user_on_system}",
+            UserName = newInvite.Email,
+            Email = newInvite.Email,
+            EmailConfirmed = true,
+            CompanyId = company.Id
+        };
+        try
+        {
+            var newUserFind = _context.Users.FirstOrDefault(u => u.Email == newUser.Email);
+            if (newUserFind == null)
+            {
+                var result = await _userManager.CreateAsync(newUser, "Abc123!");
+                if (result.Succeeded)
+                {
+                    string returnUrl = null;
+                    returnUrl = "/";
+                    var code = newInvite.CompanyToken;
+
+                    var callbackUrl = _generator.GetUriByPage(_httpContextAccessor.HttpContext,
+                        "/AcceptInvite/Tickets",
+                       values: new { userId = newUser.Id, code },
+                        scheme: _httpContextAccessor.HttpContext.Request.Scheme);
+
+                    await _emailSender.SendEmailAsync(newUser.Email, "Invite Email From Lan's Bug Tracker",
+                    $"<h1>You received a invite ticket from Lan's Bug Tracker</h1> <br> <a style='background-color: #555555;border: none;color: white;padding: 15px 32px;text-align: center;text-decoration: none;display: inline-block;font-size: 16px;' href='{HtmlEncoder.Default.Encode(callbackUrl)}'>Clicking here to join our software.</a>  <br> <h3>Your UserName is: {newUser.Email} </h3><br> <h3>Your Password is: Abc123!</h3>");
+
+                    if (IsInRoleAdmin)
+                    {
+                        await _userManager.AddToRoleAsync(newUser, newInvite.Role);
+                    }
+                    else if (IsProjectManager)
+                    {
+                        await _userManager.AddToRoleAsync(newUser, newInvite.Role);
+                    }
+                    else
+                    {
+                        await _userManager.AddToRoleAsync(newUser, Roles.NewUser.ToString());
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+        }
+        var admin = _context.Users.FirstOrDefault(u => u.Email == "arthastheking113@gmail.com");
+
+        List<string> userIdList = new List<string>();
+        userIdList.Add(newUser.Id);
+        if (IsInRoleAdmin)
+        {
+            var number_of_project_on_system = _context.Project.Count() + 1;
+            Models.Project project = new Models.Project
+            {
+                Name = $"Project Example #{number_of_project_on_system}",
+                Description = $"This is your project Example #{number_of_project_on_system}, you can change anything in this project anytime you want",
+                Created = DateTime.Now,
+                CompanyId = company.Id
+            };
+            _context.Project.Add(project);
+            _context.SaveChanges();
+
+            _projectService.AddUserToProject(userIdList, project.Id);
+        }
+        else if (IsProjectManager)
+        {
+            if (newInvite.ProjectId != 0)
+            {
+                var pm = _projectService.ProjectManagerOnProject(newInvite.ProjectId);
+                if (pm.Id == loginUser.Id)
+                {
+                    _projectService.AddUserToProject(userIdList, newInvite.ProjectId);
+                }
+            }
+
+        }
+        if (!IsInRoleAdmin)
+        {
+            string adminEmail = admin.Email;
+            string subject = "New User Have Been Invited";
+            string message = $"{loginUser.FullName} just send a Invite Ticket to {newInvite.Email}";
+
+            await _emailSender.SendEmailAsync(adminEmail, subject, message);
+
+            _context.SaveChanges();
+        }
+        //notification for new user
+        WelcomeNotification welcomenotification = new WelcomeNotification
+        {
+            Name = "Welcome To The Bug Tracker",
+            Description = $"You have been Invited to the bug tracker service by {loginUser.FullName}. Your role is: {(_roleService.ReturnUserRole3(newUser))}. Please contact our admin or project manager ({loginUser.FullName}) by the inbox system.Or, you can start create new ticket and start working on it. You can change your name in profile setting under your name in the vertical Nav bar.",
+            Created = DateTime.Now,
+            SenderId = (admin).Id,
+            RecipientId = newUser.Id
+        };
+        _context.WelcomeNotification.Add(welcomenotification);
+        _context.SaveChanges();
+
+        //noification for admin
+        WelcomeNotification welcomenotification2 = new WelcomeNotification
+        {
+            Name = "New invite ticket has been sent",
+            Description = $"{loginUser.FullName} just send a Invite Ticket to {newInvite.Email}",
+            Created = DateTime.Now,
+            SenderId = (admin).Id,
+            RecipientId = (admin).Id
+        };
+        _context.WelcomeNotification.Add(welcomenotification2);
+        _context.SaveChanges();
+
+        //noification for person who send invite ticket
+        WelcomeNotification welcomenotification3 = new WelcomeNotification
+        {
+            Name = "New invite ticket has been sent",
+            Description = $"You just send a Invite Ticket to {newInvite.Email}",
+            Created = DateTime.Now,
+            SenderId = (admin).Id,
+            RecipientId = loginUser.Id
+        };
+        _context.WelcomeNotification.Add(welcomenotification3);
+        _context.SaveChanges();
+        newInvite.InvitorId = loginUser.Id;
+        newInvite.InviteeId = newUser.Id;
+        newInvite.InviteDate = DateTime.Now;
+        newInvite.IsValid = true;
+        _context.Add(newInvite);
+        _context.SaveChanges();
+
+        await CancelInviteDialog();
+
+        await JSRuntime.InvokeVoidAsync("success", null);
+    }
+
     public void GetDataChart()
     {
         TicketTypeList = _context.TicketType.ToList();
@@ -636,4 +1223,22 @@ else
         }
     }
 
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        //user = await sessionStorage.GetItemAsync<CustomUser>("user");
+        //IsInRoleAdmin = await sessionStorage.GetItemAsync<bool>("IsInRoleAdmin");
+        //IsDeveloper = await sessionStorage.GetItemAsync<bool>("IsDeveloper");
+        //IsNewUser = await sessionStorage.GetItemAsync<bool>("IsNewUser");
+        //IsSubmitter = await sessionStorage.GetItemAsync<bool>("IsSubmitter");
+        //IsProjectManager = await sessionStorage.GetItemAsync<bool>("IsProjectManager");
+        if (firstRender)
+        {
+            //await JSRuntime.InvokeVoidAsync("enableTable", null);
+
+        }
+        _editModalWidth = await JSRuntime.InvokeAsync<int>("ScreenWidth", null);
+        _editModalWidth = _editModalWidth * 0.5;
+    }
 }

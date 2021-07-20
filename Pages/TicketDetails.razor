@@ -149,7 +149,7 @@ else
                     <div class="row ">
                         <EditForm Model="newTicketAttachment" OnValidSubmit="AddNewAttachment">
                             <div class="media-body ml-3 ">
-                                <label>Description<input @bind="newTicketAttachment.Description" class="form-control" required placeholder="Add Description..."></label>
+                                <label>Description<input @bind="newTicketAttachment.Description" class="form-control" placeholder="Add Description..."></label>
                                 <label class="btn btn-outline-secondary btn-sm">
                                     Upload File
                                     <InputFile OnChange="@LoadFilesNew" />
@@ -278,8 +278,8 @@ else
                     </div>
                     <div class="row">
                         <div class="container">
-                            <div class="row">
-                                <div class="col">
+                            <div class="row ">
+                                <div class="col  scrollable-div">
                                     @if (currentTicket.Comments.Count != 0)
                                     {
                                         foreach (var comment in currentTicket.Comments)
@@ -317,8 +317,8 @@ else
                                                         @if (IsInRoleAdmin || IsProjectManager)
                                                         {
                                                             <div class="col text-right">
-                                                                <a class="btn btn-secondary" asp-controller="PostComments" asp-action="Edit" asp-route-id="@comment.Id">Edit</a>
-                                                                <a class="btn btn-secondary" asp-controller="PostComments" asp-action="Delete" asp-route-id="@comment.Id">Delete</a>
+                                                                <a class="btn btn-secondary text-white" >Edit</a>
+                                                                <a class="btn btn-secondary text-white" >Delete</a>
                                                             </div>
                                                         }
 
@@ -702,7 +702,7 @@ else
                     </div>
                     <div class="row mt-2">
                         <div class="col">
-                            <a class="btn btn-block btn-secondary" href="@(_customFileService.ConvertByteArrayToFile(currentTicketAttachment.FileData,currentTicketAttachment.FileName))" download="@(currentTicketAttachment.FileName)">
+                            <a class="btn btn-block btn-outline-success" href="@(_customFileService.ConvertByteArrayToFile(currentTicketAttachment.FileData,currentTicketAttachment.FileName))" download="@(currentTicketAttachment.FileName)">
                                 <i class="fas fa-file-download"></i> Download File
                             </a>
                         </div>
@@ -905,6 +905,7 @@ else
             newTicketComment.Created = DateTime.Now;
             newTicketComment.Updated = newTicketComment.Created;
             newTicketComment.CustomUserId = user.Id;
+            newTicketComment.TicketId = currentTicket.Id;
             var id = newTicketComment.TicketId;
             _context.Add(newTicketComment);
             _context.SaveChanges();
@@ -925,12 +926,16 @@ else
 
 
             var receiver = currentTicket.DeveloperId;
-            string devEmail = (await _userManager.FindByIdAsync(receiver)).Email;
-            string subject = $"New Comment From {(await _userManager.FindByIdAsync(newTicketComment.CustomUserId)).FullName} on your Ticket.";
-            string message = $"You have a new Comment from {user.FullName} on Ticket {currentTicket.Name}, comment : {messageContent}";
+            if (receiver is not null)
+            {
+                string devEmail = (_context.Users.FirstOrDefault(u => u.Id == receiver)).Email;
+                string subject = $"New Comment From {(await _userManager.FindByIdAsync(newTicketComment.CustomUserId)).FullName} on your Ticket.";
+                string message = $"You have a new Comment from {user.FullName} on Ticket {currentTicket.Name}, comment : {messageContent}";
 
-            await _emailSender.SendEmailAsync(devEmail, subject, message);
-
+                await _emailSender.SendEmailAsync(devEmail, subject, message);
+            }
+            currentTime = DateTime.Now;
+            newTicketComment = new();
             await JSRuntime.InvokeVoidAsync("success", null);
         }
         catch (Exception ex)
@@ -955,17 +960,21 @@ else
                 _context.Add(newTicketAttachment);
                 _context.SaveChanges();
                 var projectManager = _projectService.ProjectManagerOnProject(currentTicket.ProjectId);
-                Models.Notification notification = new Models.Notification
+                if (projectManager is not null)
                 {
-                    Name = $"New Attachment on Ticket #{currentTicket.Id}",
-                    Description = $"A new attachment: {newTicketAttachment.FileName} has been uploaded by {user.FullName} into ticket #{currentTicket.Id}",
-                    Created = DateTime.Now,
-                    SenderId = user.Id,
-                    RecipientId = projectManager.Id,
-                    TicketId = currentTicket.Id
-                };
-                _context.Notification.Add(notification);
-                _context.SaveChanges();
+                    Models.Notification notification = new Models.Notification
+                    {
+                        Name = $"New Attachment on Ticket #{currentTicket.Id}",
+                        Description = $"A new attachment: {newTicketAttachment.FileName} has been uploaded by {user.FullName} into ticket #{currentTicket.Id}",
+                        Created = DateTime.Now,
+                        SenderId = user.Id,
+                        RecipientId = projectManager.Id,
+                        TicketId = currentTicket.Id
+                    };
+                    _context.Notification.Add(notification);
+                    _context.SaveChanges();
+                }
+
 
                 var id = int.Parse(TicketId);
                 currentTicket = _context.Ticket
@@ -1035,6 +1044,8 @@ else
         {
             await JSRuntime.InvokeVoidAsync("enableTable", null);
         }
+        _editModalWidth = await JSRuntime.InvokeAsync<int>("ScreenWidth", null);
+        _editModalWidth = _editModalWidth * 0.7;
         StateHasChanged();
     }
 

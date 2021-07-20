@@ -2982,3 +2982,8 @@ body {
 #frame .content .message-input .wrap button:focus {
     outline: none;
 }
+
+.scrollable-div {
+    max-height: 40vh;
+    overflow-y: scroll;
+}

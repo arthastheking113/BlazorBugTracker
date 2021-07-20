@@ -516,8 +516,9 @@ else
         if (firstRender)
         {
             //await JSRuntime.InvokeVoidAsync("enableTable", null);
-            _editModalWidth = await JSRuntime.InvokeAsync<int>("ScreenWidth", null);
-            _editModalWidth = _editModalWidth * 0.5;
+
         }
+        _editModalWidth = await JSRuntime.InvokeAsync<int>("ScreenWidth", null);
+        _editModalWidth = _editModalWidth * 0.5;
     }
 }
