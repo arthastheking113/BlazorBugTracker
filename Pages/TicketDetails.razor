@@ -757,11 +757,24 @@ else
     private ModalDialog _editDialog;
     private ModalDialog _deleteDialog;
 
-    protected override async Task OnInitializedAsync()
+    protected override void  OnInitialized()
     {
         if (!String.IsNullOrEmpty(TicketId))
         {
-            await GetData();
+            var currrentUser = _httpContextAccessor.HttpContext.User;
+            user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
+            IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
+            IsDeveloper = currrentUser.IsInRole(Roles.Developer.ToString());
+            IsNewUser = currrentUser.IsInRole(Roles.NewUser.ToString());
+            IsSubmitter = currrentUser.IsInRole(Roles.Submitter.ToString());
+            IsProjectManager = currrentUser.IsInRole(Roles.ProjectManager.ToString());
+
+            GetData();
+            if (!IsInRoleAdmin && _projectService.ProjectManagerOnProject(currentTicket.ProjectId).Id != user.Id && currentTicket.OwnnerId != user.Id && currentTicket.DeveloperId != user.Id)
+            {
+                NavigationManager.NavigateTo("/accessdenied");
+            }
+
         }
 
     }
@@ -833,7 +846,7 @@ else
             await _customHistoryService.AddHistoryAsync(oldTicket, newTicket, userId);
 
 
-            await GetData();
+            GetData();
             CancelEditDialog();
             await JSRuntime.InvokeVoidAsync("success", null);
 
@@ -884,7 +897,7 @@ else
             await _context.SaveChangesAsync();
 
 
-            await GetData();
+            GetData();
             CancelDeleteDialog();
             await JSRuntime.InvokeVoidAsync("success", null);
             NavigationManager.NavigateTo("/ticket");
@@ -999,7 +1012,7 @@ else
         }
     }
 
-    public async Task GetData()
+    public void  GetData()
     {
         var id = int.Parse(TicketId);
         currentTicket = _context.Ticket
@@ -1023,13 +1036,7 @@ else
         ProjectList = _context.Project.ToList();
         DeveloperList = _context.Users.ToList();
 
-        var currrentUser = _httpContextAccessor.HttpContext.User;
-        user = await _userManager.GetUserAsync(currrentUser);
-        IsInRoleAdmin = await _userManager.IsInRoleAsync(user, Roles.Admin.ToString());
-        IsDeveloper = await _userManager.IsInRoleAsync(user, Roles.Developer.ToString());
-        IsNewUser = await _userManager.IsInRoleAsync(user, Roles.NewUser.ToString());
-        IsSubmitter = await _userManager.IsInRoleAsync(user, Roles.Submitter.ToString());
-        IsProjectManager = await _userManager.IsInRoleAsync(user, Roles.ProjectManager.ToString());
+
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

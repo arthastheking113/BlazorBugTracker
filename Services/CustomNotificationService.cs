@@ -27,5 +27,6 @@ namespace BlazorBugTracker.Services
             var unreadNotifications = await notifications.Where(n => !n.IsViewed).ToListAsync();
             return unreadNotifications;
         }
+
     }
 }

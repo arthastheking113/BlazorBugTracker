@@ -490,9 +490,25 @@ else
         await _ProjectAttachmentDialog.Close();
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override void  OnInitialized()
     {
-        await GetData();
+
+        var currrentUser = _httpContextAccessor.HttpContext.User;
+        user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
+        IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
+        IsDeveloper = currrentUser.IsInRole(Roles.Developer.ToString());
+        IsNewUser = currrentUser.IsInRole(Roles.NewUser.ToString());
+        IsSubmitter = currrentUser.IsInRole(Roles.Submitter.ToString());
+        IsProjectManager = currrentUser.IsInRole(Roles.ProjectManager.ToString());
+        var developerOnProject = _projectService.DeveloperOnProject(Convert.ToInt32(ProjectId));
+        if (IsInRoleAdmin || IsProjectManager || developerOnProject.Contains(user))
+        {
+            GetData();
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/accessdenied");
+        }
     }
 
     public void DeleteFileAttachment(Models.ProjectAttachment file)
@@ -501,7 +517,7 @@ else
         _context.SaveChanges();
     }
 
-    public async Task GetData()
+    public void  GetData()
     {
         currentProject = _context.Project
             .Include(p => p.Attachments)
@@ -534,13 +550,6 @@ else
         submitterOnProject = (_projectService.SubmitterOnProject(currentProject.Id)).ToList();
 
 
-        var currrentUser = _httpContextAccessor.HttpContext.User;
-        user = await _userManager.GetUserAsync(currrentUser);
-        IsInRoleAdmin = await _userManager.IsInRoleAsync(user, Roles.Admin.ToString());
-        IsDeveloper = await _userManager.IsInRoleAsync(user, Roles.Developer.ToString());
-        IsNewUser = await _userManager.IsInRoleAsync(user, Roles.NewUser.ToString());
-        IsSubmitter = await _userManager.IsInRoleAsync(user, Roles.Submitter.ToString());
-        IsProjectManager = await _userManager.IsInRoleAsync(user, Roles.ProjectManager.ToString());
     }
 
     public async Task UploadFileProjectAttachment()

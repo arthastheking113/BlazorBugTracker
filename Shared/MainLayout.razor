@@ -219,7 +219,7 @@
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                 <!-- Add icons to the links using the .nav-icon class
-                with font-awesome or any other icon font library -->
+    with font-awesome or any other icon font library -->
 
                 <li class="nav-item">
                     <a href="/" class="nav-link">
@@ -227,29 +227,31 @@
                         <p>Dashboard</p>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="/inbox" class="nav-link">
-                        <i class="nav-icon fas fa-comments"></i>
-                        <p>Inbox</p>
-                    </a>
-                </li>
 
-                <li class="nav-item">
-                    <a href="/company" class="nav-link">
-                        <i class="nav-icon fas fa-building"></i>
-                        <p>
-                            Company
-                        </p>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/project" class="nav-link">
-                        <i class="nav-icon fas fa-tasks"></i>
-                        <p>
-                            Project
-                        </p>
-                    </a>
-                </li>
+                @if (IsInRoleAdmin)
+                {
+                    <li class="nav-item">
+                        <a href="/company" class="nav-link">
+                            <i class="nav-icon fas fa-building"></i>
+                            <p>
+                                Company
+                            </p>
+                        </a>
+                    </li>
+                }
+
+                @if (IsInRoleAdmin || IsProjectManager)
+                {
+                    <li class="nav-item">
+                        <a href="/project" class="nav-link">
+                            <i class="nav-icon fas fa-tasks"></i>
+                            <p>
+                                Project
+                            </p>
+                        </a>
+                    </li>
+                }
+
                 <li class="nav-item">
                     <a href="/ticket" class="nav-link">
                         <i class="nav-icon fas fa-ticket-alt"></i>
@@ -259,57 +261,62 @@
                         </p>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="/manage/role" class="nav-link">
-                        <i class="nav-icon fas fa-people-arrows"></i>
-                        <p>
-                            Role's Management
-                        </p>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/manage/project/user" class="nav-link">
-                        <i class="nav-icon fas fa-user-edit"></i>
-                        <p>
-                            Project User Management
-                        </p>
-                    </a>
-                </li>
-                <li class="nav-item has-treeview">
-                    <a style="cursor:pointer" class="nav-link">
-                        <i class="nav-icon fas fa-toolbox"></i>
-                        <p>
-                            Admin Tool
-                            <i class="right fas fa-angle-left"></i>
-                        </p>
-                    </a>
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a href="manage/ticket/type" class="nav-link">
-                                <i class="fas fa-filter"></i>
-                                <p>Ticket Type</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="manage/ticket/priority" class="nav-link">
-                                <i class="fas fa-sort-alpha-down"></i>
-                                <p>Ticket Priority</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="manage/ticket/status" class="nav-link">
-                                <i class="fas fa-battery-three-quarters"></i>
-                                <p>Ticket Status</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="manage/user" class="nav-link">
-                                <i class="fas fa-users"></i>
-                                <p>User Overview</p>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
+                @if (IsInRoleAdmin)
+                {
+                    <li class="nav-item">
+                        <a href="/manage/role" class="nav-link">
+                            <i class="nav-icon fas fa-people-arrows"></i>
+                            <p>
+                                Role's Management
+                            </p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/manage/project/user" class="nav-link">
+                            <i class="nav-icon fas fa-user-edit"></i>
+                            <p>
+                                Project User Management
+                            </p>
+                        </a>
+                    </li>
+                    <li class="nav-item has-treeview">
+                        <a style="cursor:pointer" class="nav-link">
+                            <i class="nav-icon fas fa-toolbox"></i>
+                            <p>
+                                Admin Tool
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="manage/ticket/type" class="nav-link">
+                                    <i class="fas fa-filter"></i>
+                                    <p>Ticket Type</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="manage/ticket/priority" class="nav-link">
+                                    <i class="fas fa-sort-alpha-down"></i>
+                                    <p>Ticket Priority</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="manage/ticket/status" class="nav-link">
+                                    <i class="fas fa-battery-three-quarters"></i>
+                                    <p>Ticket Status</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="manage/user" class="nav-link">
+                                    <i class="fas fa-users"></i>
+                                    <p>User Overview</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+
+                }
 
 
 
@@ -342,6 +349,11 @@
     public List<Models.WelcomeNotification> welcomeNotificationList = new();
     public DateTime currentTime;
     public string time;
+    public bool IsInRoleAdmin;
+    public bool IsDeveloper;
+    public bool IsSubmitter;
+    public bool IsProjectManager;
+    public bool IsNewUser;
 
     protected override async Task OnInitializedAsync()
     {
@@ -353,6 +365,11 @@
         {
             var currrentUser = _httpContextAccessor.HttpContext.User;
             user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
+            IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
+            IsDeveloper = currrentUser.IsInRole(Roles.Developer.ToString());
+            IsNewUser = currrentUser.IsInRole(Roles.NewUser.ToString());
+            IsSubmitter = currrentUser.IsInRole(Roles.Submitter.ToString());
+            IsProjectManager = currrentUser.IsInRole(Roles.ProjectManager.ToString());
             currentTime = DateTime.Now;
             GetNotificationAndInbox();
             GetTime();

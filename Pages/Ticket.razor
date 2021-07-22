@@ -934,12 +934,12 @@ else
         ProjectList = _context.Project.ToList();
         DeveloperList = _context.Users.ToList();
         var currrentUser = _httpContextAccessor.HttpContext.User;
-        user = await _userManager.GetUserAsync(currrentUser);
-        IsInRoleAdmin = await _roleService.IsUserInRoleAsync(user, Roles.Admin.ToString());
-        IsDeveloper = await _roleService.IsUserInRoleAsync(user, Roles.Developer.ToString());
-        IsNewUser = await _roleService.IsUserInRoleAsync(user, Roles.NewUser.ToString());
-        IsSubmitter = await _roleService.IsUserInRoleAsync(user, Roles.Submitter.ToString());
-        IsProjectManager = await _roleService.IsUserInRoleAsync(user, Roles.ProjectManager.ToString());
+        user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
+        IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
+        IsDeveloper = currrentUser.IsInRole(Roles.Developer.ToString());
+        IsNewUser = currrentUser.IsInRole(Roles.NewUser.ToString());
+        IsSubmitter = currrentUser.IsInRole(Roles.Submitter.ToString());
+        IsProjectManager = currrentUser.IsInRole(Roles.ProjectManager.ToString());
 
 
         ItemList = _context.Ticket
@@ -954,7 +954,7 @@ else
         .Include(t => t.TicketType).ToList();
         if (IsInRoleAdmin)
         {
-            
+
         }
         else if (IsProjectManager)
         {

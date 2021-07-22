@@ -749,12 +749,12 @@ else
     {
         currentTime = DateTime.Now;
         var currrentUser = _httpContextAccessor.HttpContext.User;
-        user = await _userManager.GetUserAsync(currrentUser);
-        IsInRoleAdmin = await _userManager.IsInRoleAsync(user, Roles.Admin.ToString());
-        IsDeveloper = await _userManager.IsInRoleAsync(user, Roles.Developer.ToString());
-        IsNewUser = await _userManager.IsInRoleAsync(user, Roles.NewUser.ToString());
-        IsSubmitter = await _userManager.IsInRoleAsync(user, Roles.Submitter.ToString());
-        IsProjectManager = await _userManager.IsInRoleAsync(user, Roles.ProjectManager.ToString());
+        user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
+        IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
+        IsDeveloper = currrentUser.IsInRole(Roles.Developer.ToString());
+        IsNewUser = currrentUser.IsInRole(Roles.NewUser.ToString());
+        IsSubmitter = currrentUser.IsInRole(Roles.Submitter.ToString());
+        IsProjectManager = currrentUser.IsInRole(Roles.ProjectManager.ToString());
 
         AllUser = _context.Users.ToList();
         ProjectList = _context.Project.ToList();
@@ -1064,20 +1064,26 @@ else
                 var result = await _userManager.CreateAsync(newUser, "Abc123!");
                 if (result.Succeeded)
                 {
-                    string returnUrl = null;
-                    returnUrl = "/";
+
                     var code = newInvite.CompanyToken;
                     string host = "https://" + _httpContextAccessor.HttpContext.Request.Host.ToString();
                     var callbackUrl = $"{host}/AcceptInvite/UserId/{newUser.Id}/Code/{code}";
                     var callbackUrl2 = _generator.GetUriByPage(_httpContextAccessor.HttpContext,
-            "/AcceptInvite",
+                        handler: null,
+           page: "/AcceptInvite",
+           values: new { UserId = newUser.Id, Code = code },
+            scheme: _httpContextAccessor.HttpContext.Request.Scheme);
+
+                    var callbackUrl3 = _generator.GetUriByPage(_httpContextAccessor.HttpContext,
+                        handler: null,
+           page: "/AcceptInvite",
            values: new { UserId = newUser.Id, Code = code },
             scheme: _httpContextAccessor.HttpContext.Request.Scheme);
 
                     var callBackTest = HtmlEncoder.Default.Encode(callbackUrl);
                     //var callBackTest2 = HtmlEncoder.Default.Encode(callbackUrl2);
                     await _emailSender.SendEmailAsync(newUser.Email, "Invite Email From Lan's Bug Tracker",
-        $"<h1>You received a invite ticket from Lan's Bug Tracker</h1> <br> <a style='background-color: #555555;border: none;color: white;padding: 15px 32px;text-align: center;text-decoration: none;display: inline-block;font-size: 16px;' href='{callbackUrl}'>Clicking here to join our software.</a>  <br> <h3>Your UserName is: {newUser.Email} </h3><br> <h3>Your Password is: Abc123!</h3>");
+        $"<h1>You received a invite ticket from Lan's Bug Tracker</h1> <br> <a style='background-color: #555555;border: none;color: white;padding: 15px 32px;text-align: center;text-decoration: none;display: inline-block;font-size: 16px;' target='_blank' href='{callbackUrl}'>Clicking here to join our software.</a>  <br> <h3>Your UserName is: {newUser.Email} </h3><br> <h3>Your Password is: Abc123!</h3>");
 
                     //     await _emailSender.SendEmailAsync(newUser.Email, "Invite Email From Lan's Bug Tracker",
                     //$"<h1>You received a invite ticket from Lan's Bug Tracker</h1> <br> <a style='background-color: #555555;border: none;color: white;padding: 15px 32px;text-align: center;text-decoration: none;display: inline-block;font-size: 16px;' href='{HtmlEncoder.Default.Encode(callbackUrl2)}'>Clicking here to join our software.</a>  <br> <h3>Your UserName is: {newUser.Email} </h3><br> <h3>Your Password is: Abc123!</h3>");
@@ -1139,7 +1145,7 @@ else
                     WelcomeNotification welcomenotification = new WelcomeNotification
                     {
                         Name = "Welcome To The Bug Tracker",
-                        Description = $"You have been Invited to the bug tracker service by {loginUser.FullName}. Your role is: {(_roleService.ReturnUserRole3(newUser))}. Please contact our admin or project manager ({loginUser.FullName}) by the inbox system.Or, you can start create new ticket and start working on it. You can change your name in profile setting under your name in the vertical Nav bar.",
+                        Description = $"You have been Invited to the bug tracker service by {loginUser.FullName}. Your role is: {(_roleService.ReturnUserRole3(newUser))}. Please change your password and contact our admin or project manager ({loginUser.FullName}) by the inbox system.Or, you can start create new ticket and start working on it. You can change your name in profile setting under your name in the vertical Nav bar.",
                         Created = DateTime.Now,
                         SenderId = (admin).Id,
                         RecipientId = newUser.Id

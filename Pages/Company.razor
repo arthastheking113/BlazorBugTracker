@@ -265,15 +265,19 @@
         var currrentUser = _httpContextAccessor.HttpContext.User;
         if (currrentUser.Identity.IsAuthenticated)
         {
-            user = await _userManager.GetUserAsync(currrentUser);
-            IsInRoleAdmin = await _roleService.IsUserInRoleAsync(user, Roles.Admin.ToString());
+            user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
+            IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
+            IsDeveloper = currrentUser.IsInRole(Roles.Developer.ToString());
+            IsNewUser = currrentUser.IsInRole(Roles.NewUser.ToString());
+            IsSubmitter = currrentUser.IsInRole(Roles.Submitter.ToString());
+            IsProjectManager = currrentUser.IsInRole(Roles.ProjectManager.ToString());
             if (!IsInRoleAdmin)
             {
                 NavigationManager.NavigateTo("/accessdenied");
             }
             else
             {
-                await GetData();
+                GetData();
             }
 
         }
@@ -402,7 +406,7 @@
             }
             //delete company
             _context.Company.Remove(currentItem);
-             _context.SaveChanges();
+            _context.SaveChanges();
             await GetData();
             await CancelDeleteDialog();
 
@@ -415,14 +419,11 @@
         }
     }
 
-    public async Task GetData()
+    public void  GetData()
     {
         ItemList = _context.Company.ToList();
 
-        IsDeveloper = await _roleService.IsUserInRoleAsync(user, Roles.Developer.ToString());
-        IsNewUser = await _roleService.IsUserInRoleAsync(user, Roles.NewUser.ToString());
-        IsSubmitter = await _roleService.IsUserInRoleAsync(user, Roles.Submitter.ToString());
-        IsProjectManager = await _roleService.IsUserInRoleAsync(user, Roles.ProjectManager.ToString());
+
     }
 
 

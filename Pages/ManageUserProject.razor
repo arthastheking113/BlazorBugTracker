@@ -3,13 +3,16 @@
 @using BlazorBugTracker.Data
 @using BlazorBugTracker.Services
 @using Microsoft.AspNetCore.Identity
-@using Microsoft.EntityFrameworkCore 
-@inject IJSRuntime JSRuntime 
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Http
+@inject IJSRuntime JSRuntime
 @inject ApplicationDbContext _context
 @inject UserManager<CustomUser> _userManager
 @inject ICustomRoleService _roleService
 @inject ICustomProjectService _projectService
-<div class="container-fluid" >
+@inject IHttpContextAccessor _httpContextAccessor
+@inject NavigationManager NavigationManager 
+<div class="container-fluid">
     <div class="shadow-lg mb-5 bg-white rounded">
         <div class="row">
             <div class="col pl-0 pr-0">
@@ -18,7 +21,7 @@
                         <h3 class="card-title">Manager User Project</h3>
                     </div>
                     <div class="card-body">
-                        <EditForm Model="userProject" OnValidSubmit="AddUserToProject" >
+                        <EditForm Model="userProject" OnValidSubmit="AddUserToProject">
                             <div class="row">
                                 <div class="col-md p-3">
                                     <div class="row">
@@ -31,7 +34,7 @@
                                         <div class="col">
                                             <div class="form-group">
                                                 <RadzenListBox AllowFiltering="true" AllowClear="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value=@ProjectSelected Data=@ProjectList TextProperty="Name" ValueProperty="Id"
-                                                      Change="@(args => OnChangeSelectProjet(args))"         TValue="int" Placeholder="Select Project..." Style="height:300px;width:100%" />
+                                                               Change="@(args => OnChangeSelectProjet(args))" TValue="int" Placeholder="Select Project..." Style="height:300px;width:100%" />
                                             </div>
 
 
@@ -68,12 +71,12 @@
                                                 <div class="card-body" style="padding:0;">
                                                     <div class="row">
                                                         <div class="col-12">
-                                                           
 
-                                                                <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value="DeveloperSelected" TValue="List<string>" Multiple="true" Data=@DeveloperList
-                                                                               Change=@(args => OnChangeSelectDeveloper(args)) Placeholder="Select Developer..." TextProperty="FullName" ValueProperty="Id" Style="height:300px;width:100%" />
 
-                                                          
+                                                            <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value="DeveloperSelected" TValue="IEnumerable<string>" Multiple="true" Data=@DeveloperList
+                                                                           Change=@(args => OnChangeSelectDeveloper(args)) Placeholder="Select Developer..." TextProperty="FullName" ValueProperty="Id" Style="height:300px;width:100%" />
+
+
                                                             <!-- /.form-group -->
                                                         </div>
                                                         <!-- /.col -->
@@ -99,12 +102,12 @@
                                                 <div class="card-body" style="padding:0;">
                                                     <div class="row">
                                                         <div class="col-12">
-                                                         
 
-                                                                <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"  @bind-Value="SubmitterSelected" TValue="List<string>" Multiple="true" Data=@SubmitterList
-                                                                               Change=@(args => OnChangeSelectSubmitter(args)) Placeholder="Select Submitter..." TextProperty="FullName" ValueProperty="Id" Style="height:300px;width:100%" />
 
-                                                           
+                                                            <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value="SubmitterSelected" TValue="IEnumerable<string>" Multiple="true" Data=@SubmitterList
+                                                                           Change=@(args => OnChangeSelectSubmitter(args)) Placeholder="Select Submitter..." TextProperty="FullName" ValueProperty="Id" Style="height:300px;width:100%" />
+
+
                                                             <!-- /.form-group -->
                                                         </div>
                                                         <!-- /.col -->
@@ -122,7 +125,6 @@
                             <div class="row">
                                 <div class="col text-center">
                                     <input type="submit" class="btn btn-secondary" value="         Save         " />
-                                    <a asp-controller="Projects" asp-action="ManagerUserProject" class="btn text-white btn-secondary">Cancel</a>
                                 </div>
                             </div>
                         </EditForm>
@@ -134,17 +136,17 @@
                                                 FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                                                 LogicalFilterOperator="LogicalFilterOperator.Or">
                                     <Columns>
-                                        <RadzenDataGridColumn TItem="Models.Project" Property="Id"  Title="ID" Width="50px" TextAlign="TextAlign.Center" />
+                                        <RadzenDataGridColumn TItem="Models.Project" Property="Id" Title="ID" Width="50px" TextAlign="TextAlign.Center" />
 
-                                        <RadzenDataGridColumn TItem="Models.Project" Property="Name" Title="Name"  Width="250px"/>
+                                        <RadzenDataGridColumn TItem="Models.Project" Property="Name" Title="Name" Width="250px" />
                                         <RadzenDataGridColumn TItem="Models.Project" Property="Description" Title="Description" />
-                                        <RadzenDataGridColumn TItem="Models.Project"  Property="Id" Title="PM"  Width="150px">
+                                        <RadzenDataGridColumn TItem="Models.Project" Property="Id" Title="PM" Width="150px">
                                             <Template Context="data">
-                                               @if (_projectService.ProjectManagerOnProject(data.Id) is not null)
-                                               {
-                                                   <p>@_projectService.ProjectManagerOnProject(data.Id).FullName</p>
-                                               }
-                                                
+                                                @if (_projectService.ProjectManagerOnProject(data.Id) is not null)
+                                                {
+                                                    <p>@_projectService.ProjectManagerOnProject(data.Id).FullName</p>
+                                                }
+
 
                                             </Template>
                                         </RadzenDataGridColumn>
@@ -182,20 +184,31 @@
 @code {
     public List<Models.CustomUser> AllUser = new();
     public List<Models.CustomUser> DeveloperList = new();
-    public List<Models.CustomUser> SubmitterList= new();
+    public List<Models.CustomUser> SubmitterList = new();
     public List<Models.CustomUser> ProjectManagerList = new();
     public List<Models.Project> ProjectList = new();
+    public bool IsInRoleAdmin;
     public List<IdentityRole> RoleList = new();
-    public List<string> DeveloperSelected = new();
-    public List<string> SubmitterSelected = new();
+    public IEnumerable<string> DeveloperSelected = Enumerable.Empty<string>();
+    public IEnumerable<string> SubmitterSelected = Enumerable.Empty<string>();
     public Models.ChangeUserModel userProject = new();
     public int ProjectSelected;
     public int ViewProjectSelected;
     public string ProjectManagerSelected;
 
-    protected override void OnInitialized()
+    protected override void  OnInitialized()
     {
-        GetData();
+        var currrentUser = _httpContextAccessor.HttpContext.User;
+        IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
+        if (IsInRoleAdmin)
+        {
+            GetData();
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/accessdenied");
+        }
+
     }
 
     public void GetData()
@@ -269,12 +282,12 @@
 
 
             ProjectManagerSelected = null;
-            DeveloperSelected = new();
-            SubmitterSelected = new();
+            DeveloperSelected = Enumerable.Empty<string>();
+            SubmitterSelected = Enumerable.Empty<string>();
             GetData();
             await JSRuntime.InvokeVoidAsync("success", null);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             await JSRuntime.InvokeVoidAsync("error", null);
         }
@@ -284,14 +297,28 @@
 
     public void OnChangeSelectProjet(object value)
     {
+        ProjectManagerSelected = null;
+        DeveloperSelected = Enumerable.Empty<string>();
+        SubmitterSelected = Enumerable.Empty<string>();
         var str = value is IEnumerable<object> ? string.Join(",", (IEnumerable<object>)value) : value;
         ProjectSelected = Convert.ToInt32(str.ToString());
         var projectManagerOnProject = _projectService.ProjectManagerOnProject(ProjectSelected);
-        ProjectManagerSelected = projectManagerOnProject.Id;
+        if (projectManagerOnProject is not null)
+        {
+            ProjectManagerSelected = projectManagerOnProject.Id;
+
+        }
         var DeveloperOnProject = _projectService.DeveloperOnProject(ProjectSelected).ToList().Select(d => d.Id).ToList();
-        DeveloperSelected = DeveloperOnProject;
+        if (DeveloperOnProject.Count != 0)
+        {
+            DeveloperSelected = DeveloperOnProject;
+        }
         var SubmitterOnProject = _projectService.SubmitterOnProject(ProjectSelected).ToList().Select(d => d.Id).ToList();
-        SubmitterSelected = SubmitterOnProject;
+        if (SubmitterOnProject.Count != 0)
+        {
+            SubmitterSelected = SubmitterOnProject;
+        }
+
     }
 
 
