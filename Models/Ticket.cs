@@ -10,7 +10,9 @@ namespace BlazorBugTracker.Models
     {
         public int Id { get; set; }
         [Display(Name = "Name")]
+        [Required]
         public string Name { get; set; }
+        [Required]
         public string Description { get; set; }
 
         [Display(Name = "Created")]
@@ -32,6 +34,7 @@ namespace BlazorBugTracker.Models
         public virtual CustomUser Ownner { get; set; }
 
         [Display(Name = "Project")]
+        [Required]
         public int ProjectId { get; set; }
         public virtual Project Project { get; set; }
 

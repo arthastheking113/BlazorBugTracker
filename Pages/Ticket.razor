@@ -200,7 +200,7 @@ else
                         <div class="form-group">
                             <label class="control-label">Project</label>
                             <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="newItem.ProjectId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
-                                            Placeholder="Select Project..." Data=@ProjectList TextProperty="Name" ValueProperty="Id" />
+                                            Placeholder="Select Project..." Change=@(args => OnChangeSelectProject(args)) Data=@ProjectList TextProperty="Name" ValueProperty="Id" />
 
                         </div>
                         @if (IsInRoleAdmin || IsProjectManager)
@@ -323,7 +323,7 @@ else
                             <div class="form-group">
                                 <label class="control-label">Project</label>
                                 <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="currentItem.ProjectId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
-                                                Placeholder="Select Project..." Data=@ProjectList TextProperty="Name" ValueProperty="Id" />
+                                                Placeholder="Select Project..." Data=@ProjectList Change=@(args => OnChangeSelectProject(args)) TextProperty="Name" ValueProperty="Id" />
 
                             </div>
                             <div class="row">
@@ -394,22 +394,16 @@ else
                         }
                         else if (IsSubmitter)
                         {
+                            <div class="form-group">
+                                <label class="control-label">Project</label>
+                                <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="currentItem.ProjectId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                Disabled="true" Placeholder="Select Project..." Data=@ProjectList Change=@(args => OnChangeSelectProject(args)) TextProperty="Name" ValueProperty="Id" />
+
+                            </div>
                             <div class="row">
                                 <div class="col">
                                     <div class="form-group">
-                                        <label class="control-label">Is Assigned ?</label>
-
-                                        <RadzenSelectBar @bind-Value="currentItem.IsAssigned" TValue="bool">
-                                            <Items>
-                                                <RadzenSelectBarItem Text="On" Value="true" />
-                                                <RadzenSelectBarItem Text="Off" Value="false" />
-                                            </Items>
-                                        </RadzenSelectBar>
-                                    </div>
-                                </div>
-                                <div class="col">
-                                    <div class="form-group">
-                                        <label class="control-label">TicketType</label>
+                                        <label class="control-label">Ticket Type</label>
                                         <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="currentItem.TicketTypeId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
                                                         Placeholder="Select Ticket Type..." Data=@TicketTypeList TextProperty="Name" ValueProperty="Id" />
 
@@ -435,21 +429,6 @@ else
 
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col">
-                                    <div class="form-group">
-                                        <label class="control-label">Project</label>
-                                        <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="currentItem.ProjectId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
-                                                        Placeholder="Select Project..." Data=@ProjectList TextProperty="Name" ValueProperty="Id" />
-
-                                    </div>
-                                </div>
-
-                            </div>
-
-
-
-
 
                         }
                         else
@@ -457,44 +436,18 @@ else
                             <div class="form-group">
                                 <label class="control-label">Project</label>
                                 <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="currentItem.ProjectId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
-                                                Placeholder="Select Project..." Data=@ProjectList TextProperty="Name" ValueProperty="Id" />
+                                                Disabled="true" Placeholder="Select Project..." Data=@ProjectList Change=@(args => OnChangeSelectProject(args)) TextProperty="Name" ValueProperty="Id" />
 
                             </div>
                             <div class="form-group">
-                                <label class="control-label">Is Assigned?</label>
-
-                                <RadzenSelectBar @bind-Value="currentItem.IsAssigned" TValue="bool">
-                                    <Items>
-                                        <RadzenSelectBarItem Text="On" Value="true" />
-                                        <RadzenSelectBarItem Text="Off" Value="false" />
-                                    </Items>
-                                </RadzenSelectBar>
-
+                                <label class="control-label">Status</label>
+                                <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="currentItem.StatusId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                Placeholder="Select Ticket Status..." Data=@TicketStatusList TextProperty="Name" ValueProperty="Id" />
 
                             </div>
-                            <div class="row">
-                                <div class="col">
-                                    <div class="form-group">
-                                        <label class="control-label">Ticket Priority</label>
-                                        <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="currentItem.PriorityId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
-                                                        Placeholder="Select Ticket Priority..." Data=@TicketPriorityList TextProperty="Name" ValueProperty="Id" />
-
-                                    </div>
-
-                                </div>
-                                <div class="col">
-                                    <div class="form-group">
-                                        <label class="control-label">Ticket Type</label>
-                                        <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="currentItem.TicketTypeId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
-                                                        Placeholder="Select Ticket Type..." Data=@TicketTypeList TextProperty="Name" ValueProperty="Id" />
-
-                                    </div>
-                                </div>
-                            </div>
-
-
 
                         }
+
 
                         <br />
                         <div class="row">
@@ -697,6 +650,20 @@ else
         await _deleteDialog.Close();
 
     }
+    public void OnChangeSelectProject(object value)
+    {
+        var str = value is IEnumerable<object> ? string.Join(", ", (IEnumerable<object>)value) : value;
+        if (str is not null)
+        {
+            var developerOnProject = _projectService.DeveloperOnProject(Convert.ToInt32(str.ToString()));
+            DeveloperList = developerOnProject.ToList();
+        }
+        else
+        {
+            DeveloperList = new();
+        }
+    }
+
 
     public async Task Add()
     {
@@ -822,7 +789,7 @@ else
 
 
             CancelCreateDialog();
-            await GetData();
+            GetData();
             await JSRuntime.InvokeVoidAsync("success", null);
         }
         catch (Exception ex)
@@ -856,7 +823,7 @@ else
             await _customHistoryService.AddHistoryAsync(oldTicket, newTicket, userId);
 
 
-            await GetData();
+            GetData();
             CancelEditDialog();
             await JSRuntime.InvokeVoidAsync("success", null);
 
@@ -907,7 +874,7 @@ else
             await _context.SaveChangesAsync();
 
 
-            await GetData();
+            GetData();
             CancelDeleteDialog();
             await JSRuntime.InvokeVoidAsync("success", null);
 
@@ -919,20 +886,14 @@ else
         }
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override  void OnInitialized()
     {
-        await  GetData();
+        GetData();
     }
 
 
-    public async Task  GetData()
+    public void  GetData()
     {
-        TicketTypeList = _context.TicketType.ToList();
-        TicketPriorityList = _context.Priority.ToList();
-        TicketStatusList = _context.Status.ToList();
-        OwnerList = _context.Users.ToList();
-        ProjectList = _context.Project.ToList();
-        DeveloperList = _context.Users.ToList();
         var currrentUser = _httpContextAccessor.HttpContext.User;
         user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
         IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
@@ -940,6 +901,27 @@ else
         IsNewUser = currrentUser.IsInRole(Roles.NewUser.ToString());
         IsSubmitter = currrentUser.IsInRole(Roles.Submitter.ToString());
         IsProjectManager = currrentUser.IsInRole(Roles.ProjectManager.ToString());
+
+        TicketTypeList = _context.TicketType.ToList();
+        TicketPriorityList = _context.Priority.ToList();
+        TicketStatusList = _context.Status.ToList();
+
+        ProjectList = _context.Project.ToList();
+        OwnerList = _context.Users.ToList();
+
+        var projectOfUser = new List<Models.Project>();
+        if (!IsInRoleAdmin && !IsProjectManager)
+        {
+            foreach (var item in ProjectList)
+            {
+                if(_projectService.IsUserOnProject(user.Id, item.Id))
+                {
+                    projectOfUser.Add(item);
+                }
+            }
+            ProjectList = projectOfUser;
+        }
+
 
 
         ItemList = _context.Ticket
