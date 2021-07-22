@@ -323,7 +323,7 @@
             _context.Add(newItem);
             _context.SaveChanges();
 
-            await GetData();
+            GetData();
             await CancelCreateDialog();
 
             await JSRuntime.InvokeVoidAsync("success", null);
@@ -341,7 +341,7 @@
             _context.Update(currentItem);
             _context.SaveChanges();
 
-            await GetData();
+            GetData();
             await CancelEditDialog();
 
             await JSRuntime.InvokeVoidAsync("success", null);
@@ -407,7 +407,7 @@
             //delete company
             _context.Company.Remove(currentItem);
             _context.SaveChanges();
-            await GetData();
+            GetData();
             await CancelDeleteDialog();
 
             await JSRuntime.InvokeVoidAsync("success", null);

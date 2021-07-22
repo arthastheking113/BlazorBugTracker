@@ -55,7 +55,7 @@
                                 }
                             </Template>
                         </RadzenDataGridColumn>
-                        <RadzenDataGridColumn TItem="Models.NotificationListModel" Property="Created" Title="Created">
+                        <RadzenDataGridColumn TItem="Models.NotificationListModel" Property="Created" Width="250px" Title="Created">
                             <Template Context="data">
                                 @if (!data.IsViewed)
                                 {
@@ -68,7 +68,7 @@
 
                             </Template>
                         </RadzenDataGridColumn>
-                        <RadzenDataGridColumn TItem="Models.NotificationListModel" Property="Sender.FullName" Width="150px" Title="From" />
+                        <RadzenDataGridColumn TItem="Models.NotificationListModel" Property="Sender.FullName" Width="100px" Title="From" />
                         <RadzenDataGridColumn TItem="Models.NotificationListModel" Property="Ticket" Width="70px" Title="Ticket ID">
                             <Template Context="data">
                                 @if (data.Ticket is not null)
