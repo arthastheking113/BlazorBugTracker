@@ -1,0 +1,279 @@
+﻿@page "/timesheet"
+@using BlazorBugTracker.Data
+@using Microsoft.AspNetCore.Http
+@inject ApplicationDbContext _context
+@inject IHttpContextAccessor _httpContextAccessor
+@inject IJSRuntime JSRuntime
+<div class="container-fluid">
+    <br /><br />
+    <div class="row">
+        <div class="col">
+            <RadzenScheduler @ref=@payRoll style="height: 768px;" TItem="Models.PayRoll" Data=@ItemList StartProperty="Start" EndProperty="End"
+                             TextProperty="Summary" SelectedIndex="2"
+                             SlotSelect=@OnSlotSelect AppointmentSelect=@OnAppointmentSelect >
+                <RadzenDayView />
+                <RadzenWeekView />
+                <RadzenMonthView />
+            </RadzenScheduler>
+        </div>
+    </div>
+</div>
+
+
+
+<ModalDialog @ref="_createDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             Width="_editModalWidth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>Create New Time Sheet</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col">
+                    <EditForm Model="newItem" OnValidSubmit="Add">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input class="form-control" />
+                            <RadzenDropDown AllowClear="true" TValue="string" @bind-Value="newItem.Name"  FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%"
+                                            Placeholder="Select Name..." Data=@DropDownName TextProperty="SelectName" ValueProperty="SelectName"  />
+
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label>Start</label>
+                                    <RadzenDatePicker Style="width:100%" TValue="DateTime" @bind-Value="newItem.Start" ShowTime="true" ShowSeconds="true" HoursStep="1.5" MinutesStep="5" SecondsStep="10" DateFormat="MM/dd/yyyy HH:mm" />
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label>End</label>
+                                    <RadzenDatePicker Style="width:100%" TValue="DateTime" @bind-Value="newItem.End" ShowTime="true" ShowSeconds="true" HoursStep="1.5" MinutesStep="5" SecondsStep="10" DateFormat="MM/dd/yyyy HH:mm" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Note</label>
+                            <RadzenHtmlEditor @bind-Value=@newItem.Note style="height: 300px; margin-bottom: 1rem;" UploadUrl="upload/image" >
+                                <RadzenHtmlEditorUndo />
+                                <RadzenHtmlEditorRedo />
+                                <RadzenHtmlEditorSeparator />
+                                <RadzenHtmlEditorBold />
+                                <RadzenHtmlEditorItalic />
+                                <RadzenHtmlEditorUnderline />
+                                <RadzenHtmlEditorStrikeThrough />
+                                <RadzenHtmlEditorSeparator />
+                                <RadzenHtmlEditorColor />
+                                <RadzenHtmlEditorBackground />
+                                <RadzenHtmlEditorRemoveFormat />
+                            </RadzenHtmlEditor>
+                        </div>
+                        <input type="submit" value="Create new Project" class="btn btn-outline-success btn-block">
+
+
+                    </EditForm>
+                    <br />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelCreateDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
+
+
+<ModalDialog @ref="_editDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             Width="_editModalWidth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>Edit Time Sheet #@currentItem.Id</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col">
+                    <EditForm Model="currentItem" OnValidSubmit="Edit">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="form-group">
+                            <label>Name</label>
+                            <RadzenDropDown AllowClear="true" TValue="string" @bind-Value="currentItem.Name" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%"
+                                            Placeholder="Select Name..." Data=@DropDownName TextProperty="SelectName" ValueProperty="SelectName" />
+
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label>Start</label>
+                                    <RadzenDatePicker Style="width:100%" TValue="DateTime" @bind-Value="currentItem.Start" ShowTime="true" ShowSeconds="true" HoursStep="1.5" MinutesStep="5" SecondsStep="10" DateFormat="MM/dd/yyyy HH:mm" />
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label>End</label>
+                                    <RadzenDatePicker Style="width:100%" TValue="DateTime" @bind-Value="currentItem.End" ShowTime="true" ShowSeconds="true" HoursStep="1.5" MinutesStep="5" SecondsStep="10" DateFormat="MM/dd/yyyy HH:mm" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Note</label>
+                            <RadzenHtmlEditor @bind-Value=@currentItem.Note style="height: 300px; margin-bottom: 1rem;" UploadUrl="upload/image">
+                                <RadzenHtmlEditorUndo />
+                                <RadzenHtmlEditorRedo />
+                                <RadzenHtmlEditorSeparator />
+                                <RadzenHtmlEditorBold />
+                                <RadzenHtmlEditorItalic />
+                                <RadzenHtmlEditorUnderline />
+                                <RadzenHtmlEditorStrikeThrough />
+                                <RadzenHtmlEditorSeparator />
+                                <RadzenHtmlEditorColor />
+                                <RadzenHtmlEditorBackground />
+                                <RadzenHtmlEditorRemoveFormat />
+                            </RadzenHtmlEditor>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <button type="submit" class="btn btn-primary btn-block">Accept Changes</button>
+                            </div>
+                        </div>
+                    </EditForm>
+                    <br />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelEditDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
+
+
+@code {
+    //Fully customized dialog
+    private double _overlayOpacity = 0.3;
+    private double _modalMinHeight = 100;
+    private double _editModalWidth;
+    private double _modalMinWitdth = 100;
+    private bool _modalAnimate = true;
+    private bool _modalCloseOnClick = true;
+    private bool _modalCloseOnEsc = true;
+    private bool _modalFocus = true;
+    private bool _modalCentered = true;
+    private bool _modalShowClose = true;
+
+
+
+    RadzenScheduler<Models.PayRoll> payRoll;
+    public List<Models.PayRoll> ItemList = new();
+    public Models.PayRoll newItem = new();
+    public Models.PayRoll currentItem = new();
+    public Models.CustomUser user = new();
+    public List<Models.SelectDropDown> DropDownName = new();
+
+    private ModalDialog _createDialog;
+    private ModalDialog _editDialog;
+    async Task OnSlotSelect(SchedulerSlotSelectEventArgs args)
+    {
+        newItem = new();
+        newItem.Start = args.Start;
+        newItem.End = args.End;
+        await _createDialog.Open();
+
+    }
+
+    async Task OnAppointmentSelect(SchedulerAppointmentSelectEventArgs<Models.PayRoll> args)
+    {
+        currentItem = args.Data;
+        await _editDialog.Open();
+    }
+
+    private async Task CancelCreateDialog()
+    {
+        newItem = new();
+
+        await _createDialog.Close();
+        await payRoll.Reload();
+    }
+    private async Task OpenEditDialog(int id)
+    {
+        currentItem = ItemList.FirstOrDefault(i => i.Id == id);
+        await _editDialog.Open();
+    }
+    private async Task CancelEditDialog()
+    {
+        currentItem = new();
+
+        await _editDialog.Close();
+        await payRoll.Reload();
+    }
+
+    public void Add()
+    {
+
+    }
+    public void Edit()
+    {
+
+    }
+    protected override void OnInitialized()
+    {
+        GetData();
+        GetDropDown();
+    }
+    public void GetData()
+    {
+        var currrentUser = _httpContextAccessor.HttpContext.User;
+        user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
+        ItemList = _context.PayRoll.Where(p => p.CustomUserId == user.Id).ToList();
+    }
+
+    public void GetDropDown()
+    {
+        DropDownName = new();
+        var dropdown = "New Ticket,New Development,Current Ticket,Fix Error,Meeting,Holiday";
+        foreach (var item in dropdown.Split(",").ToList())
+        {
+            Models.SelectDropDown newDropDown = new Models.SelectDropDown
+            {
+                SelectName = item,
+                SelectValue = item
+            };
+            DropDownName.Add(newDropDown);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        //user = await sessionStorage.GetItemAsync<CustomUser>("user");
+        //IsInRoleAdmin = await sessionStorage.GetItemAsync<bool>("IsInRoleAdmin");
+        //IsDeveloper = await sessionStorage.GetItemAsync<bool>("IsDeveloper");
+        //IsNewUser = await sessionStorage.GetItemAsync<bool>("IsNewUser");
+        //IsSubmitter = await sessionStorage.GetItemAsync<bool>("IsSubmitter");
+        //IsProjectManager = await sessionStorage.GetItemAsync<bool>("IsProjectManager");
+        if (firstRender)
+        {
+            //await JSRuntime.InvokeVoidAsync("enableTable", null);
+
+        }
+        _editModalWidth = await JSRuntime.InvokeAsync<int>("ScreenWidth", null);
+        _editModalWidth = _editModalWidth * 0.3;
+    }
+}
