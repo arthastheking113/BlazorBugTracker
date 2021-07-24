@@ -29,6 +29,7 @@ namespace BlazorBugTracker.Data
         public DbSet<InboxNotification> InboxNotification { get; set; }
         public DbSet<WelcomeNotification> WelcomeNotification { get; set; }
         public DbSet<PayRoll> PayRoll { get; set; }
+        public DbSet<PayCheck> PayCheck { get; set; }
 
     }
 }

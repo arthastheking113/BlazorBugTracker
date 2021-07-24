@@ -38,7 +38,20 @@ namespace BlazorBugTracker.Models
         [NotMapped]
         public string Role { get; set; }
 
+        public string Address { get; set; }
 
+        public string City { get; set; }
+
+        public string State { get; set; }
+
+        public string ZipCode { get; set; }
+
+        public long MonthlySalary { get; set; }
+        [NotMapped]
+        public long HourSalary { get { return (MonthlySalary / 4 / 6 / 8); } }
+         [NotMapped]
+        public long DaySalary { get { return (MonthlySalary / 4 / 6); } }
+        [Required]
         public int CompanyId { get; set; }
         public virtual Company Company { get; set; }
         public virtual ICollection<Project> Projects { get; set; }

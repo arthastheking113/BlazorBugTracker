@@ -5,7 +5,6 @@
 @inject IHttpContextAccessor _httpContextAccessor
 @inject IJSRuntime JSRuntime
 <div class="container-fluid">
-    <br /><br />
     <div class="row">
         <div class="col">
             <RadzenScheduler @ref=@payRoll style="height: 768px;" TItem="Models.PayRoll" Data=@ItemList StartProperty="Start" EndProperty="End"
@@ -15,6 +14,11 @@
                 <RadzenWeekView />
                 <RadzenMonthView />
             </RadzenScheduler>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+
         </div>
     </div>
 </div>
@@ -45,7 +49,6 @@
                         <ValidationSummary />
                         <div class="form-group">
                             <label>Name</label>
-                            <input class="form-control" />
                             <RadzenDropDown AllowClear="true" TValue="string" @bind-Value="newItem.Name"  FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%"
                                             Placeholder="Select Name..." Data=@DropDownName TextProperty="SelectName" ValueProperty="SelectName"  />
 
@@ -187,6 +190,7 @@
     public Models.PayRoll currentItem = new();
     public Models.CustomUser user = new();
     public List<Models.SelectDropDown> DropDownName = new();
+    public DateTime currentTime = DateTime.Now;
 
     private ModalDialog _createDialog;
     private ModalDialog _editDialog;
@@ -237,6 +241,10 @@
     {
         GetData();
         GetDropDown();
+        if (Convert.ToInt32(currentTime.ToString("dd")) <= 15)
+        {
+
+        }
     }
     public void GetData()
     {
@@ -275,5 +283,19 @@
         }
         _editModalWidth = await JSRuntime.InvokeAsync<int>("ScreenWidth", null);
         _editModalWidth = _editModalWidth * 0.3;
+    }
+    public static DateTime FirstDayOfMonth(this DateTime value)
+    {
+        return new DateTime(value.Year, value.Month, 1);
+    }
+
+    public static int DaysInMonth(this DateTime value)
+    {
+        return DateTime.DaysInMonth(value.Year, value.Month);
+    }
+
+    public static DateTime LastDayOfMonth(this DateTime value)
+    {
+        return new DateTime(value.Year, value.Month, DaysInMonth(value));
     }
 }

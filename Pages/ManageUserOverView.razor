@@ -26,68 +26,45 @@
             </div>
             <div class="card-body">
                 <a class="btn btn-outline-success" @onclick="OpenCreateDialog">Create New User</a>
-                <table id="useroverview" class="table table-striped table-hover">
+                <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true"
+                                FilterMode="FilterMode.Simple" PageSize="5" AllowPaging="true" AllowSorting="true" Data="@ItemList" TItem="Models.CustomUser" ColumnWidth="100%"
+                                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                LogicalFilterOperator="LogicalFilterOperator.Or">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="Models.CustomUser" Property="FullName" Title="Name" />
 
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>
-                                Full Name
-                            </th>
-                            <th>
-                                Email
-                            </th>
-                            <th>
-                                Phone Number
-                            </th>
-                            <th>
-                                Role
-                            </th>
-                            <th>
-                                Company
-                            </th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var user in ItemList)
-                        {
-                            var id = user.Id;
-                            <tr>
-                                <td>
-                                    <img class="d-flex mr-3 rounded-circle" style="width:5%" src="@(_imageService.DecodeFileAvatar(user.ImageData, user.ContentType))" />
-                                </td>
-                                <td>
-                                    @user.FullName
-                                </td>
-                                <td>
-                                    @user.Email
-                                </td>
-                                <td>
-                                    @user.PhoneNumber
-                                </td>
-                                <td>
-                                    @user.Role
-                                </td>
-                                <td>
-                                    @if (user.Company != null)
-                                    {
-                                        @(user.Company.Name)
-                                    }
-                                    else
-                                    {
-                                        <p>None</p>
-                                    }
+                        <RadzenDataGridColumn TItem="Models.CustomUser" Property="Email" Title="Email" />
+                        <RadzenDataGridColumn TItem="Models.CustomUser" Property="Role"  Title="Role" />
+                        <RadzenDataGridColumn TItem="Models.CustomUser" Property="Phone Number"  Title="Phone Number" />
+                        <RadzenDataGridColumn TItem="Models.CustomUser" Property="Company" Title="Company">
+                            <Template Context="data">
+                                @if (data.Company is not null)
+                                {
+                                    @(data.Company.Name)
+                                }
+                                else
+                                {
+                                    <p>None</p>
+                                }
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="Models.CustomUser" Width="90px">
+                            <Template Context="data">
+                                <div class="btn-group-vertical">
+                                    <a class="btn btn-info text-white btn-sm mb-1" @onclick="() => OpenEditDialog(data)"><i class="fas fa-pencil-alt"></i> Edit</a>
 
-                                </td>
-                                <td>
-                                    <a class="btn btn-outline-primary" @onclick="() => OpenEditDialog(id)">Edit</a>
-                                    <a class="btn btn-outline-danger" @onclick="() => OpenDeleteDialog(id)">Delete</a>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+                                    <button type="button" class="btn btn-danger btn-sm mb-1" @onclick="() => OpenDeleteDialog(data)">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+
+                                </div>
+
+
+                            </Template>
+                        </RadzenDataGridColumn>
+
+                    </Columns>
+                </RadzenDataGrid>
             </div>
         </div>
     </div>
@@ -148,6 +125,31 @@
                             <div class="col">
                                 <div style="margin-top:5%">Confirm Password</div>
                                 <input class="form-control" required min="6" max="50" @bind="newItem.NewConfirmPassword" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div style="margin-top:5%">Address</div>
+                                <input class="form-control" required @bind="newItem.Address" />
+                            </div>
+                            <div class="col">
+                                <div style="margin-top:5%">City</div>
+                                <input class="form-control" required  @bind="newItem.City" />
+                            </div>
+
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div style="margin-top:5%">State</div>
+                                <input class="form-control" required @bind="newItem.State" />
+                            </div>
+                            <div class="col">
+                                <div style="margin-top:5%">ZipCode</div>
+                                <input class="form-control" required @bind="newItem.ZipCode" />
+                            </div>
+                            <div class="col">
+                                <div style="margin-top:5%">Monthly Salary</div>
+                                <input class="form-control" required @bind="newItem.MonthlySalary" />
                             </div>
                         </div>
                         <div class="row">
@@ -224,6 +226,30 @@
                         </div>
                         <div class="row">
                             <div class="col">
+                                <div style="margin-top:5%">Address</div>
+                                <input class="form-control" required  @bind="currentItem.Address" />
+                            </div>
+                            <div class="col">
+                                <div style="margin-top:5%">City</div>
+                                <input class="form-control" required  @bind="currentItem.City" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div style="margin-top:5%">State</div>
+                                <input class="form-control" required @bind="currentItem.State" />
+                            </div>
+                            <div class="col">
+                                <div style="margin-top:5%">ZipCode</div>
+                                <input class="form-control" required @bind="currentItem.ZipCode" />
+                            </div>
+                            <div class="col">
+                                <div style="margin-top:5%">Monthly Salary</div>
+                                <input class="form-control" required @bind="currentItem.MonthlySalary" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
                                 <div style="margin-top:5%">Company</div>
                                 <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="currentItem.CompanyId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%"
                                                 Placeholder="Select Company..." Data=@CompanyList TextProperty="Name" ValueProperty="Id" Change=@(args => OnChange(args)) />
@@ -292,13 +318,45 @@
                             </div>
                             <div class="col">
                                 <div style="margin-top:5%">Phone Number</div>
-                                <input class="form-control" @bind="currentItem.PhoneNumber" />
+                                <input class="form-control" readonly @bind="currentItem.PhoneNumber" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div style="margin-top:5%">Address</div>
+                                <input class="form-control" readonly  @bind="currentItem.Address" />
+                            </div>
+                            <div class="col">
+                                <div style="margin-top:5%">City</div>
+                                <input class="form-control" readonly  @bind="currentItem.City" />
+                            </div>
+
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div style="margin-top:5%">State</div>
+                                <input class="form-control" readonly @bind="currentItem.State" />
+                            </div>
+                            <div class="col">
+                                <div style="margin-top:5%">ZipCode</div>
+                                <input class="form-control" readonly @bind="currentItem.ZipCode" />
+                            </div>
+                            <div class="col">
+                                <div style="margin-top:5%">Monthly Salary</div>
+                                <input class="form-control" readonly @bind="currentItem.MonthlySalary" />
                             </div>
                         </div>
                         <div class="row">
                             <div class="col">
                                 <div style="margin-top:5%">Company</div>
-                                <input class="form-control" readonly @bind="currentItem.Company.Name" />
+                                @if (currentItem.Company is not null)
+                                {
+                                    <input class="form-control" readonly @bind="currentItem.Company.Name" />
+                                }
+                                else
+                                {
+                                    <p>None</p>
+                                }
                             </div>
                         </div>
                         <br />
@@ -350,9 +408,9 @@
         errors = null;
         await _createDialog.Close();
     }
-    private async Task OpenEditDialog(string id)
+    private async Task OpenEditDialog(Models.CustomUser user)
     {
-        currentItem = ItemList.FirstOrDefault(i => i.Id == id);
+        currentItem = user;
         await _editDialog.Open();
     }
     private async Task CancelEditDialog()
@@ -360,9 +418,9 @@
         currentItem = new();
         await _editDialog.Close();
     }
-    private async Task OpenDeleteDialog(string id)
+    private async Task OpenDeleteDialog(Models.CustomUser user)
     {
-        currentItem = ItemList.FirstOrDefault(i => i.Id == id);
+        currentItem = user;
         await _deleteDialog.Open();
     }
     private async Task CancelDeleteDialog()
