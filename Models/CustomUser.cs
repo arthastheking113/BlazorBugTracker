@@ -34,6 +34,8 @@ namespace BlazorBugTracker.Models
         [NotMapped]
         [DataType(DataType.Password)]
         public string NewConfirmPassword { get; set; }
+        
+        public DateTime DateJoined { get; set; }
 
         [NotMapped]
         public string Role { get; set; }

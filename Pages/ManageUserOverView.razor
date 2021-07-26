@@ -442,6 +442,7 @@
                 if (newItem.NewPassword != newItem.NewConfirmPassword)
                 {
                     newItem.EmailConfirmed = true;
+                    newItem.DateJoined = DateTime.Now;
                     var result = await _userManager.CreateAsync(newItem, newItem.NewPassword);
                     if (result.Succeeded)
                     {

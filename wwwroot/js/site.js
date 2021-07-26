@@ -131,6 +131,25 @@ function errorUserExist() {
         timer: 1200
     })
 }
+function errorInvalidTimeSheet() {
+    Swal.fire({
+        position: 'center',
+        icon: 'error',
+        title: 'Opp, Invalid Date Time!!!',
+        showConfirmButton: false,
+        timer: 1200
+    })
+}
+function errorNotTime() {
+    Swal.fire({
+        position: 'center',
+        icon: 'error',
+        title: "Opp, You Can't Select Date You Haven't Worked Yet !!!",
+        showConfirmButton: false,
+        timer: 1500
+    })
+}
+
 function errorFileMissing() {
     Swal.fire({
         position: 'center',

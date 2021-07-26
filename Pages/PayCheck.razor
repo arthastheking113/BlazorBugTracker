@@ -7,7 +7,7 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col">
-            <RadzenScheduler @ref=@payRoll style="height: 768px;" TItem="Models.PayRoll" Data=@ItemList StartProperty="Start" EndProperty="End"
+            <RadzenScheduler @ref=@payRoll style="height: 600px;" TItem="Models.PayRoll" Data=@ItemList StartProperty="Start" EndProperty="End"
                              TextProperty="Summary" SelectedIndex="2"
                              SlotSelect=@OnSlotSelect AppointmentSelect=@OnAppointmentSelect >
                 <RadzenDayView />
@@ -16,8 +16,73 @@
             </RadzenScheduler>
         </div>
     </div>
-    <div class="row">
+    <div class="row ">
         <div class="col">
+            @if (user.DateJoined < Begin4Period)
+            {
+                <div class="row">
+                    <div class="col">
+                        @Begin4Period.ToString("MM/dd/yyyy") - @End4Period.ToString("MM/dd/yyyy")
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        @Begin3Period.ToString("MM/dd/yyyy") - @End3Period.ToString("MM/dd/yyyy")
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        @Begin2Period.ToString("MM/dd/yyyy") - @End2Period.ToString("MM/dd/yyyy")
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        @Begin1Period.ToString("MM/dd/yyyy") - @End1Period.ToString("MM/dd/yyyy") (Next Week)
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    <div class="col">
+                        <p class="mb-0">You Joined The Company From: @user.DateJoined.ToString("MM/dd/yyyy") </p>
+                        <p class="mb-0">You only can fill timesheet after @user.DateJoined.ToString("MM/dd/yyyy") </p>
+                    </div>
+                </div>
+                @if (user.DateJoined > Begin4Period && user.DateJoined < End4Period)
+                {
+                    <div class="row">
+                        <div class="col">
+                            @user.DateJoined.ToString("MM/dd/yyyy") - @End4Period.ToString("MM/dd/yyyy")
+                        </div>
+                    </div>
+                }
+                @if (user.DateJoined > Begin3Period && user.DateJoined < End3Period)
+                {
+                    <div class="row">
+                        <div class="col">
+                            @user.DateJoined.ToString("MM/dd/yyyy") - @End3Period.ToString("MM/dd/yyyy")
+                        </div>
+                    </div>
+                }
+
+                @if (user.DateJoined > Begin2Period && user.DateJoined < End2Period)
+                {
+                    <div class="row">
+                        <div class="col">
+                            @user.DateJoined.ToString("MM/dd/yyyy") - @End2Period.ToString("MM/dd/yyyy")
+                        </div>
+                    </div>
+                }
+
+
+
+                <div class="row">
+                    <div class="col">
+                        @Begin1Period.ToString("MM/dd/yyyy") - @End1Period.ToString("MM/dd/yyyy") (Next Week)
+                    </div>
+                </div>
+            }
 
         </div>
     </div>
@@ -57,13 +122,13 @@
                             <div class="col">
                                 <div class="form-group">
                                     <label>Start</label>
-                                    <RadzenDatePicker Style="width:100%" TValue="DateTime" @bind-Value="newItem.Start" ShowTime="true" ShowSeconds="true" HoursStep="1.5" MinutesStep="5" SecondsStep="10" DateFormat="MM/dd/yyyy HH:mm" />
+                                    <RadzenDatePicker Style="width:100%"  DateRender=@DateRender TValue="DateTime" @bind-Value="newItem.Start" ShowTime="true" ShowSeconds="true" HoursStep="1.5" MinutesStep="5" SecondsStep="10" DateFormat="MM/dd/yyyy HH:mm" />
                                 </div>
                             </div>
                             <div class="col">
                                 <div class="form-group">
                                     <label>End</label>
-                                    <RadzenDatePicker Style="width:100%" TValue="DateTime" @bind-Value="newItem.End" ShowTime="true" ShowSeconds="true" HoursStep="1.5" MinutesStep="5" SecondsStep="10" DateFormat="MM/dd/yyyy HH:mm" />
+                                    <RadzenDatePicker Style="width:100%"  DateRender=@DateRender TValue="DateTime" @bind-Value="newItem.End" ShowTime="true" ShowSeconds="true" HoursStep="1.5" MinutesStep="5" SecondsStep="10" DateFormat="MM/dd/yyyy HH:mm" />
                                 </div>
                             </div>
                         </div>
@@ -128,13 +193,13 @@
                             <div class="col">
                                 <div class="form-group">
                                     <label>Start</label>
-                                    <RadzenDatePicker Style="width:100%" TValue="DateTime" @bind-Value="currentItem.Start" ShowTime="true" ShowSeconds="true" HoursStep="1.5" MinutesStep="5" SecondsStep="10" DateFormat="MM/dd/yyyy HH:mm" />
+                                    <RadzenDatePicker Disabled="true"  Style="width:100%" TValue="DateTime" @bind-Value="currentItem.Start" ShowTime="true" ShowSeconds="true" HoursStep="1.5" MinutesStep="5" SecondsStep="10" DateFormat="MM/dd/yyyy HH:mm" />
                                 </div>
                             </div>
                             <div class="col">
                                 <div class="form-group">
                                     <label>End</label>
-                                    <RadzenDatePicker Style="width:100%" TValue="DateTime" @bind-Value="currentItem.End" ShowTime="true" ShowSeconds="true" HoursStep="1.5" MinutesStep="5" SecondsStep="10" DateFormat="MM/dd/yyyy HH:mm" />
+                                    <RadzenDatePicker Disabled="true" Style="width:100%" TValue="DateTime" @bind-Value="currentItem.End" ShowTime="true" ShowSeconds="true" HoursStep="1.5" MinutesStep="5" SecondsStep="10" DateFormat="MM/dd/yyyy HH:mm" />
                                 </div>
                             </div>
                         </div>
@@ -192,14 +257,34 @@
     public List<Models.SelectDropDown> DropDownName = new();
     public DateTime currentTime = DateTime.Now;
 
+    public DateTime Begin1Period;
+    public DateTime End1Period;
+    public DateTime Begin2Period;
+    public DateTime End2Period;
+    public DateTime Begin3Period;
+    public DateTime End3Period;
+    public DateTime Begin4Period;
+    public DateTime End4Period;
+    public DateTime BeginningOfTime;
+    IEnumerable<DateTime> DisableDate = null;
+
+
     private ModalDialog _createDialog;
     private ModalDialog _editDialog;
     async Task OnSlotSelect(SchedulerSlotSelectEventArgs args)
     {
-        newItem = new();
-        newItem.Start = args.Start;
-        newItem.End = args.End;
-        await _createDialog.Open();
+        if (user.DateJoined.Date <= args.Start.Date)
+        {
+            newItem = new();
+            newItem.Start = args.Start.AddHours(8);
+            newItem.End = args.Start.AddHours(17);
+            await _createDialog.Open();
+
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("errorNotTime", null);
+        }
 
     }
 
@@ -229,9 +314,16 @@
         await payRoll.Reload();
     }
 
-    public void Add()
+    public async Task Add()
     {
+        if (user.DateJoined > newItem.Start || user.DateJoined > newItem.End)
+        {
+            await JSRuntime.InvokeVoidAsync("errorInvalidTimeSheet", null);
+        }
+        else
+        {
 
+        }
     }
     public void Edit()
     {
@@ -241,10 +333,49 @@
     {
         GetData();
         GetDropDown();
-        if (Convert.ToInt32(currentTime.ToString("dd")) <= 15)
-        {
+        var currentDate = Convert.ToInt32(currentTime.ToString("dd"));
 
+
+        if (currentDate <= 15)
+        {
+            Begin2Period = FirstDayOfMonth(currentTime);
+            End2Period = Begin1Period.AddDays(14);
+
+            Begin1Period = End2Period.AddDays(1);
+            End1Period = LastDayOfMonth(currentTime);
+
+            var nextDateOfNextMonth = Begin2Period.AddDays(-2);
+
+            Begin4Period = FirstDayOfMonth(nextDateOfNextMonth);
+            End4Period = Begin4Period.AddDays(14);
+
+            End3Period = LastDayOfMonth(nextDateOfNextMonth);
+            Begin3Period = End4Period.AddDays(1);
         }
+        else
+        {
+            Begin1Period = FirstDayOfMonth(LastDayOfMonth(currentTime).AddDays(2));
+            End1Period = Begin1Period.AddDays(14);
+
+            Begin2Period = FirstDayOfMonth(currentTime).AddDays(14);
+            End2Period = LastDayOfMonth(currentTime);
+
+
+            Begin3Period = FirstDayOfMonth(currentTime);
+            End3Period = Begin3Period.AddDays(14);
+
+            Begin4Period = FirstDayOfMonth(Begin3Period.AddDays(-2)).AddDays(14);
+            End4Period = LastDayOfMonth(Begin4Period);
+        }
+
+        DisableDate = Enumerable.Range(0, 1 + user.DateJoined.AddDays(-1).Subtract(BeginningOfTime).Days)
+          .Select(offset => BeginningOfTime.AddDays(offset))
+          .ToArray();
+
+    }
+    void DateRender(DateRenderEventArgs args)
+    {
+        args.Disabled = DisableDate.Contains(args.Date);
     }
     public void GetData()
     {
@@ -270,12 +401,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        //user = await sessionStorage.GetItemAsync<CustomUser>("user");
-        //IsInRoleAdmin = await sessionStorage.GetItemAsync<bool>("IsInRoleAdmin");
-        //IsDeveloper = await sessionStorage.GetItemAsync<bool>("IsDeveloper");
-        //IsNewUser = await sessionStorage.GetItemAsync<bool>("IsNewUser");
-        //IsSubmitter = await sessionStorage.GetItemAsync<bool>("IsSubmitter");
-        //IsProjectManager = await sessionStorage.GetItemAsync<bool>("IsProjectManager");
+
         if (firstRender)
         {
             //await JSRuntime.InvokeVoidAsync("enableTable", null);
@@ -284,17 +410,17 @@
         _editModalWidth = await JSRuntime.InvokeAsync<int>("ScreenWidth", null);
         _editModalWidth = _editModalWidth * 0.3;
     }
-    public static DateTime FirstDayOfMonth(this DateTime value)
+    public DateTime FirstDayOfMonth(DateTime value)
     {
         return new DateTime(value.Year, value.Month, 1);
     }
 
-    public static int DaysInMonth(this DateTime value)
+    public int DaysInMonth(DateTime value)
     {
         return DateTime.DaysInMonth(value.Year, value.Month);
     }
 
-    public static DateTime LastDayOfMonth(this DateTime value)
+    public  DateTime LastDayOfMonth(DateTime value)
     {
         return new DateTime(value.Year, value.Month, DaysInMonth(value));
     }

@@ -128,7 +128,8 @@ namespace BlazorBugTracker.Utilities
                 FirstName = "Lan",
                 LastName = "Le",
                 EmailConfirmed = true,
-                CompanyId = company1Id
+                CompanyId = company1Id,
+                DateJoined = DateTime.Now
 
             };
             try
@@ -157,7 +158,8 @@ namespace BlazorBugTracker.Utilities
                 FirstName = "Henry",
                 LastName = "McCoy",
                 EmailConfirmed = true,
-                CompanyId = company1Id
+                CompanyId = company1Id,
+                DateJoined = DateTime.Now
             };
             try
             {
@@ -186,7 +188,8 @@ namespace BlazorBugTracker.Utilities
                 FirstName = "Peter",
                 LastName = "Quill",
                 EmailConfirmed = true,
-                CompanyId = company1Id
+                CompanyId = company1Id,
+                DateJoined = DateTime.Now
             };
             try
             {
@@ -215,7 +218,8 @@ namespace BlazorBugTracker.Utilities
                 FirstName = "Steve",
                 LastName = "Rogers",
                 EmailConfirmed = true,
-                CompanyId = company1Id
+                CompanyId = company1Id,
+                DateJoined = DateTime.Now
             };
             try
             {
@@ -244,7 +248,8 @@ namespace BlazorBugTracker.Utilities
                 FirstName = "James",
                 LastName = "Howlett",
                 EmailConfirmed = true,
-                CompanyId = company1Id
+                CompanyId = company1Id,
+                DateJoined = DateTime.Now
             };
             try
             {
@@ -273,7 +278,8 @@ namespace BlazorBugTracker.Utilities
                 FirstName = "Natasha",
                 LastName = "Romanova",
                 EmailConfirmed = true,
-                CompanyId = company1Id
+                CompanyId = company1Id,
+                DateJoined = DateTime.Now
             };
             try
             {
@@ -302,7 +308,8 @@ namespace BlazorBugTracker.Utilities
                 FirstName = "Carol",
                 LastName = "Danvers",
                 EmailConfirmed = true,
-                CompanyId = company1Id
+                CompanyId = company1Id,
+                DateJoined = DateTime.Now
             };
             try
             {
@@ -331,7 +338,8 @@ namespace BlazorBugTracker.Utilities
                 FirstName = "Tony",
                 LastName = "Stark",
                 EmailConfirmed = true,
-                CompanyId = company1Id
+                CompanyId = company1Id,
+                DateJoined = DateTime.Now
             };
             try
             {
@@ -360,7 +368,8 @@ namespace BlazorBugTracker.Utilities
                 FirstName = "Scott",
                 LastName = "Summers",
                 EmailConfirmed = true,
-                CompanyId = company1Id
+                CompanyId = company1Id,
+                DateJoined = DateTime.Now
             };
             try
             {
@@ -389,7 +398,8 @@ namespace BlazorBugTracker.Utilities
                 FirstName = "Sue",
                 LastName = "Storm",
                 EmailConfirmed = true,
-                CompanyId = company1Id
+                CompanyId = company1Id,
+                DateJoined = DateTime.Now
             };
             try
             {
@@ -422,7 +432,8 @@ namespace BlazorBugTracker.Utilities
                 FirstName = "Demo",
                 LastName = "Admin",
                 EmailConfirmed = true,
-                CompanyId = company2Id
+                CompanyId = company2Id,
+                DateJoined = DateTime.Now
             };
             try
             {
@@ -453,7 +464,8 @@ namespace BlazorBugTracker.Utilities
                 FirstName = "Demo",
                 LastName = "ProjectManager",
                 EmailConfirmed = true,
-                CompanyId = company2Id
+                CompanyId = company2Id,
+                DateJoined = DateTime.Now
             };
             try
             {
@@ -483,7 +495,8 @@ namespace BlazorBugTracker.Utilities
                 FirstName = "Demo",
                 LastName = "Developer",
                 EmailConfirmed = true,
-                CompanyId = company2Id
+                CompanyId = company2Id,
+                DateJoined = DateTime.Now
             };
             try
             {
@@ -513,7 +526,8 @@ namespace BlazorBugTracker.Utilities
                 FirstName = "Demo",
                 LastName = "Submitter",
                 EmailConfirmed = true,
-                CompanyId = company2Id
+                CompanyId = company2Id,
+                DateJoined = DateTime.Now
             };
             try
             {
@@ -543,7 +557,8 @@ namespace BlazorBugTracker.Utilities
                 FirstName = "Demo",
                 LastName = "NewUser",
                 EmailConfirmed = true,
-                CompanyId = company2Id
+                CompanyId = company2Id,
+                DateJoined = DateTime.Now
             };
             try
             {
