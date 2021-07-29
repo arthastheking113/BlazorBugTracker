@@ -1,7 +1,47 @@
 ﻿@page "/payroll"
+@using BlazorBugTracker.Data
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Http
+@inject ApplicationDbContext _context
+@inject IHttpContextAccessor _httpContextAccessor
+@inject IJSRuntime JSRuntime
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true"
+                            FilterMode="FilterMode.Simple" PageSize="10" AllowPaging="true" AllowSorting="true" Data="@ItemList" TItem="Models.PayCheckRecord" ColumnWidth="100%"
+                            FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                            LogicalFilterOperator="LogicalFilterOperator.Or">
+                <Columns>
+                    <RadzenDataGridColumn TItem="Models.PayRoll" Property="NumberDayOfWorked" Title="Days Worked" />
 
-<h3>Payroll</h3>
+                    <RadzenDataGridColumn TItem="Models.PayRoll" Property="Salary" Title="Salary" />
+
+                    <RadzenDataGridColumn TItem="Models.PayRoll" Property="Start" Title="Start" FormatString="{0:d}" />
+                    <RadzenDataGridColumn TItem="Models.PayRoll" Property="End" Title="End" FormatString="{0:d}" />
+
+                    <RadzenDataGridColumn TItem="Models.PayRoll" Property="IsSubmitted" Title="Submitted" />
+                    <RadzenDataGridColumn TItem="Models.PayRoll" Property="IsApproved" Title="Approved" />
+                </Columns>
+            </RadzenDataGrid>
+        </div>
+    </div>
+</div>
+
 
 @code {
+    public List<Models.PayCheckRecord> ItemList = new();
+    public Models.CustomUser user = new();
 
+    protected override void OnInitialized()
+    {
+        GetData();
+    }
+
+    public void GetData()
+    {
+        var currrentUser = _httpContextAccessor.HttpContext.User;
+        user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
+        ItemList = _context.PayCheckRecord.Include(c => c.CustomUser).Where(c => c.CustomUserId == user.Id).OrderByDescending(c => c.Start).ToList();
+    }
 }

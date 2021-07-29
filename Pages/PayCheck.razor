@@ -264,7 +264,7 @@
             <div class="row">
                 <div class="col text-right">
                     Is Submitted?
-                    <RadzenSelectBar @bind-Value=@currentPayRollIsSubmitted TValue="bool">
+                    <RadzenSelectBar @bind-Value=@currentPayRollIsSubmitted Change=@(args => OnChange(args)) TValue="bool">
                         <Items>
                             <RadzenSelectBarItem Text="Yes" Value="true" />
                             <RadzenSelectBarItem Text="No" Value="false" />
@@ -275,7 +275,7 @@
             <div class="row mt-2">
                 <div class="col text-right">
                     Is Approved?
-                    <RadzenSelectBar @bind-Value=@currentPayRollIsApproved TValue="bool">
+                    <RadzenSelectBar Disabled="true" @bind-Value=@currentPayRollIsApproved TValue="bool">
                         <Items>
                             <RadzenSelectBarItem Text="Yes" Value="true" />
                             <RadzenSelectBarItem Text="No" Value="false" />
@@ -415,6 +415,30 @@
         await payRoll.Reload();
     }
 
+    public async Task OnChange(object value)
+    {
+        var str = value is IEnumerable<int> ? string.Join(", ", (IEnumerable<int>)value) : value;
+        if (!string.IsNullOrEmpty(str.ToString()))
+        {
+            try
+            {
+                var submitted = bool.Parse(str.ToString());
+                foreach (var item in currentPayRoll)
+                {
+                    item.IsSubmitted = submitted;
+                    _context.Update(item);
+                }
+                _context.SaveChanges();
+            }
+            catch(Exception ex)
+            {
+                await JSRuntime.InvokeVoidAsync("error", null);
+            }
+
+
+        }
+    }
+
     public async Task Add()
     {
         if (user.DateJoined > newItem.Start || user.DateJoined > newItem.End)
@@ -498,11 +522,11 @@
           .Select(offset => BeginningOfTime.AddDays(offset))
           .ToArray();
 
-        ItemList = _context.PayRoll.Include(p => p.CustomUser).Where(p => p.CustomUserId == user.Id).ToList();
-        PayRollPeriod1 = ItemList.Where(p => p.Start.Date == Begin1Period.Date && p.End.Date == End1Period.Date).ToList();
-        PayRollPeriod2 = ItemList.Where(p => p.Start.Date == Begin2Period.Date && p.End.Date == End2Period.Date).ToList();
-        PayRollPeriod3 = ItemList.Where(p => p.Start.Date == Begin3Period.Date && p.End.Date == End3Period.Date).ToList();
-        PayRollPeriod4 = ItemList.Where(p => p.Start.Date == Begin4Period.Date && p.End.Date == End4Period.Date).ToList();
+        ItemList = _context.PayRoll.Include(p => p.CustomUser).Where(p => p.CustomUserId == user.Id).OrderByDescending(c => c.Start).ToList();
+        PayRollPeriod1 = ItemList.Where(p => p.Start.Date == Begin1Period.Date && p.End.Date == End1Period.Date).OrderByDescending(c => c.Start).ToList();
+        PayRollPeriod2 = ItemList.Where(p => p.Start.Date == Begin2Period.Date && p.End.Date == End2Period.Date).OrderByDescending(c => c.Start).ToList();
+        PayRollPeriod3 = ItemList.Where(p => p.Start.Date == Begin3Period.Date && p.End.Date == End3Period.Date).OrderByDescending(c => c.Start).ToList();
+        PayRollPeriod4 = ItemList.Where(p => p.Start.Date == Begin4Period.Date && p.End.Date == End4Period.Date).OrderByDescending(c => c.Start).ToList();
 
     }
     void DateRender(DateRenderEventArgs args)
