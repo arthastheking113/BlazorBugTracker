@@ -1,6 +1,7 @@
 ﻿@page "/timesheet"
 @using BlazorBugTracker.Data
 @using Microsoft.AspNetCore.Http
+@using Microsoft.EntityFrameworkCore
 @inject ApplicationDbContext _context
 @inject IHttpContextAccessor _httpContextAccessor
 @inject IJSRuntime JSRuntime
@@ -9,35 +10,42 @@
         <div class="col">
             <RadzenScheduler @ref=@payRoll style="height: 600px;" TItem="Models.PayRoll" Data=@ItemList StartProperty="Start" EndProperty="End"
                              TextProperty="Summary" SelectedIndex="2"
-                             SlotSelect=@OnSlotSelect AppointmentSelect=@OnAppointmentSelect >
+                             SlotSelect=@OnSlotSelect AppointmentSelect=@OnAppointmentSelect>
                 <RadzenDayView />
                 <RadzenWeekView />
                 <RadzenMonthView />
             </RadzenScheduler>
         </div>
     </div>
+    <br />
     <div class="row ">
+        <div class="col-2"></div>
         <div class="col">
             @if (user.DateJoined < Begin4Period)
             {
-                <div class="row">
+                <p>View Pay Roll</p>
+                <div class="row mt-2">
                     <div class="col">
-                        @Begin4Period.ToString("MM/dd/yyyy") - @End4Period.ToString("MM/dd/yyyy")
+                        <a style="cursor:pointer;text-decoration:underline;" @onclick="() => OpenPayRollDialog(PayRollPeriod4)"> @Begin4Period.ToString("MM/dd/yyyy") - @End4Period.ToString("MM/dd/yyyy")</a>
+
                     </div>
                 </div>
-                <div class="row">
+                <div class="row mt-2">
                     <div class="col">
-                        @Begin3Period.ToString("MM/dd/yyyy") - @End3Period.ToString("MM/dd/yyyy")
+                        <a style="cursor:pointer;text-decoration:underline;" @onclick="() => OpenPayRollDialog(PayRollPeriod3)"> @Begin3Period.ToString("MM/dd/yyyy") - @End3Period.ToString("MM/dd/yyyy")</a>
+
                     </div>
                 </div>
-                <div class="row">
+                <div class="row mt-2">
                     <div class="col">
-                        @Begin2Period.ToString("MM/dd/yyyy") - @End2Period.ToString("MM/dd/yyyy")
+                        <a style="cursor:pointer;text-decoration:underline;" @onclick="() => OpenPayRollDialog(PayRollPeriod2)"> @Begin2Period.ToString("MM/dd/yyyy") - @End2Period.ToString("MM/dd/yyyy")</a>
+
                     </div>
                 </div>
-                <div class="row">
+                <div class="row mt-2">
                     <div class="col">
-                        @Begin1Period.ToString("MM/dd/yyyy") - @End1Period.ToString("MM/dd/yyyy") (Next Week)
+                        <a style="cursor:pointer;text-decoration:underline;" @onclick="() => OpenPayRollDialog(PayRollPeriod1)"> @Begin1Period.ToString("MM/dd/yyyy") - @End1Period.ToString("MM/dd/yyyy") (Next Week)</a>
+
                     </div>
                 </div>
             }
@@ -49,37 +57,40 @@
                         <p class="mb-0">You only can fill timesheet after @user.DateJoined.ToString("MM/dd/yyyy") </p>
                     </div>
                 </div>
+                <br />
+                <p>View Pay Roll</p>
                 @if (user.DateJoined > Begin4Period && user.DateJoined < End4Period)
                 {
-                    <div class="row">
+                    <div class="row mt-2">
                         <div class="col">
-                            @user.DateJoined.ToString("MM/dd/yyyy") - @End4Period.ToString("MM/dd/yyyy")
+                            <a style="cursor:pointer;text-decoration:underline;" @onclick="() => OpenPayRollDialog(PayRollPeriod4)"> @user.DateJoined.ToString("MM/dd/yyyy") - @End4Period.ToString("MM/dd/yyyy")</a>
+
                         </div>
                     </div>
                 }
                 @if (user.DateJoined > Begin3Period && user.DateJoined < End3Period)
                 {
-                    <div class="row">
+                    <div class="row mt-2">
                         <div class="col">
-                            @user.DateJoined.ToString("MM/dd/yyyy") - @End3Period.ToString("MM/dd/yyyy")
+                            <a style="cursor:pointer;text-decoration:underline;" @onclick="() => OpenPayRollDialog(PayRollPeriod3)"> @user.DateJoined.ToString("MM/dd/yyyy") - @End3Period.ToString("MM/dd/yyyy")</a>
+
                         </div>
                     </div>
                 }
 
                 @if (user.DateJoined > Begin2Period && user.DateJoined < End2Period)
                 {
-                    <div class="row">
+                    <div class="row mt-2">
                         <div class="col">
-                            @user.DateJoined.ToString("MM/dd/yyyy") - @End2Period.ToString("MM/dd/yyyy")
+                            <a style="cursor:pointer;text-decoration:underline;" @onclick="() => OpenPayRollDialog(PayRollPeriod2)"> @user.DateJoined.ToString("MM/dd/yyyy") - @End2Period.ToString("MM/dd/yyyy")</a>
+
                         </div>
                     </div>
                 }
-
-
-
-                <div class="row">
+                <div class="row mt-2">
                     <div class="col">
-                        @Begin1Period.ToString("MM/dd/yyyy") - @End1Period.ToString("MM/dd/yyyy") (Next Week)
+                        <a style="cursor:pointer;text-decoration:underline;" @onclick="() => OpenPayRollDialog(PayRollPeriod1)"> @Begin1Period.ToString("MM/dd/yyyy") - @End1Period.ToString("MM/dd/yyyy") (Next Week)</a>
+
                     </div>
                 </div>
             }
@@ -114,27 +125,27 @@
                         <ValidationSummary />
                         <div class="form-group">
                             <label>Name</label>
-                            <RadzenDropDown AllowClear="true" TValue="string" @bind-Value="newItem.Name"  FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%"
-                                            Placeholder="Select Name..." Data=@DropDownName TextProperty="SelectName" ValueProperty="SelectName"  />
+                            <RadzenDropDown AllowClear="true" TValue="string" @bind-Value="newItem.Name" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%"
+                                            Placeholder="Select Name..." Data=@DropDownName TextProperty="SelectName" ValueProperty="SelectName" />
 
                         </div>
                         <div class="row">
                             <div class="col">
                                 <div class="form-group">
                                     <label>Start</label>
-                                    <RadzenDatePicker Style="width:100%"  DateRender=@DateRender TValue="DateTime" @bind-Value="newItem.Start" ShowTime="true" ShowSeconds="true" HoursStep="1.5" MinutesStep="5" SecondsStep="10" DateFormat="MM/dd/yyyy HH:mm" />
+                                    <RadzenDatePicker Style="width:100%" DateRender=@DateRender TValue="DateTime" @bind-Value="newItem.Start" ShowTime="true" ShowSeconds="true" HoursStep="1.5" MinutesStep="5" SecondsStep="10" DateFormat="MM/dd/yyyy HH:mm" />
                                 </div>
                             </div>
                             <div class="col">
                                 <div class="form-group">
                                     <label>End</label>
-                                    <RadzenDatePicker Style="width:100%"  DateRender=@DateRender TValue="DateTime" @bind-Value="newItem.End" ShowTime="true" ShowSeconds="true" HoursStep="1.5" MinutesStep="5" SecondsStep="10" DateFormat="MM/dd/yyyy HH:mm" />
+                                    <RadzenDatePicker Style="width:100%" DateRender=@DateRender TValue="DateTime" @bind-Value="newItem.End" ShowTime="true" ShowSeconds="true" HoursStep="1.5" MinutesStep="5" SecondsStep="10" DateFormat="MM/dd/yyyy HH:mm" />
                                 </div>
                             </div>
                         </div>
                         <div class="form-group">
                             <label>Note</label>
-                            <RadzenHtmlEditor @bind-Value=@newItem.Note style="height: 300px; margin-bottom: 1rem;" UploadUrl="upload/image" >
+                            <RadzenHtmlEditor @bind-Value=@newItem.Note style="height: 300px; margin-bottom: 1rem;" UploadUrl="upload/image">
                                 <RadzenHtmlEditorUndo />
                                 <RadzenHtmlEditorRedo />
                                 <RadzenHtmlEditorSeparator />
@@ -193,7 +204,7 @@
                             <div class="col">
                                 <div class="form-group">
                                     <label>Start</label>
-                                    <RadzenDatePicker Disabled="true"  Style="width:100%" TValue="DateTime" @bind-Value="currentItem.Start" ShowTime="true" ShowSeconds="true" HoursStep="1.5" MinutesStep="5" SecondsStep="10" DateFormat="MM/dd/yyyy HH:mm" />
+                                    <RadzenDatePicker Disabled="true" Style="width:100%" TValue="DateTime" @bind-Value="currentItem.Start" ShowTime="true" ShowSeconds="true" HoursStep="1.5" MinutesStep="5" SecondsStep="10" DateFormat="MM/dd/yyyy HH:mm" />
                                 </div>
                             </div>
                             <div class="col">
@@ -233,6 +244,69 @@
     </Content>
 </ModalDialog>
 
+<ModalDialog @ref="_payCheckDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             Width="_editModalWidth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>View Pay Check </h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col text-right">
+                    Is Submitted?
+                    <RadzenSelectBar @bind-Value=@currentPayRollIsSubmitted TValue="bool">
+                        <Items>
+                            <RadzenSelectBarItem Text="Yes" Value="true" />
+                            <RadzenSelectBarItem Text="No" Value="false" />
+                        </Items>
+                    </RadzenSelectBar>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col text-right">
+                    Is Approved?
+                    <RadzenSelectBar @bind-Value=@currentPayRollIsApproved TValue="bool">
+                        <Items>
+                            <RadzenSelectBarItem Text="Yes" Value="true" />
+                            <RadzenSelectBarItem Text="No" Value="false" />
+                        </Items>
+                    </RadzenSelectBar>
+                </div>
+            </div>
+            <div class="row mt-2 pb-2">
+                <div class="col">
+                    <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true"
+                                    FilterMode="FilterMode.Simple" PageSize="6" AllowPaging="true" AllowSorting="true" Data="@currentPayRoll" TItem="Models.PayRoll" ColumnWidth="100%"
+                                    FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                    LogicalFilterOperator="LogicalFilterOperator.Or">
+                        <Columns>
+                            <RadzenDataGridColumn TItem="Models.PayRoll" Property="TotalHour" Title="Total Hour" />
+
+                            <RadzenDataGridColumn TItem="Models.PayRoll" Property="Name" Title="Name" />
+                            <RadzenDataGridColumn TItem="Models.PayRoll" Property="Note" Title="Note" />
+                            <RadzenDataGridColumn TItem="Models.PayRoll" Property="Start" Title="Start" FormatString="{0:d}" />
+                            <RadzenDataGridColumn TItem="Models.PayRoll" Property="End" Title="End" FormatString="{0:d}" />
+                        </Columns>
+                    </RadzenDataGrid>
+                    <br />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelPayRollDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
+
+
 
 @code {
     //Fully customized dialog
@@ -255,6 +329,15 @@
     public Models.PayRoll currentItem = new();
     public Models.CustomUser user = new();
     public List<Models.SelectDropDown> DropDownName = new();
+
+    public List<Models.PayRoll> PayRollPeriod1 = new();
+    public List<Models.PayRoll> PayRollPeriod2 = new();
+    public List<Models.PayRoll> PayRollPeriod3 = new();
+    public List<Models.PayRoll> PayRollPeriod4 = new();
+    public List<Models.PayRoll> currentPayRoll = new();
+    public bool currentPayRollIsSubmitted;
+    public bool currentPayRollIsApproved;
+
     public DateTime currentTime = DateTime.Now;
 
     public DateTime Begin1Period;
@@ -271,6 +354,24 @@
 
     private ModalDialog _createDialog;
     private ModalDialog _editDialog;
+    private ModalDialog _payCheckDialog;
+    public async Task OpenPayRollDialog(List<Models.PayRoll> payRolls)
+    {
+        currentPayRoll = payRolls;
+        if (currentPayRoll.Count != 0)
+        {
+            currentPayRollIsSubmitted = currentPayRoll.First().IsSubmitted;
+            currentPayRollIsApproved = currentPayRoll.First().IsApproved;
+        }
+        await _payCheckDialog.Open();
+    }
+    public async Task CancelPayRollDialog()
+    {
+        currentPayRoll = new();
+        currentPayRollIsApproved = false;
+        currentPayRollIsSubmitted = false;
+        await _payCheckDialog.Close();
+    }
     async Task OnSlotSelect(SchedulerSlotSelectEventArgs args)
     {
         if (user.DateJoined.Date <= args.Start.Date)
@@ -322,12 +423,37 @@
         }
         else
         {
+            try
+            {
+                _context.Add(newItem);
+                _context.SaveChanges();
+
+                GetData();
+                await CancelCreateDialog();
+                await JSRuntime.InvokeVoidAsync("success", null);
+            }
+            catch (Exception ex)
+            {
+                await JSRuntime.InvokeVoidAsync("error", null);
+            }
 
         }
     }
-    public void Edit()
+    public async Task Edit()
     {
+        try
+        {
+            _context.Update(currentItem);
+            _context.SaveChanges();
 
+            GetData();
+            await CancelEditDialog();
+            await JSRuntime.InvokeVoidAsync("success", null);
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+        }
     }
     protected override void OnInitialized()
     {
@@ -372,6 +498,12 @@
           .Select(offset => BeginningOfTime.AddDays(offset))
           .ToArray();
 
+        ItemList = _context.PayRoll.Include(p => p.CustomUser).Where(p => p.CustomUserId == user.Id).ToList();
+        PayRollPeriod1 = ItemList.Where(p => p.Start.Date == Begin1Period.Date && p.End.Date == End1Period.Date).ToList();
+        PayRollPeriod2 = ItemList.Where(p => p.Start.Date == Begin2Period.Date && p.End.Date == End2Period.Date).ToList();
+        PayRollPeriod3 = ItemList.Where(p => p.Start.Date == Begin3Period.Date && p.End.Date == End3Period.Date).ToList();
+        PayRollPeriod4 = ItemList.Where(p => p.Start.Date == Begin4Period.Date && p.End.Date == End4Period.Date).ToList();
+
     }
     void DateRender(DateRenderEventArgs args)
     {
@@ -408,7 +540,7 @@
 
         }
         _editModalWidth = await JSRuntime.InvokeAsync<int>("ScreenWidth", null);
-        _editModalWidth = _editModalWidth * 0.3;
+        _editModalWidth = _editModalWidth * 0.5;
     }
     public DateTime FirstDayOfMonth(DateTime value)
     {
@@ -420,7 +552,7 @@
         return DateTime.DaysInMonth(value.Year, value.Month);
     }
 
-    public  DateTime LastDayOfMonth(DateTime value)
+    public DateTime LastDayOfMonth(DateTime value)
     {
         return new DateTime(value.Year, value.Month, DaysInMonth(value));
     }

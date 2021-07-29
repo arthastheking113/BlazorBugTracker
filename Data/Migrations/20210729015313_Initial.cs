@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -353,25 +354,25 @@ namespace BlazorBugTracker.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PayCheck",
+                name: "PayCheckRecord",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Start = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     End = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    NumberDayOfWorked = table.Column<float>(type: "real", nullable: false),
                     Salary = table.Column<long>(type: "bigint", nullable: false),
-                    NumberOfDayWorked = table.Column<double>(type: "double precision", nullable: false),
-                    Guid = table.Column<Guid>(type: "uuid", nullable: false),
-                    IsApproved = table.Column<bool>(type: "boolean", nullable: false),
                     IsSubmitted = table.Column<bool>(type: "boolean", nullable: false),
+                    IsApproved = table.Column<bool>(type: "boolean", nullable: false),
+                    PayRollId = table.Column<List<int>>(type: "integer[]", nullable: true),
                     CustomUserId = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PayCheck", x => x.Id);
+                    table.PrimaryKey("PK_PayCheckRecord", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_PayCheck_AspNetUsers_CustomUserId",
+                        name: "FK_PayCheckRecord_AspNetUsers_CustomUserId",
                         column: x => x.CustomUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
@@ -802,8 +803,8 @@ namespace BlazorBugTracker.Data.Migrations
                 column: "TicketId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PayCheck_CustomUserId",
-                table: "PayCheck",
+                name: "IX_PayCheckRecord_CustomUserId",
+                table: "PayCheckRecord",
                 column: "CustomUserId");
 
             migrationBuilder.CreateIndex(
@@ -916,7 +917,7 @@ namespace BlazorBugTracker.Data.Migrations
                 name: "Notification");
 
             migrationBuilder.DropTable(
-                name: "PayCheck");
+                name: "PayCheckRecord");
 
             migrationBuilder.DropTable(
                 name: "PayRoll");

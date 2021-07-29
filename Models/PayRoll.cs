@@ -20,6 +20,8 @@ namespace BlazorBugTracker.Models
         public string Note { get; set; }
         [NotMapped]
         public string Summary { get { return $"{Name} - {End.Subtract(Start).TotalHours}"; } }
+        [NotMapped]
+        public string TotalHour { get { return $"{End.Subtract(Start).TotalHours}"; } }
 
         public bool IsSubmitted { get; set; }
 

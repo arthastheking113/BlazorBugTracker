@@ -59,5 +59,9 @@ namespace BlazorBugTracker.Models
         public virtual ICollection<Project> Projects { get; set; }
 
         public virtual ICollection<Comment> Comments { get; set; }
+
+        public virtual ICollection<PayRoll> PayRolls { get; set; }
+
+        public virtual ICollection<PayCheckRecord> PayCheckRecords { get; set; }
     }
 }
