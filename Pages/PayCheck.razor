@@ -405,31 +405,58 @@
     }
     public async Task ConfirmSubmitPayCheck()
     {
-        List<int> numberList = new List<int>();
-        float numberOfWork = 0;
-        foreach (var item in currentPayRoll)
+        try
         {
-            numberList.Add(item.Id);
-            numberOfWork += float.Parse(item.TotalHour);
-        }
-        var salary = user.HourSalary * numberOfWork;
-        if (currentPayCheckRecord is null)
-        {
-            Models.PayCheckRecord newPayCheckRecord = new Models.PayCheckRecord
+            List<int> numberList = new List<int>();
+            float numberOfWork = 0;
+            foreach (var item in currentPayRoll)
             {
-                Start = currentPayRoll.First().Start,
-                End = currentPayRoll.Last().End,
-                NumberDayOfWorked = numberOfWork / 8,
-                CustomUserId = currentPayRoll.First().CustomUserId,
-                Salary = Convert.ToInt64(salary),
-                IsSubmitted = true
-            };
-            _context.Add(newPayCheckRecord);
+                numberList.Add(item.Id);
+                numberOfWork += float.Parse(item.TotalHour);
+            }
+            var salary = user.HourSalary * numberOfWork;
+            if (currentPayCheckRecord is null)
+            {
+                Models.PayCheckRecord newPayCheckRecord = new Models.PayCheckRecord
+                {
+                    Start = currentPayRoll.First().Start,
+                    End = currentPayRoll.Last().End,
+                    NumberDayOfWorked = numberOfWork / 8,
+                    CustomUserId = currentPayRoll.First().CustomUserId,
+                    Salary = Convert.ToInt64(salary),
+                    IsSubmitted = true,
+                    PayRollId = numberList
+                };
+                _context.Add(newPayCheckRecord);
+                _context.SaveChanges();
+            }
+            else
+            {
+                currentPayCheckRecord.Start = currentPayRoll.First().Start;
+                currentPayCheckRecord.End = currentPayRoll.Last().End;
+                currentPayCheckRecord.NumberDayOfWorked = numberOfWork / 8;
+                currentPayCheckRecord.CustomUserId = currentPayRoll.First().CustomUserId;
+                currentPayCheckRecord.Salary = Convert.ToInt64(salary);
+                currentPayCheckRecord.IsSubmitted = true;
+                currentPayCheckRecord.PayRollId = numberList;
+                _context.Update(currentPayCheckRecord);
+                _context.SaveChanges();
+            }
+            foreach (var item in currentPayRoll)
+            {
+                item.IsSubmitted = true;
+                _context.Update(item);
+            }
             _context.SaveChanges();
-        }
-        else
-        {
+            GetData();
+            await CancelSubmitPayCheckDialog();
+            await CancelPayRollDialog();
+            await JSRuntime.InvokeVoidAsync("success", null);
 
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
         }
 
     }
@@ -532,7 +559,7 @@
 
     public async Task Add()
     {
-        if (user.DateJoined > newItem.Start || user.DateJoined > newItem.End)
+        if (user.DateJoined < newItem.Start && user.DateJoined < newItem.End)
         {
             await JSRuntime.InvokeVoidAsync("errorInvalidTimeSheet", null);
         }
@@ -540,6 +567,7 @@
         {
             try
             {
+                newItem.CustomUserId = user.Id;
                 _context.Add(newItem);
                 _context.SaveChanges();
 
@@ -572,8 +600,6 @@
     }
     protected override void OnInitialized()
     {
-        GetData();
-        GetDropDown();
         var currentDate = Convert.ToInt32(currentTime.ToString("dd"));
 
 
@@ -609,15 +635,11 @@
             End4Period = LastDayOfMonth(Begin4Period);
         }
 
-        DisableDate = Enumerable.Range(0, 1 + user.DateJoined.AddDays(-1).Subtract(BeginningOfTime).Days)
-          .Select(offset => BeginningOfTime.AddDays(offset))
-          .ToArray();
 
-        ItemList = _context.PayRoll.Include(p => p.CustomUser).Where(p => p.CustomUserId == user.Id).OrderByDescending(c => c.Start).ToList();
-        PayRollPeriod1 = ItemList.Where(p => p.Start.Date == Begin1Period.Date && p.End.Date == End1Period.Date).OrderByDescending(c => c.Start).ToList();
-        PayRollPeriod2 = ItemList.Where(p => p.Start.Date == Begin2Period.Date && p.End.Date == End2Period.Date).OrderByDescending(c => c.Start).ToList();
-        PayRollPeriod3 = ItemList.Where(p => p.Start.Date == Begin3Period.Date && p.End.Date == End3Period.Date).OrderByDescending(c => c.Start).ToList();
-        PayRollPeriod4 = ItemList.Where(p => p.Start.Date == Begin4Period.Date && p.End.Date == End4Period.Date).OrderByDescending(c => c.Start).ToList();
+        GetData();
+        GetDropDown();
+
+
 
     }
     void DateRender(DateRenderEventArgs args)
@@ -628,7 +650,17 @@
     {
         var currrentUser = _httpContextAccessor.HttpContext.User;
         user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
-        ItemList = _context.PayRoll.Where(p => p.CustomUserId == user.Id).ToList();
+
+        ItemList = _context.PayRoll.Include(p => p.CustomUser).Where(p => p.CustomUserId == user.Id).OrderByDescending(c => c.Start).ToList();
+        PayRollPeriod1 = ItemList.Where(p => p.Start.Date == Begin1Period.Date && p.End.Date == End1Period.Date).OrderByDescending(c => c.Start).ToList();
+        PayRollPeriod2 = ItemList.Where(p => p.Start.Date == Begin2Period.Date && p.End.Date == End2Period.Date).OrderByDescending(c => c.Start).ToList();
+        PayRollPeriod3 = ItemList.Where(p => p.Start.Date == Begin3Period.Date && p.End.Date == End3Period.Date).OrderByDescending(c => c.Start).ToList();
+        PayRollPeriod4 = ItemList.Where(p => p.Start.Date == Begin4Period.Date && p.End.Date == End4Period.Date).OrderByDescending(c => c.Start).ToList();
+
+        DisableDate = Enumerable.Range(0, 1 + user.DateJoined.AddDays(-1).Subtract(BeginningOfTime).Days)
+         .Select(offset => BeginningOfTime.AddDays(offset))
+         .ToArray();
+
     }
 
     public void GetDropDown()
