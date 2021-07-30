@@ -262,6 +262,9 @@
     <Content>
         <div class="container-fluid">
             <div class="row">
+                <div class="col text-left">
+                    <button class="btn btn-outline-primary" @onclick="SubmitTimeSheet">Submit Time Sheet</button>
+                </div>
                 <div class="col text-right">
                     Is Submitted?
                     <RadzenSelectBar @bind-Value=@currentPayRollIsSubmitted Change=@(args => OnChange(args)) TValue="bool">
@@ -271,8 +274,6 @@
                         </Items>
                     </RadzenSelectBar>
                 </div>
-            </div>
-            <div class="row mt-2">
                 <div class="col text-right">
                     Is Approved?
                     <RadzenSelectBar Disabled="true" @bind-Value=@currentPayRollIsApproved TValue="bool">
@@ -283,6 +284,7 @@
                     </RadzenSelectBar>
                 </div>
             </div>
+
             <div class="row mt-2 pb-2">
                 <div class="col">
                     <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true"
@@ -307,6 +309,39 @@
 </ModalDialog>
 
 
+<ModalDialog @ref="_submitPayCheckDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             Width="_editModalWidth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>Submit Pay Check </h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col text-center">
+                    <h5>Are you sure you want to submit this time sheet?</h5>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col text-center">
+                    <button class="btn btn-outline-primary" @onclick="ConfirmSubmitPayCheck">Yes, submit this time sheet</button>
+                    <button class="btn btn-outline-secondary" @onclick="CancelSubmitPayCheckDialog">No, I'm not ready</button>
+                </div>
+            </div>
+
+        </div>
+    </Content>
+</ModalDialog>
+
 
 @code {
     //Fully customized dialog
@@ -327,6 +362,8 @@
     public List<Models.PayRoll> ItemList = new();
     public Models.PayRoll newItem = new();
     public Models.PayRoll currentItem = new();
+    public Models.PayCheckRecord currentPayCheckRecord = new();
+
     public Models.CustomUser user = new();
     public List<Models.SelectDropDown> DropDownName = new();
 
@@ -355,6 +392,48 @@
     private ModalDialog _createDialog;
     private ModalDialog _editDialog;
     private ModalDialog _payCheckDialog;
+    private ModalDialog _submitPayCheckDialog;
+
+
+    public async Task CancelSubmitPayCheckDialog()
+    {
+        await _submitPayCheckDialog.Close();
+    }
+    public async Task SubmitTimeSheet()
+    {
+        await _submitPayCheckDialog.Open();
+    }
+    public async Task ConfirmSubmitPayCheck()
+    {
+        List<int> numberList = new List<int>();
+        float numberOfWork = 0;
+        foreach (var item in currentPayRoll)
+        {
+            numberList.Add(item.Id);
+            numberOfWork += float.Parse(item.TotalHour);
+        }
+        var salary = user.HourSalary * numberOfWork;
+        if (currentPayCheckRecord is null)
+        {
+            Models.PayCheckRecord newPayCheckRecord = new Models.PayCheckRecord
+            {
+                Start = currentPayRoll.First().Start,
+                End = currentPayRoll.Last().End,
+                NumberDayOfWorked = numberOfWork / 8,
+                CustomUserId = currentPayRoll.First().CustomUserId,
+                Salary = Convert.ToInt64(salary),
+                IsSubmitted = true
+            };
+            _context.Add(newPayCheckRecord);
+            _context.SaveChanges();
+        }
+        else
+        {
+
+        }
+
+    }
+
     public async Task OpenPayRollDialog(List<Models.PayRoll> payRolls)
     {
         currentPayRoll = payRolls;
@@ -363,6 +442,17 @@
             currentPayRollIsSubmitted = currentPayRoll.First().IsSubmitted;
             currentPayRollIsApproved = currentPayRoll.First().IsApproved;
         }
+        List<int> IdList = new List<int>();
+        foreach (var item in currentPayRoll)
+        {
+            IdList.Add(item.Id);
+        }
+        List<int> SumittedIdList = new List<int>();
+        foreach (var item in currentPayRoll.Where(p => p.IsSubmitted))
+        {
+            SumittedIdList.Add(item.Id);
+        }
+        currentPayCheckRecord = _context.PayCheckRecord.FirstOrDefault(p => p.PayRollId == SumittedIdList);
         await _payCheckDialog.Open();
     }
     public async Task CancelPayRollDialog()
@@ -370,6 +460,7 @@
         currentPayRoll = new();
         currentPayRollIsApproved = false;
         currentPayRollIsSubmitted = false;
+        currentPayCheckRecord = new();
         await _payCheckDialog.Close();
     }
     async Task OnSlotSelect(SchedulerSlotSelectEventArgs args)
@@ -430,7 +521,7 @@
                 }
                 _context.SaveChanges();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 await JSRuntime.InvokeVoidAsync("error", null);
             }
