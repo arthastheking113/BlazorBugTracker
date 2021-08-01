@@ -8,241 +8,30 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col">
-            <RadzenScheduler @ref=@payRoll style="height: 600px;" TItem="Models.PayRoll" Data=@ItemList StartProperty="Start" EndProperty="End"
-                             TextProperty="Summary" SelectedIndex="2"
-                             SlotSelect=@OnSlotSelect AppointmentSelect=@OnAppointmentSelect>
-                <RadzenDayView />
-                <RadzenWeekView />
-                <RadzenMonthView />
-            </RadzenScheduler>
-        </div>
-    </div>
-    <br />
-    <div class="row ">
-        <div class="col-2"></div>
-        <div class="col">
-            @if (user.DateJoined < Begin4Period)
-            {
-                <p>View Pay Roll</p>
-                <div class="row mt-2">
-                    <div class="col">
-                        <a style="cursor:pointer;text-decoration:underline;" @onclick="() => OpenPayRollDialog(PayRollPeriod4)"> @Begin4Period.ToString("MM/dd/yyyy") - @End4Period.ToString("MM/dd/yyyy")</a>
+            <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true"
+                            FilterMode="FilterMode.Simple" PageSize="7" AllowPaging="true" AllowSorting="true" Data="@ListOfTwoWeeks" TItem="Models.TwoWeeksModel" ColumnWidth="100%"
+                            FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                            LogicalFilterOperator="LogicalFilterOperator.Or">
+                <Columns>
+                    <RadzenDataGridColumn TItem="Models.TwoWeeksModel"  Title="View">
+                        <Template Context="data">
 
-                    </div>
-                </div>
-                <div class="row mt-2">
-                    <div class="col">
-                        <a style="cursor:pointer;text-decoration:underline;" @onclick="() => OpenPayRollDialog(PayRollPeriod3)"> @Begin3Period.ToString("MM/dd/yyyy") - @End3Period.ToString("MM/dd/yyyy")</a>
+                            <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="help" Click=@(() => OpenCreateDialog(data)) Text="View" />
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="Models.TwoWeeksModel" Property="Start" Title="Start"  FormatString="{0:d}"  />
 
-                    </div>
-                </div>
-                <div class="row mt-2">
-                    <div class="col">
-                        <a style="cursor:pointer;text-decoration:underline;" @onclick="() => OpenPayRollDialog(PayRollPeriod2)"> @Begin2Period.ToString("MM/dd/yyyy") - @End2Period.ToString("MM/dd/yyyy")</a>
-
-                    </div>
-                </div>
-                <div class="row mt-2">
-                    <div class="col">
-                        <a style="cursor:pointer;text-decoration:underline;" @onclick="() => OpenPayRollDialog(PayRollPeriod1)"> @Begin1Period.ToString("MM/dd/yyyy") - @End1Period.ToString("MM/dd/yyyy") (Next Week)</a>
-
-                    </div>
-                </div>
-            }
-            else
-            {
-                <div class="row">
-                    <div class="col">
-                        <p class="mb-0">You Joined The Company From: @user.DateJoined.ToString("MM/dd/yyyy") </p>
-                        <p class="mb-0">You only can fill timesheet after @user.DateJoined.ToString("MM/dd/yyyy") </p>
-                    </div>
-                </div>
-                <br />
-                <p>View Pay Roll</p>
-                @if (user.DateJoined > Begin4Period && user.DateJoined < End4Period)
-                {
-                    <div class="row mt-2">
-                        <div class="col">
-                            <a style="cursor:pointer;text-decoration:underline;" @onclick="() => OpenPayRollDialog(PayRollPeriod4)"> @user.DateJoined.ToString("MM/dd/yyyy") - @End4Period.ToString("MM/dd/yyyy")</a>
-
-                        </div>
-                    </div>
-                }
-                @if (user.DateJoined > Begin3Period && user.DateJoined < End3Period)
-                {
-                    <div class="row mt-2">
-                        <div class="col">
-                            <a style="cursor:pointer;text-decoration:underline;" @onclick="() => OpenPayRollDialog(PayRollPeriod3)"> @user.DateJoined.ToString("MM/dd/yyyy") - @End3Period.ToString("MM/dd/yyyy")</a>
-
-                        </div>
-                    </div>
-                }
-
-                @if (user.DateJoined > Begin2Period && user.DateJoined < End2Period)
-                {
-                    <div class="row mt-2">
-                        <div class="col">
-                            <a style="cursor:pointer;text-decoration:underline;" @onclick="() => OpenPayRollDialog(PayRollPeriod2)"> @user.DateJoined.ToString("MM/dd/yyyy") - @End2Period.ToString("MM/dd/yyyy")</a>
-
-                        </div>
-                    </div>
-                }
-                <div class="row mt-2">
-                    <div class="col">
-                        <a style="cursor:pointer;text-decoration:underline;" @onclick="() => OpenPayRollDialog(PayRollPeriod1)"> @Begin1Period.ToString("MM/dd/yyyy") - @End1Period.ToString("MM/dd/yyyy") (Next Week)</a>
-
-                    </div>
-                </div>
-            }
-
+                    <RadzenDataGridColumn TItem="Models.TwoWeeksModel" Property="End" Title="End"  FormatString="{0:d}"  />
+                   
+                </Columns>
+            </RadzenDataGrid>
         </div>
     </div>
 </div>
 
 
 
-<ModalDialog @ref="_createDialog"
-             OverlayOpacity="_overlayOpacity"
-             MinHeight="@_modalMinHeight"
-             MinWidth="@_modalMinWitdth"
-             Width="_editModalWidth"
-             CloseOnOverlayClick="_modalCloseOnClick"
-             CloseOnEscapeKey="_modalCloseOnEsc"
-             Focus="_modalFocus"
-             Animate="_modalAnimate"
-             Centered="_modalCentered"
-             ShowCloseButton="_modalShowClose">
-    <Header>
-        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
-        <h4>Create New Time Sheet</h4>
-    </Header>
-    <Content>
-        <div class="container-fluid">
-            <div class="row pb-2">
-                <div class="col">
-                    <EditForm Model="newItem" OnValidSubmit="Add">
-                        <DataAnnotationsValidator />
-                        <ValidationSummary />
-                        <div class="form-group">
-                            <label>Name</label>
-                            <RadzenDropDown AllowClear="true" TValue="string" @bind-Value="newItem.Name" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%"
-                                            Placeholder="Select Name..." Data=@DropDownName TextProperty="SelectName" ValueProperty="SelectName" />
 
-                        </div>
-                        <div class="row">
-                            <div class="col">
-                                <div class="form-group">
-                                    <label>Start</label>
-                                    <RadzenDatePicker Style="width:100%" DateRender=@DateRender TValue="DateTime" @bind-Value="newItem.Start" ShowTime="true" ShowSeconds="true" HoursStep="1.5" MinutesStep="5" SecondsStep="10" DateFormat="MM/dd/yyyy HH:mm" />
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="form-group">
-                                    <label>End</label>
-                                    <RadzenDatePicker Style="width:100%" DateRender=@DateRender TValue="DateTime" @bind-Value="newItem.End" ShowTime="true" ShowSeconds="true" HoursStep="1.5" MinutesStep="5" SecondsStep="10" DateFormat="MM/dd/yyyy HH:mm" />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Note</label>
-                            <RadzenHtmlEditor @bind-Value=@newItem.Note style="height: 300px; margin-bottom: 1rem;" UploadUrl="upload/image">
-                                <RadzenHtmlEditorUndo />
-                                <RadzenHtmlEditorRedo />
-                                <RadzenHtmlEditorSeparator />
-                                <RadzenHtmlEditorBold />
-                                <RadzenHtmlEditorItalic />
-                                <RadzenHtmlEditorUnderline />
-                                <RadzenHtmlEditorStrikeThrough />
-                                <RadzenHtmlEditorSeparator />
-                                <RadzenHtmlEditorColor />
-                                <RadzenHtmlEditorBackground />
-                                <RadzenHtmlEditorRemoveFormat />
-                            </RadzenHtmlEditor>
-                        </div>
-                        <input type="submit" value="Create new Project" class="btn btn-outline-success btn-block">
-
-
-                    </EditForm>
-                    <br />
-                    <button class="btn btn-secondary btn-block" @onclick="CancelCreateDialog">Cancel</button>
-                </div>
-            </div>
-        </div>
-    </Content>
-</ModalDialog>
-
-
-<ModalDialog @ref="_editDialog"
-             OverlayOpacity="_overlayOpacity"
-             MinHeight="@_modalMinHeight"
-             MinWidth="@_modalMinWitdth"
-             Width="_editModalWidth"
-             CloseOnOverlayClick="_modalCloseOnClick"
-             CloseOnEscapeKey="_modalCloseOnEsc"
-             Focus="_modalFocus"
-             Animate="_modalAnimate"
-             Centered="_modalCentered"
-             ShowCloseButton="_modalShowClose">
-    <Header>
-        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
-        <h4>Edit Time Sheet #@currentItem.Id</h4>
-    </Header>
-    <Content>
-        <div class="container-fluid">
-            <div class="row pb-2">
-                <div class="col">
-                    <EditForm Model="currentItem" OnValidSubmit="Edit">
-                        <DataAnnotationsValidator />
-                        <ValidationSummary />
-                        <div class="form-group">
-                            <label>Name</label>
-                            <RadzenDropDown AllowClear="true" TValue="string" @bind-Value="currentItem.Name" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%"
-                                            Placeholder="Select Name..." Data=@DropDownName TextProperty="SelectName" ValueProperty="SelectName" />
-
-                        </div>
-                        <div class="row">
-                            <div class="col">
-                                <div class="form-group">
-                                    <label>Start</label>
-                                    <RadzenDatePicker Disabled="true" Style="width:100%" TValue="DateTime" @bind-Value="currentItem.Start" ShowTime="true" ShowSeconds="true" HoursStep="1.5" MinutesStep="5" SecondsStep="10" DateFormat="MM/dd/yyyy HH:mm" />
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="form-group">
-                                    <label>End</label>
-                                    <RadzenDatePicker Disabled="true" Style="width:100%" TValue="DateTime" @bind-Value="currentItem.End" ShowTime="true" ShowSeconds="true" HoursStep="1.5" MinutesStep="5" SecondsStep="10" DateFormat="MM/dd/yyyy HH:mm" />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Note</label>
-                            <RadzenHtmlEditor @bind-Value=@currentItem.Note style="height: 300px; margin-bottom: 1rem;" UploadUrl="upload/image">
-                                <RadzenHtmlEditorUndo />
-                                <RadzenHtmlEditorRedo />
-                                <RadzenHtmlEditorSeparator />
-                                <RadzenHtmlEditorBold />
-                                <RadzenHtmlEditorItalic />
-                                <RadzenHtmlEditorUnderline />
-                                <RadzenHtmlEditorStrikeThrough />
-                                <RadzenHtmlEditorSeparator />
-                                <RadzenHtmlEditorColor />
-                                <RadzenHtmlEditorBackground />
-                                <RadzenHtmlEditorRemoveFormat />
-                            </RadzenHtmlEditor>
-                        </div>
-                        <div class="row">
-                            <div class="col">
-                                <button type="submit" class="btn btn-primary btn-block">Accept Changes</button>
-                            </div>
-                        </div>
-                    </EditForm>
-                    <br />
-                    <button class="btn btn-secondary btn-block" @onclick="CancelEditDialog">Cancel</button>
-                </div>
-            </div>
-        </div>
-    </Content>
-</ModalDialog>
 
 <ModalDialog @ref="_payCheckDialog"
              OverlayOpacity="_overlayOpacity"
@@ -257,7 +46,7 @@
              ShowCloseButton="_modalShowClose">
     <Header>
         @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
-        <h4>View Pay Check </h4>
+        <h4>View Time Sheet </h4>
     </Header>
     <Content>
         <div class="container-fluid">
@@ -267,7 +56,7 @@
                 </div>
                 <div class="col text-right">
                     Is Submitted?
-                    <RadzenSelectBar @bind-Value=@currentPayRollIsSubmitted Change=@(args => OnChange(args)) TValue="bool">
+                    <RadzenSelectBar  Disabled="true" @bind-Value=@currentPayRollIsSubmitted  TValue="bool">
                         <Items>
                             <RadzenSelectBarItem Text="Yes" Value="true" />
                             <RadzenSelectBarItem Text="No" Value="false" />
@@ -284,22 +73,82 @@
                     </RadzenSelectBar>
                 </div>
             </div>
-
+            <div class="row mt-2">
+                <div class="col">
+                    <h3>Week:  @currentTwoWeek.Start.ToString("MM/dd/yyyy") - @currentTwoWeek.End.ToString("MM/dd/yyyy")</h3>
+                </div>
+            </div>
             <div class="row mt-2 pb-2">
                 <div class="col">
-                    <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true"
-                                    FilterMode="FilterMode.Simple" PageSize="6" AllowPaging="true" AllowSorting="true" Data="@currentPayRoll" TItem="Models.PayRoll" ColumnWidth="100%"
-                                    FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                                    LogicalFilterOperator="LogicalFilterOperator.Or">
-                        <Columns>
-                            <RadzenDataGridColumn TItem="Models.PayRoll" Property="TotalHour" Title="Total Hour" />
+                    <table class="table table-condensed" >
+                        <thead>
+                         
+                            <tr>
+                                <th>Date</th>
+                                <th>In</th>
+                                <th>Out</th>
+                                <th>Type</th>
+                                <th>Note</th>
+                                <th>Total</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach(var item in currentItemList)
+                            {
 
-                            <RadzenDataGridColumn TItem="Models.PayRoll" Property="Name" Title="Name" />
-                            <RadzenDataGridColumn TItem="Models.PayRoll" Property="Note" Title="Note" />
-                            <RadzenDataGridColumn TItem="Models.PayRoll" Property="Start" Title="Start" FormatString="{0:d}" />
-                            <RadzenDataGridColumn TItem="Models.PayRoll" Property="End" Title="End" FormatString="{0:d}" />
-                        </Columns>
-                    </RadzenDataGrid>
+                                <tr>
+                                    <td>
+                                        <input class="form-control" readonly  value="@item.Start.ToString("dddd, dd MMMM yyyy")" />
+                                    </td>
+                                    <td>
+                                        <input class="form-control" type="time" @bind="item.Start"  @bind:event="oninput" @onchange="reload"/>
+                                    </td>
+                                    <td>
+                                        <input class="form-control" type="time" @bind="item.End" @bind:event="oninput" @onchange="reload"/>
+                                    </td>
+                                    <td>
+                                        <RadzenDropDown AllowClear="true" TValue="string" @bind-Value="item.Name" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%"
+                                                        Placeholder="Select Type..." Data=@DropDownName TextProperty="SelectName" ValueProperty="SelectName" />
+
+                                    </td>
+                                    <td>
+                                        <input class="form-control" type="text"  @bind="item.Note" />
+                                    </td>
+                                    <td>
+                                        @if (item.Start.DayOfWeek == DayOfWeek.Sunday || item.Start.DayOfWeek == DayOfWeek.Saturday)
+                                        {
+                                            <p>@((item.End - item.Start).Hours) Hours</p>
+                                        }
+                                        else
+                                        {
+                                            <p>@((item.End.AddHours(-1) - item.Start).Hours) Hours</p>
+                                        }
+
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-outline-primary" @onclick="() => Save(item)">Save</button>
+                                    </td>
+                                </tr>
+                            }
+
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td>
+                                    <h4>Total</h4>
+                                </td>
+                                <td>
+                                </td>
+                                <td>
+                                </td>
+                                <td>
+                                    <h4>@totalWeek hours</h4>
+                                </td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
                     <br />
                     <button class="btn btn-secondary btn-block" @onclick="CancelPayRollDialog">Cancel</button>
                 </div>
@@ -360,6 +209,10 @@
 
     RadzenScheduler<Models.PayRoll> payRoll;
     public List<Models.PayRoll> ItemList = new();
+    public List<Models.PayRoll> currentItemList = new();
+
+    public List<Models.TwoWeeksModel> ListOfTwoWeeks = new();
+    public Models.TwoWeeksModel currentTwoWeek = new();
     public Models.PayRoll newItem = new();
     public Models.PayRoll currentItem = new();
     public Models.PayCheckRecord currentPayCheckRecord = new();
@@ -379,16 +232,11 @@
 
     public DateTime Begin1Period;
     public DateTime End1Period;
-    public DateTime Begin2Period;
-    public DateTime End2Period;
-    public DateTime Begin3Period;
-    public DateTime End3Period;
-    public DateTime Begin4Period;
-    public DateTime End4Period;
+    public IEnumerable<DateTime> DayRange = null;
     public DateTime BeginningOfTime;
     IEnumerable<DateTime> DisableDate = null;
 
-
+    public double totalWeek;
     private ModalDialog _createDialog;
     private ModalDialog _editDialog;
     private ModalDialog _payCheckDialog;
@@ -409,20 +257,24 @@
         {
             List<int> numberList = new List<int>();
             float numberOfWork = 0;
-            foreach (var item in currentPayRoll)
+            foreach (var item in currentItemList)
             {
-                numberList.Add(item.Id);
-                numberOfWork += float.Parse(item.TotalHour);
+                if (item.Id != 0)
+                {
+                    numberList.Add(item.Id);
+                    numberOfWork += float.Parse(item.TotalHour);
+                }
+
             }
             var salary = user.HourSalary * numberOfWork;
             if (currentPayCheckRecord is null)
             {
                 Models.PayCheckRecord newPayCheckRecord = new Models.PayCheckRecord
                 {
-                    Start = currentPayRoll.First().Start,
-                    End = currentPayRoll.Last().End,
+                    Start = currentItemList.First().Start,
+                    End = currentItemList.Last().End,
                     NumberDayOfWorked = numberOfWork / 8,
-                    CustomUserId = currentPayRoll.First().CustomUserId,
+                    CustomUserId = currentItemList.First().CustomUserId,
                     Salary = Convert.ToInt64(salary),
                     IsSubmitted = true,
                     PayRollId = numberList
@@ -432,23 +284,28 @@
             }
             else
             {
-                currentPayCheckRecord.Start = currentPayRoll.First().Start;
-                currentPayCheckRecord.End = currentPayRoll.Last().End;
+                currentPayCheckRecord.Start = currentItemList.First().Start;
+                currentPayCheckRecord.End = currentItemList.Last().End;
                 currentPayCheckRecord.NumberDayOfWorked = numberOfWork / 8;
-                currentPayCheckRecord.CustomUserId = currentPayRoll.First().CustomUserId;
+                currentPayCheckRecord.CustomUserId = currentItemList.First().CustomUserId;
                 currentPayCheckRecord.Salary = Convert.ToInt64(salary);
                 currentPayCheckRecord.IsSubmitted = true;
                 currentPayCheckRecord.PayRollId = numberList;
                 _context.Update(currentPayCheckRecord);
                 _context.SaveChanges();
             }
-            foreach (var item in currentPayRoll)
+            foreach (var item in currentItemList)
             {
-                item.IsSubmitted = true;
-                _context.Update(item);
+                if (item.Id != 0)
+                {
+                    item.IsSubmitted = true;
+                    _context.Update(item);
+                }
             }
             _context.SaveChanges();
+
             GetData();
+            GetTimeSheet();
             await CancelSubmitPayCheckDialog();
             await CancelPayRollDialog();
             await JSRuntime.InvokeVoidAsync("success", null);
@@ -460,213 +317,253 @@
         }
 
     }
-
-    public async Task OpenPayRollDialog(List<Models.PayRoll> payRolls)
+    public void reload()
     {
-        currentPayRoll = payRolls;
-        if (currentPayRoll.Count != 0)
+        totalWeek = 0;
+        foreach (var item in currentItemList)
         {
-            currentPayRollIsSubmitted = currentPayRoll.First().IsSubmitted;
-            currentPayRollIsApproved = currentPayRoll.First().IsApproved;
+            if (item.Start.DayOfWeek == DayOfWeek.Sunday || item.Start.DayOfWeek == DayOfWeek.Saturday)
+            {
+                if (item.End.Date == currentTime.Date || item.Start.Date == currentTime.Date)
+                {
+                    if (item.End.Date == currentTime.Date)
+                    {
+                        TimeSpan time = new TimeSpan(item.End.Hour, item.End.Minute, 0);
+                        item.End = item.Start.Date + time;
+                        totalWeek += (item.End - item.Start).TotalHours;
+                    }
+                    else
+                    {
+                        TimeSpan time = new TimeSpan(item.Start.Hour, item.Start.Minute, 0);
+                        item.Start = item.End.Date + time;
+                        totalWeek += (item.End - item.Start).TotalHours;
+                    }
+
+                }
+                else
+                {
+                    totalWeek += (item.End - item.Start).TotalHours;
+                }
+
+            }
+            else
+            {
+                if (item.End.Date == currentTime.Date || item.Start.Date == currentTime.Date)
+                {
+                    if (item.End.Date == currentTime.Date)
+                    {
+                        TimeSpan time = new TimeSpan(item.End.Hour, item.End.Minute, 0);
+                        item.End = item.Start.Date + time;
+                        totalWeek += (item.End.AddHours(-1) - item.Start).TotalHours;
+                    }
+                    else
+                    {
+                        TimeSpan time = new TimeSpan(item.Start.Hour, item.Start.Minute, 0);
+                        item.Start = item.End.Date + time;
+                        totalWeek += (item.End.AddHours(-1) - item.Start).TotalHours;
+                    }
+
+                }
+                else
+                {
+                    totalWeek += (item.End.AddHours(-1) - item.Start).TotalHours;
+                }
+
+            }
+
+
         }
-        List<int> IdList = new List<int>();
-        foreach (var item in currentPayRoll)
-        {
-            IdList.Add(item.Id);
-        }
-        List<int> SumittedIdList = new List<int>();
-        foreach (var item in currentPayRoll.Where(p => p.IsSubmitted))
-        {
-            SumittedIdList.Add(item.Id);
-        }
-        currentPayCheckRecord = _context.PayCheckRecord.FirstOrDefault(p => p.PayRollId == SumittedIdList);
+
+
+        StateHasChanged();
+    }
+    public async Task OpenCreateDialog(Models.TwoWeeksModel twoWeek)
+    {
+        currentTwoWeek = twoWeek;
+        GetTimeSheet();
         await _payCheckDialog.Open();
     }
+    public void GetTimeSheet()
+    {
+        DayRange = EachDay(currentTwoWeek.Start, currentTwoWeek.End);
+        currentItemList = new();
+        totalWeek = 0;
+        List<int> IdList = new List<int>();
+        foreach (var item in DayRange)
+        {
+            if (item.DayOfWeek == DayOfWeek.Sunday || item.DayOfWeek == DayOfWeek.Saturday)
+            {
+                var checkPayRoll = ItemList.FirstOrDefault(p => p.Start.Date == item.Date);
+                if (checkPayRoll is null)
+                {
+                    Models.PayRoll newPayRoll = new Models.PayRoll
+                    {
+                        Start = item,
+                        End = item,
+                        CustomUserId = user.Id
+                    };
+                    currentItemList.Add(newPayRoll);
+                    totalWeek += (newPayRoll.End - newPayRoll.Start).TotalHours;
+                }
+                else
+                {
+                    currentItemList.Add(checkPayRoll);
+                    totalWeek += (checkPayRoll.End - checkPayRoll.Start).TotalHours;
+                    IdList.Add(checkPayRoll.Id);
+                }
+
+            }
+            else
+            {
+                var checkPayRoll = ItemList.FirstOrDefault(p => p.Start.Date == item.Date);
+                if (checkPayRoll is null)
+                {
+                    Models.PayRoll newPayRoll = new Models.PayRoll
+                    {
+                        Start = item.AddHours(8),
+                        End = item.AddHours(17),
+                        CustomUserId = user.Id
+                    };
+                    currentItemList.Add(newPayRoll);
+                    totalWeek += (newPayRoll.End.AddHours(-1) - newPayRoll.Start).TotalHours;
+                }
+                else
+                {
+                    currentItemList.Add(checkPayRoll);
+                    totalWeek += (checkPayRoll.End.AddHours(-1) - checkPayRoll.Start).TotalHours;
+                    IdList.Add(checkPayRoll.Id);
+                }
+
+            }
+
+        }
+
+        currentPayCheckRecord = _context.PayCheckRecord.FirstOrDefault(p => p.PayRollId == IdList);
+        if (currentItemList.First().IsSubmitted)
+        {
+            currentPayRollIsSubmitted = true;
+        }
+        else
+        {
+            currentPayRollIsSubmitted = false;
+        }
+        if (currentItemList.First().IsApproved)
+        {
+            currentPayRollIsApproved = true;
+        }
+        else
+        {
+            currentPayRollIsApproved = false;
+        }
+        StateHasChanged();
+    }
+
+    public async Task Save(Models.PayRoll payroll)
+    {
+        try
+        {
+            if (payroll.Id != 0)
+            {
+                _context.Update(payroll);
+                _context.SaveChanges();
+            }
+            else
+            {
+                payroll.CustomUserId = user.Id;
+                _context.Add(payroll);
+                _context.SaveChanges();
+            }
+            GetData();
+            GetTimeSheet();
+
+            await JSRuntime.InvokeVoidAsync("success", null);
+        }
+        catch(Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+        }
+
+
+    }
+
     public async Task CancelPayRollDialog()
     {
-        currentPayRoll = new();
+        currentItemList = new();
+        DayRange = null;
         currentPayRollIsApproved = false;
         currentPayRollIsSubmitted = false;
         currentPayCheckRecord = new();
         await _payCheckDialog.Close();
     }
-    async Task OnSlotSelect(SchedulerSlotSelectEventArgs args)
-    {
-        if (user.DateJoined.Date <= args.Start.Date)
-        {
-            newItem = new();
-            newItem.Start = args.Start.AddHours(8);
-            newItem.End = args.Start.AddHours(17);
-            await _createDialog.Open();
-
-        }
-        else
-        {
-            await JSRuntime.InvokeVoidAsync("errorNotTime", null);
-        }
-
-    }
-
-    async Task OnAppointmentSelect(SchedulerAppointmentSelectEventArgs<Models.PayRoll> args)
-    {
-        currentItem = args.Data;
-        await _editDialog.Open();
-    }
-
-    private async Task CancelCreateDialog()
-    {
-        newItem = new();
-
-        await _createDialog.Close();
-        await payRoll.Reload();
-    }
-    private async Task OpenEditDialog(int id)
-    {
-        currentItem = ItemList.FirstOrDefault(i => i.Id == id);
-        await _editDialog.Open();
-    }
-    private async Task CancelEditDialog()
-    {
-        currentItem = new();
-
-        await _editDialog.Close();
-        await payRoll.Reload();
-    }
-
-    public async Task OnChange(object value)
-    {
-        var str = value is IEnumerable<int> ? string.Join(", ", (IEnumerable<int>)value) : value;
-        if (!string.IsNullOrEmpty(str.ToString()))
-        {
-            try
-            {
-                var submitted = bool.Parse(str.ToString());
-                foreach (var item in currentPayRoll)
-                {
-                    item.IsSubmitted = submitted;
-                    _context.Update(item);
-                }
-                _context.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                await JSRuntime.InvokeVoidAsync("error", null);
-            }
 
 
-        }
-    }
-
-    public async Task Add()
-    {
-        if (user.DateJoined < newItem.Start && user.DateJoined < newItem.End)
-        {
-            await JSRuntime.InvokeVoidAsync("errorInvalidTimeSheet", null);
-        }
-        else
-        {
-            try
-            {
-                newItem.CustomUserId = user.Id;
-                _context.Add(newItem);
-                _context.SaveChanges();
-
-                GetData();
-                await CancelCreateDialog();
-                await JSRuntime.InvokeVoidAsync("success", null);
-            }
-            catch (Exception ex)
-            {
-                await JSRuntime.InvokeVoidAsync("error", null);
-            }
-
-        }
-    }
-    public async Task Edit()
-    {
-        try
-        {
-            _context.Update(currentItem);
-            _context.SaveChanges();
-
-            GetData();
-            await CancelEditDialog();
-            await JSRuntime.InvokeVoidAsync("success", null);
-        }
-        catch (Exception ex)
-        {
-            await JSRuntime.InvokeVoidAsync("error", null);
-        }
-    }
     protected override void OnInitialized()
     {
-        var currentDate = Convert.ToInt32(currentTime.ToString("dd"));
-
-
-        if (currentDate <= 15)
-        {
-            Begin2Period = FirstDayOfMonth(currentTime);
-            End2Period = Begin1Period.AddDays(14);
-
-            Begin1Period = End2Period.AddDays(1);
-            End1Period = LastDayOfMonth(currentTime);
-
-            var nextDateOfNextMonth = Begin2Period.AddDays(-2);
-
-            Begin4Period = FirstDayOfMonth(nextDateOfNextMonth);
-            End4Period = Begin4Period.AddDays(14);
-
-            End3Period = LastDayOfMonth(nextDateOfNextMonth);
-            Begin3Period = End4Period.AddDays(1);
-        }
-        else
-        {
-            Begin1Period = FirstDayOfMonth(LastDayOfMonth(currentTime).AddDays(2));
-            End1Period = Begin1Period.AddDays(14);
-
-            Begin2Period = FirstDayOfMonth(currentTime).AddDays(14);
-            End2Period = LastDayOfMonth(currentTime);
-
-
-            Begin3Period = FirstDayOfMonth(currentTime);
-            End3Period = Begin3Period.AddDays(14);
-
-            Begin4Period = FirstDayOfMonth(Begin3Period.AddDays(-2)).AddDays(14);
-            End4Period = LastDayOfMonth(Begin4Period);
-        }
-
-
         GetData();
         GetDropDown();
 
 
+    }
 
-    }
-    void DateRender(DateRenderEventArgs args)
-    {
-        args.Disabled = DisableDate.Contains(args.Date);
-    }
     public void GetData()
     {
         var currrentUser = _httpContextAccessor.HttpContext.User;
         user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
 
         ItemList = _context.PayRoll.Include(p => p.CustomUser).Where(p => p.CustomUserId == user.Id).OrderByDescending(c => c.Start).ToList();
-        PayRollPeriod1 = ItemList.Where(p => p.Start.Date == Begin1Period.Date && p.End.Date == End1Period.Date).OrderByDescending(c => c.Start).ToList();
-        PayRollPeriod2 = ItemList.Where(p => p.Start.Date == Begin2Period.Date && p.End.Date == End2Period.Date).OrderByDescending(c => c.Start).ToList();
-        PayRollPeriod3 = ItemList.Where(p => p.Start.Date == Begin3Period.Date && p.End.Date == End3Period.Date).OrderByDescending(c => c.Start).ToList();
-        PayRollPeriod4 = ItemList.Where(p => p.Start.Date == Begin4Period.Date && p.End.Date == End4Period.Date).OrderByDescending(c => c.Start).ToList();
-
         DisableDate = Enumerable.Range(0, 1 + user.DateJoined.AddDays(-1).Subtract(BeginningOfTime).Days)
-         .Select(offset => BeginningOfTime.AddDays(offset))
-         .ToArray();
+        .Select(offset => BeginningOfTime.AddDays(offset))
+        .ToArray();
+
+        var dateBetweenCurrentAndDateJoin = currentTime.Subtract(user.DateJoined).TotalDays;
+        var numberOf2Week = dateBetweenCurrentAndDateJoin / 14;
+        if (Convert.ToInt32(user.DateJoined.ToString("dd")) <= 15)
+        {
+            Begin1Period = FirstDayOfMonth(user.DateJoined);
+            End1Period = Begin1Period.AddDays(14);
+        }
+        else
+        {
+            Begin1Period = LastDayOfMonth(user.DateJoined).AddDays(-14);
+            End1Period = LastDayOfMonth(user.DateJoined);
+        }
+        ListOfTwoWeeks = new();
+        Models.TwoWeeksModel newTwoWeek = new Models.TwoWeeksModel
+        {
+            Start = user.DateJoined,
+            End = End1Period
+        };
+        ListOfTwoWeeks.Add(newTwoWeek);
+
+        if (numberOf2Week > 1)
+        {
+            var begin = End1Period.AddDays(1);
+            var end = begin.AddDays(14);
+            for (int i = 0; i < numberOf2Week; i++)
+            {
+                Models.TwoWeeksModel newTwoWeek2 = new Models.TwoWeeksModel
+                {
+                    Start = begin,
+                    End = end
+                };
+                ListOfTwoWeeks.Add(newTwoWeek2);
+                begin = end.AddDays(1);
+                end = begin.AddDays(14);
+            }
+        }
+        //Models.TwoWeeksModel newTwoWeek3 = new Models.TwoWeeksModel
+        //{
+        //    Start = ListOfTwoWeeks.Last().End.AddDays(1),
+        //    End = ListOfTwoWeeks.Last().End.AddDays(15)
+        //};
+        //ListOfTwoWeeks.Add(newTwoWeek3);
 
     }
 
     public void GetDropDown()
     {
         DropDownName = new();
-        var dropdown = "New Ticket,New Development,Current Ticket,Fix Error,Meeting,Holiday";
+        var dropdown = "New Ticket,New Development,Current Ticket,Fix Error,Meeting,Holiday,Recovery,Meeting,Other";
         foreach (var item in dropdown.Split(",").ToList())
         {
             Models.SelectDropDown newDropDown = new Models.SelectDropDown
@@ -687,8 +584,14 @@
 
         }
         _editModalWidth = await JSRuntime.InvokeAsync<int>("ScreenWidth", null);
-        _editModalWidth = _editModalWidth * 0.5;
+        _editModalWidth = _editModalWidth * 0.7;
     }
+
+    void DateRender(DateRenderEventArgs args)
+    {
+        args.Disabled = DisableDate.Contains(args.Date);
+    }
+
     public DateTime FirstDayOfMonth(DateTime value)
     {
         return new DateTime(value.Year, value.Month, 1);
@@ -702,5 +605,10 @@
     public DateTime LastDayOfMonth(DateTime value)
     {
         return new DateTime(value.Year, value.Month, DaysInMonth(value));
+    }
+    public IEnumerable<DateTime> EachDay(DateTime from, DateTime thru)
+    {
+        for (var day = from.Date; day.Date <= thru.Date; day = day.AddDays(1))
+            yield return day;
     }
 }

@@ -126,6 +126,7 @@ namespace BlazorBugTracker
                 endpoints.MapControllers();
                 endpoints.MapBlazorHub();
                 endpoints.MapHub<ChatHub>(ChatHub.HubUrl);
+               
                 endpoints.MapFallbackToPage("/_Host");
             });
         }
