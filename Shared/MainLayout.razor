@@ -279,7 +279,17 @@
                         </p>
                     </a>
                 </li>
-
+                @if (IsInRoleAdmin || IsProjectManager)
+                {
+                    <li class="nav-item">
+                        <a href="/timesheet/approval" class="nav-link">
+                            <i class="nav-icon fas fa-clipboard-check"></i>
+                            <p>
+                                Time Sheet Approval
+                            </p>
+                        </a>
+                    </li>
+                }
                 @if (IsInRoleAdmin)
                 {
                     <li class="nav-item">

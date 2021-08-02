@@ -149,7 +149,7 @@
     {
         var currrentUser = _httpContextAccessor.HttpContext.User;
         user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
-        ItemList = _context.PayCheckRecord.Include(c => c.CustomUser).Where(c => c.CustomUserId == user.Id).OrderByDescending(c => c.Start).ToList();
+        ItemList = _context.PayCheckRecord.Include(c => c.CustomUser).Where(c => c.CustomUserId == user.Id && c.IsApproved).OrderByDescending(c => c.Start).ToList();
 
         AllTimeSheet = _context.PayRoll.Include(c => c.CustomUser).Where(c => c.CustomUserId == user.Id).OrderByDescending(c => c.Start).ToList();
     }

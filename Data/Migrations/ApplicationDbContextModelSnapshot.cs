@@ -360,7 +360,7 @@ namespace BlazorBugTracker.Data.Migrations
                     b.Property<bool>("IsSubmitted")
                         .HasColumnType("boolean");
 
-                    b.Property<float>("NumberDayOfWorked")
+                    b.Property<float>("NumberHourOfWorked")
                         .HasColumnType("real");
 
                     b.Property<List<int>>("PayRollId")
@@ -371,6 +371,9 @@ namespace BlazorBugTracker.Data.Migrations
 
                     b.Property<DateTime>("Start")
                         .HasColumnType("timestamp without time zone");
+
+                    b.Property<long>("UserSalary")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 

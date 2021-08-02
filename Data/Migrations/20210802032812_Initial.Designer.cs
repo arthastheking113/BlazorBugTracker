@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BlazorBugTracker.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20210729015313_Initial")]
+    [Migration("20210802032812_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -362,7 +362,7 @@ namespace BlazorBugTracker.Data.Migrations
                     b.Property<bool>("IsSubmitted")
                         .HasColumnType("boolean");
 
-                    b.Property<float>("NumberDayOfWorked")
+                    b.Property<float>("NumberHourOfWorked")
                         .HasColumnType("real");
 
                     b.Property<List<int>>("PayRollId")
@@ -373,6 +373,9 @@ namespace BlazorBugTracker.Data.Migrations
 
                     b.Property<DateTime>("Start")
                         .HasColumnType("timestamp without time zone");
+
+                    b.Property<long>("UserSalary")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 

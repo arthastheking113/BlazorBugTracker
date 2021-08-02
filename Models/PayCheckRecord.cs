@@ -12,8 +12,9 @@ namespace BlazorBugTracker.Models
         public DateTime Start { get; set; }
         public DateTime End { get; set; }
 
-        public float NumberDayOfWorked { get; set; }
+        public float NumberHourOfWorked { get; set; }
         public long Salary { get; set; }
+        public long UserSalary { get; set; }
         
         public bool IsSubmitted { get; set; }
         public bool IsApproved { get; set; }

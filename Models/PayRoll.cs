@@ -21,7 +21,16 @@ namespace BlazorBugTracker.Models
         [NotMapped]
         public string Summary { get { return $"{Name} - Note: {Note} - Hours: {End.Subtract(Start).TotalHours}"; } }
         [NotMapped]
-        public string TotalHour { get { return $"{End.Subtract(Start).TotalHours}"; } }
+        public string TotalHour { get {
+                if (Start.DayOfWeek == DayOfWeek.Saturday || Start.DayOfWeek == DayOfWeek.Sunday)
+                {
+                    return $"{End.Subtract(Start).TotalHours * 1.5}";
+                }
+                else
+                {
+                    return $"{End.Subtract(Start).TotalHours}";
+                }
+            } }
 
         public bool IsSubmitted { get; set; }
 

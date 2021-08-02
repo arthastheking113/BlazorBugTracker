@@ -2987,3 +2987,13 @@ body {
     max-height: 40vh;
     overflow-y: scroll;
 }
+
+.my-custom-scrollbar {
+    position: relative;
+    max-height: 60vh;
+    overflow: auto;
+}
+
+.table-wrapper-scroll-y {
+    display: block;
+}

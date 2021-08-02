@@ -80,79 +80,81 @@
             </div>
             <div class="row mt-2 pb-2">
                 <div class="col">
-                    <table class="table table-condensed" >
-                        <thead>
-                         
-                            <tr>
-                                <th>Date</th>
-                                <th>In</th>
-                                <th>Out</th>
-                                <th>Type</th>
-                                <th>Note</th>
-                                <th>Total</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach(var item in currentItemList)
-                            {
+                    <div class="table-wrapper-scroll-y my-custom-scrollbar">
+                        <table class="table table-condensed">
+                            <thead>
 
                                 <tr>
-                                    <td>
-                                        <input class="form-control" readonly  value="@item.Start.ToString("dddd, dd MMMM yyyy")" />
-                                    </td>
-                                    <td>
-                                        <input class="form-control" type="time" @bind="item.Start"  @bind:event="oninput" @onchange="reload"/>
-                                    </td>
-                                    <td>
-                                        <input class="form-control" type="time" @bind="item.End" @bind:event="oninput" @onchange="reload"/>
-                                    </td>
-                                    <td>
-                                        <RadzenDropDown AllowClear="true" TValue="string" @bind-Value="item.Name" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%"
-                                                        Placeholder="Select Type..." Data=@DropDownName TextProperty="SelectName" ValueProperty="SelectName" />
-
-                                    </td>
-                                    <td>
-                                        <input class="form-control" type="text"  @bind="item.Note" />
-                                    </td>
-                                    <td>
-                                        @if (item.Start.DayOfWeek == DayOfWeek.Sunday || item.Start.DayOfWeek == DayOfWeek.Saturday)
-                                        {
-                                            <p>@((item.End - item.Start).Hours) Hours</p>
-                                        }
-                                        else
-                                        {
-                                            <p>@((item.End.AddHours(-1) - item.Start).Hours) Hours</p>
-                                        }
-
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-outline-primary" @onclick="() => Save(item)">Save</button>
-                                    </td>
+                                    <th>Date</th>
+                                    <th>In</th>
+                                    <th>Out</th>
+                                    <th>Type</th>
+                                    <th>Note</th>
+                                    <th>Total</th>
+                                    <th></th>
                                 </tr>
-                            }
+                            </thead>
+                            <tbody>
+                                @foreach (var item in currentItemList)
+                                {
 
-                            <tr>
-                                <td></td>
-                                <td></td>
-                                <td>
-                                    <h4>Total</h4>
-                                </td>
-                                <td>
-                                </td>
-                                <td>
-                                </td>
-                                <td>
-                                    <h4>@totalWeek hours</h4>
-                                </td>
-                                <td></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                    <tr>
+                                        <td>
+                                            <input class="form-control" readonly value="@item.Start.ToString("dddd, dd MMMM yyyy")" />
+                                        </td>
+                                        <td>
+                                            <input class="form-control" type="time" @bind="item.Start" @bind:event="oninput" @onchange="reload" />
+                                        </td>
+                                        <td>
+                                            <input class="form-control" type="time" @bind="item.End" @bind:event="oninput" @onchange="reload" />
+                                        </td>
+                                        <td>
+                                            <RadzenDropDown AllowClear="true" TValue="string" @bind-Value="item.Name" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%"
+                                                            Placeholder="Select Type..." Data=@DropDownName TextProperty="SelectName" ValueProperty="SelectName" />
+
+                                        </td>
+                                        <td>
+                                            <input class="form-control" type="text" @bind="item.Note" />
+                                        </td>
+                                        <td>
+                                            @if (item.Start.DayOfWeek == DayOfWeek.Sunday || item.Start.DayOfWeek == DayOfWeek.Saturday)
+                                            {
+                                                <p>@((item.End - item.Start).Hours) Hours</p>
+                                            }
+                                            else
+                                            {
+                                                <p>@((item.End.AddHours(-1) - item.Start).Hours) Hours</p>
+                                            }
+
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-outline-primary" @onclick="() => Save(item)">Save</button>
+                                        </td>
+                                    </tr>
+                                }
+
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td>
+                                        <h4>Total</h4>
+                                    </td>
+                                    <td>
+                                    </td>
+                                    <td>
+                                    </td>
+                                    <td>
+                                        <h4>@totalWeek hours</h4>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                     <br />
                     <button class="btn btn-secondary btn-block" @onclick="CancelPayRollDialog">Cancel</button>
+                    </div>
                 </div>
-            </div>
         </div>
     </Content>
 </ModalDialog>
@@ -220,10 +222,7 @@
     public Models.CustomUser user = new();
     public List<Models.SelectDropDown> DropDownName = new();
 
-    public List<Models.PayRoll> PayRollPeriod1 = new();
-    public List<Models.PayRoll> PayRollPeriod2 = new();
-    public List<Models.PayRoll> PayRollPeriod3 = new();
-    public List<Models.PayRoll> PayRollPeriod4 = new();
+
     public List<Models.PayRoll> currentPayRoll = new();
     public bool currentPayRollIsSubmitted;
     public bool currentPayRollIsApproved;
@@ -237,8 +236,7 @@
     IEnumerable<DateTime> DisableDate = null;
 
     public double totalWeek;
-    private ModalDialog _createDialog;
-    private ModalDialog _editDialog;
+
     private ModalDialog _payCheckDialog;
     private ModalDialog _submitPayCheckDialog;
 
@@ -273,7 +271,8 @@
                 {
                     Start = currentItemList.First().Start,
                     End = currentItemList.Last().End,
-                    NumberDayOfWorked = numberOfWork / 8,
+                    NumberHourOfWorked = numberOfWork,
+                    UserSalary = user.HourSalary,
                     CustomUserId = currentItemList.First().CustomUserId,
                     Salary = Convert.ToInt64(salary),
                     IsSubmitted = true,
@@ -286,7 +285,8 @@
             {
                 currentPayCheckRecord.Start = currentItemList.First().Start;
                 currentPayCheckRecord.End = currentItemList.Last().End;
-                currentPayCheckRecord.NumberDayOfWorked = numberOfWork / 8;
+                currentPayCheckRecord.NumberHourOfWorked = numberOfWork;
+                currentPayCheckRecord.UserSalary = user.HourSalary;
                 currentPayCheckRecord.CustomUserId = currentItemList.First().CustomUserId;
                 currentPayCheckRecord.Salary = Convert.ToInt64(salary);
                 currentPayCheckRecord.IsSubmitted = true;
@@ -550,6 +550,17 @@
                 begin = end.AddDays(1);
                 end = begin.AddDays(14);
             }
+        }
+        else if (End1Period < currentTime)
+        {
+            var begin = End1Period.AddDays(1);
+            var end = begin.AddDays(14);
+            Models.TwoWeeksModel newTwoWeek2 = new Models.TwoWeeksModel
+            {
+                Start = begin,
+                End = end
+            };
+            ListOfTwoWeeks.Add(newTwoWeek2);
         }
         //Models.TwoWeeksModel newTwoWeek3 = new Models.TwoWeeksModel
         //{

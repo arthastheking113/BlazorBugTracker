@@ -1,0 +1,336 @@
+﻿@page "/timesheet/approval"
+@using BlazorBugTracker.Data
+@using Microsoft.AspNetCore.Http
+@using BlazorBugTracker.Services
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext _context
+@inject IHttpContextAccessor _httpContextAccessor
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject ICustomProjectService _projectService
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true"
+                            FilterMode="FilterMode.Simple" PageSize="7" AllowPaging="true" AllowSorting="true" Data="@PayCheckRecordList" TItem="Models.PayCheckRecord" ColumnWidth="100%"
+                            FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                            LogicalFilterOperator="LogicalFilterOperator.Or">
+                <Columns>
+                    <RadzenDataGridColumn TItem="Models.PayCheckRecord" Title="View">
+                        <Template Context="data">
+                            <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="help" Click=@(() => OpenViewDialog(data)) Text="View" />
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="Models.PayCheckRecord" Property="Start" Title="Start" FormatString="{0:d}" />
+
+                    <RadzenDataGridColumn TItem="Models.PayCheckRecord" Property="End" Title="End" FormatString="{0:d}" />
+                    <RadzenDataGridColumn TItem="Models.PayCheckRecord" Property="CustomUser" Title="End">
+                        <Template Context="data">
+                            @data.CustomUser.FullName
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="Models.PayCheckRecord" Property="Salary" Title="Salary" />
+
+                </Columns>
+            </RadzenDataGrid>
+        </div>
+    </div>
+</div>
+
+
+<ModalDialog @ref="_payCheckDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             Width="_editModalWidth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>View Time Sheet </h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col">
+                    <button class="btn btn-outline-primary" @onclick="ApproveTimeSheet">Approve this time sheet</button>
+                </div>
+                <div class="col text-right">
+                    <h3>Week:  @currentPayCheckRecord.Start.ToString("MM/dd/yyyy") - @currentPayCheckRecord.End.ToString("MM/dd/yyyy")</h3>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col">
+                    <p>User: @currentPayCheckRecord.CustomUser.FullName - Salary: @currentPayCheckRecord.UserSalary</p>
+                </div>
+                <div class="col">
+                    <p>Day Worked: @currentPayCheckRecord.NumberHourOfWorked</p>
+                    <p>Total Salary: @currentPayCheckRecord.Salary</p>
+                </div>
+
+            </div>
+            <div class="row mt-2 pb-2">
+                <div class="col">
+                    <div class="table-wrapper-scroll-y my-custom-scrollbar">
+                        <table class="table table-condensed">
+                            <thead>
+
+                                <tr>
+                                    <th>Date</th>
+                                    <th>In</th>
+                                    <th>Out</th>
+                                    <th>Type</th>
+                                    <th>Note</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in currentItemList)
+                                {
+
+                                    <tr>
+                                        <td>
+                                            <input class="form-control" readonly value="@item.Start.ToString("dddd, dd MMMM yyyy")" />
+                                        </td>
+                                        <td>
+                                            <input class="form-control" type="time" @bind="item.Start" readonly />
+                                        </td>
+                                        <td>
+                                            <input class="form-control" type="time" @bind="item.End" readonly/>
+                                        </td>
+                                        <td>
+                                            <input class="form-control" readonly value="@item.Name" />
+                                           
+                                        </td>
+                                        <td>
+                                            <input class="form-control" type="text" readonly @bind="item.Note" />
+                                        </td>
+                                        <td>
+                                            @if (item.Start.DayOfWeek == DayOfWeek.Sunday || item.Start.DayOfWeek == DayOfWeek.Saturday)
+                                            {
+                                                <p>@((item.End - item.Start).Hours) Hours</p>
+                                            }
+                                            else
+                                            {
+                                                <p>@((item.End.AddHours(-1) - item.Start).Hours) Hours</p>
+                                            }
+
+                                        </td>
+                                    </tr>
+                                }
+
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td>
+                                        <h4>Total</h4>
+                                    </td>
+                                    <td>
+                                    </td>
+                                    <td>
+                                    </td>
+                                    <td>
+                                        <h4>@totalWeek hours</h4>
+                                    </td>
+                                   
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <br />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelPayRollDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
+
+
+<ModalDialog @ref="_submitPayCheckDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             Width="_editModalWidth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>Submit Pay Check </h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col text-center">
+                    <h5>Are you sure you want to submit this time sheet?</h5>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col text-center">
+                    <button class="btn btn-outline-primary" @onclick="ConfirmSubmitPayCheck">Yes, submit this time sheet</button>
+                    <button class="btn btn-outline-secondary" @onclick="CancelSubmitPayCheckDialog">No, I'm not ready</button>
+                </div>
+            </div>
+
+        </div>
+    </Content>
+</ModalDialog>
+
+
+@code {
+    //Fully customized dialog
+    private double _overlayOpacity = 0.3;
+    private double _modalMinHeight = 100;
+    private double _editModalWidth;
+    private double _modalMinWitdth = 100;
+    private bool _modalAnimate = true;
+    private bool _modalCloseOnClick = true;
+    private bool _modalCloseOnEsc = true;
+    private bool _modalFocus = true;
+    private bool _modalCentered = true;
+    private bool _modalShowClose = true;
+
+    private ModalDialog _payCheckDialog;
+    private ModalDialog _submitPayCheckDialog;
+
+
+    public List<Models.PayRoll> ItemList = new();
+    public List<Models.PayRoll> currentItemList = new();
+
+    public List<Models.PayCheckRecord> PayCheckRecordList = new();
+    public Models.PayCheckRecord currentPayCheckRecord = new();
+    public List<Models.CustomUser> DeveloperUser = new();
+    public List<Models.Project> ProjectList = new();
+    public Models.CustomUser user = new();
+    public bool IsInRoleAdmin;
+    public bool IsDeveloper;
+    public bool IsSubmitter;
+    public bool IsProjectManager;
+    public bool IsNewUser;
+    public double totalWeek;
+
+    public async Task OpenViewDialog(Models.PayCheckRecord record)
+    {
+        currentPayCheckRecord = record;
+        currentItemList = new();
+        totalWeek = 0;
+        foreach (var item in currentPayCheckRecord.PayRollId)
+        {
+            var payroll = ItemList.FirstOrDefault(p => p.Id == item);
+            if (payroll is not null)
+            {
+                currentItemList.Add(payroll);
+            }
+        }
+        foreach (var item in currentItemList)
+        {
+            if (item.Start.DayOfWeek == DayOfWeek.Saturday || item.Start.DayOfWeek == DayOfWeek.Sunday)
+            {
+                totalWeek += (item.End - item.Start).TotalHours;
+            }
+            else
+            {
+                totalWeek += (item.End.AddHours(-1) - item.Start).TotalHours;
+            }
+        }
+
+        await _payCheckDialog.Open();
+    }
+
+    public async Task CancelPayRollDialog()
+    {
+        currentPayCheckRecord = new();
+        currentItemList = new();
+        await _payCheckDialog.Close();
+    }
+
+    public async Task ApproveTimeSheet()
+    {
+        await _submitPayCheckDialog.Open();
+    }
+
+    public async Task CancelSubmitPayCheckDialog()
+    {
+        await _submitPayCheckDialog.Close();
+    }
+    public async Task ConfirmSubmitPayCheck()
+    {
+
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        var currrentUser = _httpContextAccessor.HttpContext.User;
+        user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
+        IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
+        IsDeveloper = currrentUser.IsInRole(Roles.Developer.ToString());
+        IsNewUser = currrentUser.IsInRole(Roles.NewUser.ToString());
+        IsSubmitter = currrentUser.IsInRole(Roles.Submitter.ToString());
+        IsProjectManager = currrentUser.IsInRole(Roles.ProjectManager.ToString());
+        if (IsInRoleAdmin || IsProjectManager)
+        {
+            await GetData();
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/accessdenied");
+        }
+
+    }
+
+    public async Task GetData()
+    {
+        DeveloperUser = new();
+        if (IsProjectManager)
+        {
+            ProjectList = _context.Project.Include(p => p.CustomUsers).Where(p => p.CompanyId == user.CompanyId).ToList();
+            foreach (var item in ProjectList)
+            {
+                var checkUser = _projectService.ProjectManagerOnProject(item.Id);
+                if (checkUser == user)
+                {
+                    var DeveloperOnProject = _projectService.DeveloperOnProject(item.Id);
+                    var SubmitterOnProject = _projectService.SubmitterOnProject(item.Id);
+                    foreach (var developer in DeveloperOnProject)
+                    {
+                        DeveloperUser.Add(developer);
+                    }
+                    foreach (var submitter in SubmitterOnProject)
+                    {
+                        DeveloperUser.Add(submitter);
+                    }
+
+                }
+            }
+        }
+        else if(IsInRoleAdmin)
+        {
+            ProjectList = _context.Project.Include(p => p.CustomUsers).ToList();
+            DeveloperUser = _context.Users.ToList();
+        }
+
+
+
+        DeveloperUser = DeveloperUser.Distinct().ToList();
+        foreach (var item in DeveloperUser)
+        {
+            var PayCheckRecordListCheck = _context.PayCheckRecord.Include(p => p.CustomUser).Where(r => !r.IsApproved && r.IsSubmitted && r.CustomUserId == item.Id).ToList();
+            foreach (var item2 in PayCheckRecordListCheck)
+            {
+                PayCheckRecordList.Add(item2);
+            }
+            var timeSheetSubmitted = _context.PayRoll.Include(p => p.CustomUser).Where(p => !p.IsApproved && p.IsSubmitted && p.CustomUserId == item.Id).ToList();
+            foreach (var timesheet in timeSheetSubmitted)
+            {
+                ItemList.Add(timesheet);
+            }
+        }
+    }
+}

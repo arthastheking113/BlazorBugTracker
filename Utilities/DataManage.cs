@@ -129,7 +129,8 @@ namespace BlazorBugTracker.Utilities
                 LastName = "Le",
                 EmailConfirmed = true,
                 CompanyId = company1Id,
-                DateJoined = DateTime.Now
+                DateJoined = DateTime.Now,
+                MonthlySalary = 10000
 
             };
             try
@@ -159,7 +160,8 @@ namespace BlazorBugTracker.Utilities
                 LastName = "McCoy",
                 EmailConfirmed = true,
                 CompanyId = company1Id,
-                DateJoined = DateTime.Now
+                DateJoined = DateTime.Now,
+                MonthlySalary = 4000
             };
             try
             {
@@ -189,7 +191,8 @@ namespace BlazorBugTracker.Utilities
                 LastName = "Quill",
                 EmailConfirmed = true,
                 CompanyId = company1Id,
-                DateJoined = DateTime.Now
+                DateJoined = DateTime.Now,
+                MonthlySalary = 3000
             };
             try
             {
@@ -219,7 +222,8 @@ namespace BlazorBugTracker.Utilities
                 LastName = "Rogers",
                 EmailConfirmed = true,
                 CompanyId = company1Id,
-                DateJoined = DateTime.Now
+                DateJoined = DateTime.Now,
+                MonthlySalary = 4500
             };
             try
             {
@@ -249,7 +253,8 @@ namespace BlazorBugTracker.Utilities
                 LastName = "Howlett",
                 EmailConfirmed = true,
                 CompanyId = company1Id,
-                DateJoined = DateTime.Now
+                DateJoined = DateTime.Now,
+                MonthlySalary = 4400
             };
             try
             {
@@ -279,7 +284,8 @@ namespace BlazorBugTracker.Utilities
                 LastName = "Romanova",
                 EmailConfirmed = true,
                 CompanyId = company1Id,
-                DateJoined = DateTime.Now
+                DateJoined = DateTime.Now,
+                MonthlySalary = 3900
             };
             try
             {
@@ -309,7 +315,8 @@ namespace BlazorBugTracker.Utilities
                 LastName = "Danvers",
                 EmailConfirmed = true,
                 CompanyId = company1Id,
-                DateJoined = DateTime.Now
+                DateJoined = DateTime.Now,
+                MonthlySalary = 3600
             };
             try
             {
@@ -339,7 +346,8 @@ namespace BlazorBugTracker.Utilities
                 LastName = "Stark",
                 EmailConfirmed = true,
                 CompanyId = company1Id,
-                DateJoined = DateTime.Now
+                DateJoined = DateTime.Now,
+                MonthlySalary = 5000
             };
             try
             {
@@ -369,7 +377,8 @@ namespace BlazorBugTracker.Utilities
                 LastName = "Summers",
                 EmailConfirmed = true,
                 CompanyId = company1Id,
-                DateJoined = DateTime.Now
+                DateJoined = DateTime.Now,
+                MonthlySalary = 4000
             };
             try
             {
@@ -399,7 +408,8 @@ namespace BlazorBugTracker.Utilities
                 LastName = "Storm",
                 EmailConfirmed = true,
                 CompanyId = company1Id,
-                DateJoined = DateTime.Now
+                DateJoined = DateTime.Now,
+                MonthlySalary = 6000
             };
             try
             {
@@ -433,7 +443,8 @@ namespace BlazorBugTracker.Utilities
                 LastName = "Admin",
                 EmailConfirmed = true,
                 CompanyId = company2Id,
-                DateJoined = DateTime.Now
+                DateJoined = DateTime.Now,
+                MonthlySalary = 10000
             };
             try
             {
@@ -465,7 +476,8 @@ namespace BlazorBugTracker.Utilities
                 LastName = "ProjectManager",
                 EmailConfirmed = true,
                 CompanyId = company2Id,
-                DateJoined = DateTime.Now
+                DateJoined = DateTime.Now,
+                MonthlySalary = 5000
             };
             try
             {
@@ -496,7 +508,8 @@ namespace BlazorBugTracker.Utilities
                 LastName = "Developer",
                 EmailConfirmed = true,
                 CompanyId = company2Id,
-                DateJoined = DateTime.Now
+                DateJoined = DateTime.Now,
+                MonthlySalary = 4000
             };
             try
             {
@@ -527,7 +540,8 @@ namespace BlazorBugTracker.Utilities
                 LastName = "Submitter",
                 EmailConfirmed = true,
                 CompanyId = company2Id,
-                DateJoined = DateTime.Now
+                DateJoined = DateTime.Now,
+                MonthlySalary = 3000
             };
             try
             {
@@ -558,7 +572,8 @@ namespace BlazorBugTracker.Utilities
                 LastName = "NewUser",
                 EmailConfirmed = true,
                 CompanyId = company2Id,
-                DateJoined = DateTime.Now
+                DateJoined = DateTime.Now,
+                MonthlySalary = 2000
             };
             try
             {
