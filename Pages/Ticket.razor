@@ -910,11 +910,11 @@ else
         OwnerList = _context.Users.ToList();
 
         var projectOfUser = new List<Models.Project>();
-        if (!IsInRoleAdmin && !IsProjectManager)
+        if (!IsInRoleAdmin)
         {
             foreach (var item in ProjectList)
             {
-                if(_projectService.IsUserOnProject(user.Id, item.Id))
+                if (_projectService.IsUserOnProject(user.Id, item.Id))
                 {
                     projectOfUser.Add(item);
                 }

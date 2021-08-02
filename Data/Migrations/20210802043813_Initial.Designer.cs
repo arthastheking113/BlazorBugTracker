@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BlazorBugTracker.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20210802032812_Initial")]
+    [Migration("20210802043813_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -357,6 +357,9 @@ namespace BlazorBugTracker.Data.Migrations
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<bool>("IsApproved")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsFinished")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsSubmitted")

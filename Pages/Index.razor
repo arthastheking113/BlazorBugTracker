@@ -758,6 +758,18 @@ else
 
         AllUser = _context.Users.ToList();
         ProjectList = _context.Project.ToList();
+        var projectOfUser = new List<Models.Project>();
+        if (!IsInRoleAdmin)
+        {
+            foreach (var item in ProjectList)
+            {
+                if (_projectService.IsUserOnProject(user.Id, item.Id))
+                {
+                    projectOfUser.Add(item);
+                }
+            }
+            ProjectList = projectOfUser;
+        }
         TicketCloseId = _context.Status.FirstOrDefault(t => t.Name == "Closed").Id;
         CompanyList = _context.Company.ToList();
         RoleList = _context.Roles.ToList();

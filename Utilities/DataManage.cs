@@ -84,6 +84,10 @@ namespace BlazorBugTracker.Utilities
             await roleManager.CreateAsync(new IdentityRole(Roles.Submitter.ToString()));
             await roleManager.CreateAsync(new IdentityRole(Roles.NormalUser.ToString()));
             await roleManager.CreateAsync(new IdentityRole(Roles.BlockUser.ToString()));
+            await roleManager.CreateAsync(new IdentityRole(Roles.Accountant.ToString()));
+            await roleManager.CreateAsync(new IdentityRole(Roles.SeniorAccountant.ToString()));
+            await roleManager.CreateAsync(new IdentityRole(Roles.HR.ToString()));
+
         }
 
         public static async Task SeedDefaultCompaniesAsync(ApplicationDbContext context)

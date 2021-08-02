@@ -366,6 +366,7 @@ namespace BlazorBugTracker.Data.Migrations
                     UserSalary = table.Column<long>(type: "bigint", nullable: false),
                     IsSubmitted = table.Column<bool>(type: "boolean", nullable: false),
                     IsApproved = table.Column<bool>(type: "boolean", nullable: false),
+                    IsFinished = table.Column<bool>(type: "boolean", nullable: false),
                     PayRollId = table.Column<List<int>>(type: "integer[]", nullable: true),
                     CustomUserId = table.Column<string>(type: "text", nullable: true)
                 },

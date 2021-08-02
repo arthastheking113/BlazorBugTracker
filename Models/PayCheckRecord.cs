@@ -18,6 +18,7 @@ namespace BlazorBugTracker.Models
         
         public bool IsSubmitted { get; set; }
         public bool IsApproved { get; set; }
+        public bool IsFinished { get; set; }
 
         public List<int> PayRollId { get; set; }
 

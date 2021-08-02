@@ -13,11 +13,13 @@
 @inject UserManager<CustomUser> _userManager
 @inject ICustomFileService _customFileService
 @inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Identity.UI.Services
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Http
 @inject IHttpContextAccessor _httpContextAccessor
 @inject ISessionStorageService sessionStorage
 @inject IJSRuntime JSRuntime
+@inject IEmailSender _emailSender  
 
 @if (currentProject is null)
 {
@@ -40,8 +42,12 @@ else
             <div class="card-header">
                 <div class="row">
                     <div class="col">
-                        <a class="btn btn-outline-secondary mr-1"> <i class="fas fa-arrow-circle-left"></i> Back</a>
-                        <button type="button" class="btn btn-outline-success mr-1 ml-1">
+                        @if (IsInRoleAdmin || IsProjectManager)
+                        {
+                            <a href="/project" class="btn btn-outline-secondary mr-1"> <i class="fas fa-arrow-circle-left"></i> Back</a>
+                        }
+
+                        <button type="button" @onclick="OpenCreateDialog" class="btn btn-outline-success mr-1 ml-1">
                             <i class="fas fa-plus-square"></i> Create New Ticket
                         </button>
 
@@ -444,6 +450,126 @@ else
 </ModalDialog>
 
 
+<ModalDialog @ref="_createDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>Create New Ticket</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col">
+                    <EditForm Model="newItem" OnValidSubmit="Add">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="form-group">
+                            <label class="control-label">Name</label>
+                            <input class="form-control" @bind="newItem.Name" />
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Description</label>
+                            <input class="form-control" @bind="newItem.Description" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label">Project</label>
+                            <input class="form-control" readonly @bind="newItem.Project.Name" />
+                        </div>
+                        @if (IsInRoleAdmin || IsProjectManager)
+                        {
+
+
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label class="control-label">Developer</label>
+                                        <RadzenDropDown AllowClear="true" TValue="string" @bind-Value="newItem.DeveloperId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                        Placeholder="Select Developer..." Data=@developerOnProject TextProperty="FullName" ValueProperty="Id" />
+
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label class="control-label">Owner</label>
+                                        <RadzenDropDown AllowClear="true" TValue="string" @bind-Value="newItem.OwnnerId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                        Placeholder="Select Developer..." Data=@OwnerList TextProperty="FullName" ValueProperty="Id" />
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label class="control-label">Status</label>
+                                        <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="newItem.StatusId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                        Placeholder="Select Ticket Status..." Data=@TicketStatusList TextProperty="Name" ValueProperty="Id" />
+
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label class="control-label">Priority</label>
+                                        <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="newItem.PriorityId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                        Placeholder="Select Ticket Priority..." Data=@TicketPriorityList TextProperty="Name" ValueProperty="Id" />
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+
+                                    <div class="form-group">
+                                        <label class="control-label">Is Assigned?</label>
+
+                                        <RadzenSelectBar Style="width:100%;" @bind-Value="newItem.IsAssigned" TValue="bool">
+                                            <Items>
+                                                <RadzenSelectBarItem Text="On" Value="true" />
+                                                <RadzenSelectBarItem Text="Off" Value="false" />
+                                            </Items>
+                                        </RadzenSelectBar>
+                                    </div>
+                                </div>
+                                <div class="col">
+
+                                    <div class="form-group">
+                                        <label class="control-label">TicketType</label>
+                                        <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="newItem.TicketTypeId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                        Placeholder="Select Ticket Type..." Data=@TicketTypeList TextProperty="Name" ValueProperty="Id" />
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        }
+
+
+
+                        <br />
+                        <div class="row">
+                            <div class="col">
+                                <button type="submit" class="btn btn-success btn-block">Create</button>
+                            </div>
+                        </div>
+                    </EditForm>
+                    <br />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelCreateDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
+
+
 @code {
     //Fully customized dialog
     private double _overlayOpacity = 0.3;
@@ -459,7 +585,7 @@ else
 
 
     private ModalDialog _ProjectAttachmentDialog;
-
+    private ModalDialog _createDialog;
 
     [Parameter]
     public string ProjectId { get; set; }
@@ -471,6 +597,12 @@ else
     public List<Models.CustomUser> submitterOnProject = new();
     public Models.ProjectAttachment NewProjectAttachment = new();
     public Models.ProjectAttachment CurrentProjectAttachment = new();
+    public List<Models.TicketType> TicketTypeList = new();
+    public List<Models.Priority> TicketPriorityList = new();
+    public List<Models.Status> TicketStatusList = new();
+    public List<Models.Project> ProjectList = new();
+    public List<Models.CustomUser> OwnerList = new();
+
     public int CloseId;
     public bool IsInRoleAdmin;
     public bool IsDeveloper;
@@ -478,6 +610,21 @@ else
     public bool IsProjectManager;
     public bool IsNewUser;
     public DateTime currentTime;
+
+    public Models.Ticket newItem = new();
+
+    private async Task OpenCreateDialog()
+    {
+        newItem = new();
+        newItem.Project = currentProject;
+        newItem.ProjectId = currentProject.Id;
+        await _createDialog.Open();
+    }
+    private async Task CancelCreateDialog()
+    {
+        newItem = new();
+        await _createDialog.Close();
+    }
 
     public async Task OpenViewAttachmentDialog(Models.ProjectAttachment file)
     {
@@ -489,8 +636,141 @@ else
         CurrentProjectAttachment = new();
         await _ProjectAttachmentDialog.Close();
     }
+    public async Task Add()
+    {
+        try
+        {
+            newItem.OwnnerId = user.Id;
+            newItem.Created = DateTime.Now;
+            newItem.Updated = newItem.Created;
+            if (IsDeveloper || IsSubmitter)
+            {
+                newItem.TicketTypeId = _context.TicketType.FirstOrDefault(t => t.Name == "UnAssign").Id;
+                newItem.PriorityId = _context.Priority.FirstOrDefault(t => t.Name == "UnAssign").Id;
+                newItem.StatusId = _context.Status.FirstOrDefault(t => t.Name == "UnAssign").Id;
+            }
 
-    protected override void  OnInitialized()
+            _context.Add(newItem);
+            _context.SaveChanges();
+
+
+            var currentClosedStatusId = _context.Status.FirstOrDefault(t => t.Name == "Closed").Id;
+            var projectName = _context.Project.FirstOrDefault(p => p.Id == newItem.ProjectId).Name;
+            if (newItem.IsAssigned == true && newItem.StatusId != currentClosedStatusId)
+            {
+                Models.Notification notification = new Models.Notification
+                {
+                    Name = "New Ticket Assign",
+                    TicketId = newItem.Id,
+                    Description = "You have a new ticket.",
+                    Created = DateTime.Now,
+                    SenderId = newItem.OwnnerId,
+                    RecipientId = newItem.DeveloperId
+                };
+                _context.Notification.Add(notification);
+                _context.SaveChanges();
+
+
+                string devEmail = (_context.Users.FirstOrDefault(u => u.Id == newItem.DeveloperId)).Email;
+                string subject = "New Ticket Assignment";
+                string message = $"You have been Assigned a new ticket {newItem.Name} about {newItem.Description} for project: {projectName}";
+
+                await _emailSender.SendEmailAsync(devEmail, subject, message);
+
+            }
+            //access project name
+
+
+            //create notifocation for project manager on project through system notification and email
+            //notification when current user is submitter
+            if (IsSubmitter)
+            {
+                //notification for project manager on project
+                Models.Notification notification = new Models.Notification
+                {
+                    Name = "New Ticket is Created by Submitter",
+                    TicketId = newItem.Id,
+                    Description = $"New Ticket #{newItem.Id} is Created by Submitter in {projectName} and Waiting for being Assigned",
+                    Created = DateTime.Now,
+                    SenderId = newItem.OwnnerId,
+                    RecipientId = (_projectService.ProjectManagerOnProject(newItem.ProjectId)).Id
+                };
+                _context.Notification.Add(notification);
+                _context.SaveChanges();
+
+                //email to project manager about the notification
+                string PMEmail = (_projectService.ProjectManagerOnProject(newItem.ProjectId)).Email;
+                string subject = "New Ticket Has Been Created by Submitter";
+                string message = $"A new ticket {newItem.Name} has been created by Submitter {user.FullName} about {newItem.Description} for project: {projectName}, and waiting approval from you.";
+
+                await _emailSender.SendEmailAsync(PMEmail, subject, message);
+
+                //notification to current user
+                Models.Notification notification2 = new Models.Notification
+                {
+                    Name = "You just Create a New Ticket",
+                    TicketId = newItem.Id,
+                    Description = $"You just create a new ticket #{newItem.Id} in project {projectName} and waiting for being Assigned",
+                    Created = DateTime.Now,
+                    SenderId = (_projectService.ProjectManagerOnProject(newItem.ProjectId)).Id,
+                    RecipientId = newItem.OwnnerId
+                };
+                _context.Notification.Add(notification2);
+                _context.SaveChanges();
+
+            }
+            //create notifocation for project manager on project through system notification and email
+            //notification when current user is developer
+            else if (IsDeveloper)
+            {
+                //send notication to project manager on project
+                Models.Notification notification = new Models.Notification
+                {
+                    Name = "New Ticket is Created by Developer",
+                    TicketId = newItem.Id,
+                    Description = $"New Ticket #{newItem.Id} is Created by Developer in {projectName} and Waiting for being Approve",
+                    Created = DateTime.Now,
+                    SenderId = newItem.OwnnerId,
+                    RecipientId = (_projectService.ProjectManagerOnProject(newItem.ProjectId)).Id
+                };
+                _context.Notification.Add(notification);
+                _context.SaveChanges();
+
+
+                string PMEmail = (_projectService.ProjectManagerOnProject(newItem.ProjectId)).Email;
+                string subject = "New Ticket Has Been Created by Developer";
+                string message = $"A new ticket {newItem.Name} has been created by Developer {user.FullName} about {newItem.Description} for project: {projectName}, and waiting approval from you.";
+
+                await _emailSender.SendEmailAsync(PMEmail, subject, message);
+
+                Models.Notification notification2 = new Models.Notification
+                {
+                    Name = "You just Create a New Ticket",
+                    TicketId = newItem.Id,
+                    Description = $"You just create a new ticket #{newItem.Id} in project {projectName} and waiting for being Assigned",
+                    Created = DateTime.Now,
+                    SenderId = (_projectService.ProjectManagerOnProject(newItem.ProjectId)).Id,
+                    RecipientId = newItem.OwnnerId
+                };
+                _context.Notification.Add(notification2);
+                _context.SaveChanges();
+            }
+
+
+
+
+            CancelCreateDialog();
+            GetData();
+            await JSRuntime.InvokeVoidAsync("success", null);
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+
+        }
+    }
+
+    protected override void OnInitialized()
     {
 
         var currrentUser = _httpContextAccessor.HttpContext.User;
@@ -517,7 +797,7 @@ else
         _context.SaveChanges();
     }
 
-    public void  GetData()
+    public void GetData()
     {
         currentProject = _context.Project
             .Include(p => p.Attachments)
@@ -548,6 +828,12 @@ else
         developerOnProject = (_projectService.DeveloperOnProject(currentProject.Id)).ToList();
 
         submitterOnProject = (_projectService.SubmitterOnProject(currentProject.Id)).ToList();
+
+
+        TicketTypeList = _context.TicketType.ToList();
+        TicketPriorityList = _context.Priority.ToList();
+        TicketStatusList = _context.Status.ToList();
+        OwnerList = _context.Users.ToList();
 
 
     }

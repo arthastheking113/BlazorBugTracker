@@ -357,6 +357,9 @@ namespace BlazorBugTracker.Data.Migrations
                     b.Property<bool>("IsApproved")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsFinished")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsSubmitted")
                         .HasColumnType("boolean");
 

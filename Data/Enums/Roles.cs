@@ -16,6 +16,9 @@ namespace BlazorBugTracker.Data.Enums
         NewUser,
         DemoUser,
         NormalUser,
-        BlockUser
+        BlockUser,
+        Accountant,
+        SeniorAccountant,
+        HR
     }
 }
