@@ -30,6 +30,7 @@ namespace BlazorBugTracker.Data
         public DbSet<WelcomeNotification> WelcomeNotification { get; set; }
         public DbSet<PayRoll> PayRoll { get; set; }
         public DbSet<PayCheckRecord> PayCheckRecord { get; set; }
+        public DbSet<HRReport> HRReport { get; set; }
 
     }
 }

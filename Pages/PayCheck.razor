@@ -462,21 +462,34 @@
     {
         try
         {
-            if (payroll.Id != 0)
+            if (string.IsNullOrEmpty(payroll.Name))
             {
-                _context.Update(payroll);
-                _context.SaveChanges();
+                await JSRuntime.InvokeVoidAsync("errorTimeSheetNameMissing", null);
+            }
+            else if (string.IsNullOrEmpty(payroll.Note))
+            {
+                await JSRuntime.InvokeVoidAsync("errorTimeSheetNoteMissing", null);
             }
             else
             {
-                payroll.CustomUserId = user.Id;
-                _context.Add(payroll);
-                _context.SaveChanges();
-            }
-            GetData();
-            GetTimeSheet();
 
-            await JSRuntime.InvokeVoidAsync("success", null);
+                if (payroll.Id != 0)
+                {
+                    _context.Update(payroll);
+                    _context.SaveChanges();
+                }
+                else
+                {
+                    payroll.CustomUserId = user.Id;
+                    _context.Add(payroll);
+                    _context.SaveChanges();
+                }
+                GetData();
+                GetTimeSheet();
+
+                await JSRuntime.InvokeVoidAsync("success", null);
+            }
+
         }
         catch(Exception ex)
         {

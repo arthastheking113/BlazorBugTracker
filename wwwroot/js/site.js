@@ -149,6 +149,24 @@ function errorNotTime() {
         timer: 1500
     })
 }
+function errorTimeSheetNameMissing() {
+    Swal.fire({
+        position: 'center',
+        icon: 'error',
+        title: "Opp, Time Sheet type is missing !!!",
+        showConfirmButton: false,
+        timer: 1200
+    })
+}
+function errorTimeSheetNoteMissing() {
+    Swal.fire({
+        position: 'center',
+        icon: 'error',
+        title: "Opp, Time Sheet Note is missing !!!",
+        showConfirmButton: false,
+        timer: 1200
+    })
+}
 
 function errorFileMissing() {
     Swal.fire({

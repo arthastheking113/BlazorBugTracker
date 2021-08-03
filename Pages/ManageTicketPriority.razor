@@ -2,6 +2,9 @@
 @using BlazorBugTracker.Data
 @inject ApplicationDbContext _context
 @inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor _httpContextAccessor
 <div class="row">
     <div class="col">
         <div class="card">
@@ -189,6 +192,9 @@
     private ModalDialog _editDialog;
     private ModalDialog _deleteDialog;
 
+    public Models.CustomUser user = new();
+    public bool IsInRoleAdmin;
+
     public Models.Priority newItem = new();
     public Models.Priority currentItem = new();
 
@@ -278,7 +284,17 @@
 
     protected override void OnInitialized()
     {
-        GetData();
+        var currrentUser = _httpContextAccessor.HttpContext.User;
+        user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
+        IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
+        if (IsInRoleAdmin)
+        {
+            GetData();
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/accessdenied");
+        }
     }
 
     public void GetData()

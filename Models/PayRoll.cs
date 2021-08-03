@@ -28,7 +28,7 @@ namespace BlazorBugTracker.Models
                 }
                 else
                 {
-                    return $"{End.Subtract(Start).TotalHours}";
+                    return $"{End.AddHours(-1).Subtract(Start).TotalHours}";
                 }
             } }
 

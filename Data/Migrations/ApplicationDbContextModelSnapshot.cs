@@ -136,8 +136,8 @@ namespace BlazorBugTracker.Data.Migrations
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<long>("MonthlySalary")
-                        .HasColumnType("bigint");
+                    b.Property<double>("MonthlySalary")
+                        .HasColumnType("double precision");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -156,6 +156,9 @@ namespace BlazorBugTracker.Data.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("SSN")
+                        .HasColumnType("text");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
 
@@ -164,6 +167,9 @@ namespace BlazorBugTracker.Data.Migrations
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
@@ -184,6 +190,61 @@ namespace BlazorBugTracker.Data.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers");
+                });
+
+            modelBuilder.Entity("BlazorBugTracker.Models.HRReport", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<string>("CustomUserAddress")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CustomUserEmail")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CustomUserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CustomUserName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CustomUserPhoneNumber")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CustomUserSSN")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("End")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("HRId")
+                        .HasColumnType("text");
+
+                    b.Property<double>("HourSalary")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("HoursWorked")
+                        .HasColumnType("double precision");
+
+                    b.Property<DateTime>("PayDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<double>("Salary")
+                        .HasColumnType("double precision");
+
+                    b.Property<DateTime>("Start")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomUserId");
+
+                    b.HasIndex("HRId");
+
+                    b.ToTable("HRReport");
                 });
 
             modelBuilder.Entity("BlazorBugTracker.Models.Inbox", b =>
@@ -369,14 +430,14 @@ namespace BlazorBugTracker.Data.Migrations
                     b.Property<List<int>>("PayRollId")
                         .HasColumnType("integer[]");
 
-                    b.Property<long>("Salary")
-                        .HasColumnType("bigint");
+                    b.Property<double>("Salary")
+                        .HasColumnType("double precision");
 
                     b.Property<DateTime>("Start")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<long>("UserSalary")
-                        .HasColumnType("bigint");
+                    b.Property<double>("UserSalary")
+                        .HasColumnType("double precision");
 
                     b.HasKey("Id");
 
@@ -882,6 +943,21 @@ namespace BlazorBugTracker.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Company");
+                });
+
+            modelBuilder.Entity("BlazorBugTracker.Models.HRReport", b =>
+                {
+                    b.HasOne("BlazorBugTracker.Models.CustomUser", "CustomUser")
+                        .WithMany()
+                        .HasForeignKey("CustomUserId");
+
+                    b.HasOne("BlazorBugTracker.Models.CustomUser", "HR")
+                        .WithMany()
+                        .HasForeignKey("HRId");
+
+                    b.Navigation("CustomUser");
+
+                    b.Navigation("HR");
                 });
 
             modelBuilder.Entity("BlazorBugTracker.Models.Inbox", b =>

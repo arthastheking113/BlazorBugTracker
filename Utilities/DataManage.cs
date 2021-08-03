@@ -62,8 +62,8 @@ namespace BlazorBugTracker.Utilities
             // add role to the system
             await SeedRoleAsync(roleManagerSvc, userManageSvc);
             await SeedDefaultCompaniesAsync(dbContextSvc);
-            await SeedDefaultUserAsync(userManageSvc, roleManagerSvc);
-            await SeedDemoUsersAsync(userManageSvc, roleManagerSvc);
+            await SeedDefaultUserAsync(userManageSvc, roleManagerSvc, dbContextSvc);
+            await SeedDemoUsersAsync(userManageSvc, roleManagerSvc, dbContextSvc);
             await SeedDefaultTicketType(dbContextSvc);
             await SeedDefaultTicketStatusAsync(dbContextSvc);
             await SeedDefaultTicketPriorityAsync(dbContextSvc);
@@ -121,7 +121,7 @@ namespace BlazorBugTracker.Utilities
         }
 
         //Seed Default User
-        public static async Task SeedDefaultUserAsync(UserManager<CustomUser> userManagerSvc, RoleManager<IdentityRole> roleManager)
+        public static async Task SeedDefaultUserAsync(UserManager<CustomUser> userManagerSvc, RoleManager<IdentityRole> roleManager, ApplicationDbContext context)
         {
             //create your self as a user
 
@@ -134,7 +134,14 @@ namespace BlazorBugTracker.Utilities
                 EmailConfirmed = true,
                 CompanyId = company1Id,
                 DateJoined = DateTime.Now,
-                MonthlySalary = 10000
+                MonthlySalary = 10000,
+                SSN = "1234567899",
+                Address = "123 Abc St",
+                City = "New York",
+                State = "New York",
+                ZipCode = "12345",
+                PhoneNumber = "1234567899",
+                UserId = CreateUserId(context)
 
             };
             try
@@ -165,7 +172,14 @@ namespace BlazorBugTracker.Utilities
                 EmailConfirmed = true,
                 CompanyId = company1Id,
                 DateJoined = DateTime.Now,
-                MonthlySalary = 4000
+                MonthlySalary = 4000,
+                SSN = "1234567899",
+                Address = "123 Abc St",
+                City = "New York",
+                State = "New York",
+                ZipCode = "12345",
+                PhoneNumber = "1234567899",
+                UserId = CreateUserId(context)
             };
             try
             {
@@ -196,7 +210,14 @@ namespace BlazorBugTracker.Utilities
                 EmailConfirmed = true,
                 CompanyId = company1Id,
                 DateJoined = DateTime.Now,
-                MonthlySalary = 3000
+                MonthlySalary = 3000,
+                SSN = "1234567899",
+                Address = "123 Abc St",
+                City = "New York",
+                State = "New York",
+                ZipCode = "12345",
+                PhoneNumber = "1234567899",
+                UserId = CreateUserId(context)
             };
             try
             {
@@ -227,7 +248,14 @@ namespace BlazorBugTracker.Utilities
                 EmailConfirmed = true,
                 CompanyId = company1Id,
                 DateJoined = DateTime.Now,
-                MonthlySalary = 4500
+                MonthlySalary = 4500,
+                SSN = "1234567899",
+                Address = "123 Abc St",
+                City = "New York",
+                State = "New York",
+                ZipCode = "12345",
+                PhoneNumber = "1234567899",
+                UserId = CreateUserId(context)
             };
             try
             {
@@ -258,7 +286,14 @@ namespace BlazorBugTracker.Utilities
                 EmailConfirmed = true,
                 CompanyId = company1Id,
                 DateJoined = DateTime.Now,
-                MonthlySalary = 4400
+                MonthlySalary = 4400,
+                SSN = "1234567899",
+                Address = "123 Abc St",
+                City = "New York",
+                State = "New York",
+                ZipCode = "12345",
+                PhoneNumber = "1234567899",
+                UserId = CreateUserId(context)
             };
             try
             {
@@ -289,7 +324,14 @@ namespace BlazorBugTracker.Utilities
                 EmailConfirmed = true,
                 CompanyId = company1Id,
                 DateJoined = DateTime.Now,
-                MonthlySalary = 3900
+                MonthlySalary = 3900,
+                SSN = "1234567899",
+                Address = "123 Abc St",
+                City = "New York",
+                State = "New York",
+                ZipCode = "12345",
+                PhoneNumber = "1234567899",
+                UserId = CreateUserId(context)
             };
             try
             {
@@ -320,7 +362,14 @@ namespace BlazorBugTracker.Utilities
                 EmailConfirmed = true,
                 CompanyId = company1Id,
                 DateJoined = DateTime.Now,
-                MonthlySalary = 3600
+                MonthlySalary = 3600,
+                SSN = "1234567899",
+                Address = "123 Abc St",
+                City = "New York",
+                State = "New York",
+                ZipCode = "12345",
+                PhoneNumber = "1234567899",
+                UserId = CreateUserId(context)
             };
             try
             {
@@ -351,7 +400,14 @@ namespace BlazorBugTracker.Utilities
                 EmailConfirmed = true,
                 CompanyId = company1Id,
                 DateJoined = DateTime.Now,
-                MonthlySalary = 5000
+                MonthlySalary = 5000,
+                SSN = "1234567899",
+                Address = "123 Abc St",
+                City = "New York",
+                State = "New York",
+                ZipCode = "12345",
+                PhoneNumber = "1234567899",
+                UserId = CreateUserId(context)
             };
             try
             {
@@ -382,7 +438,14 @@ namespace BlazorBugTracker.Utilities
                 EmailConfirmed = true,
                 CompanyId = company1Id,
                 DateJoined = DateTime.Now,
-                MonthlySalary = 4000
+                MonthlySalary = 4000,
+                SSN = "1234567899",
+                Address = "123 Abc St",
+                City = "New York",
+                State = "New York",
+                ZipCode = "12345",
+                PhoneNumber = "1234567899",
+                UserId = CreateUserId(context)
             };
             try
             {
@@ -413,7 +476,14 @@ namespace BlazorBugTracker.Utilities
                 EmailConfirmed = true,
                 CompanyId = company1Id,
                 DateJoined = DateTime.Now,
-                MonthlySalary = 6000
+                MonthlySalary = 6000,
+                SSN = "1234567899",
+                Address = "123 Abc St",
+                City = "New York",
+                State = "New York",
+                ZipCode = "12345",
+                PhoneNumber = "1234567899",
+                UserId = CreateUserId(context)
             };
             try
             {
@@ -436,7 +506,7 @@ namespace BlazorBugTracker.Utilities
         }
 
         //Seed Demo User
-        public static async Task SeedDemoUsersAsync(UserManager<CustomUser> userManager, RoleManager<IdentityRole> roleManager)
+        public static async Task SeedDemoUsersAsync(UserManager<CustomUser> userManager, RoleManager<IdentityRole> roleManager, ApplicationDbContext context)
         {
             //Seed Demo Admin User
             var defaultUser = new CustomUser
@@ -448,7 +518,14 @@ namespace BlazorBugTracker.Utilities
                 EmailConfirmed = true,
                 CompanyId = company2Id,
                 DateJoined = DateTime.Now,
-                MonthlySalary = 10000
+                MonthlySalary = 10000,
+                SSN = "1234567899",
+                Address = "123 Abc St",
+                City = "New York",
+                State = "New York",
+                ZipCode = "12345",
+                PhoneNumber = "1234567899",
+                UserId = CreateUserId(context)
             };
             try
             {
@@ -481,7 +558,14 @@ namespace BlazorBugTracker.Utilities
                 EmailConfirmed = true,
                 CompanyId = company2Id,
                 DateJoined = DateTime.Now,
-                MonthlySalary = 5000
+                MonthlySalary = 5000,
+                SSN = "1234567899",
+                Address = "123 Abc St",
+                City = "New York",
+                State = "New York",
+                ZipCode = "12345",
+                PhoneNumber = "1234567899",
+                UserId = CreateUserId(context)
             };
             try
             {
@@ -513,7 +597,14 @@ namespace BlazorBugTracker.Utilities
                 EmailConfirmed = true,
                 CompanyId = company2Id,
                 DateJoined = DateTime.Now,
-                MonthlySalary = 4000
+                MonthlySalary = 4000,
+                SSN = "1234567899",
+                Address = "123 Abc St",
+                City = "New York",
+                State = "New York",
+                ZipCode = "12345",
+                PhoneNumber = "1234567899",
+                UserId = CreateUserId(context)
             };
             try
             {
@@ -545,7 +636,14 @@ namespace BlazorBugTracker.Utilities
                 EmailConfirmed = true,
                 CompanyId = company2Id,
                 DateJoined = DateTime.Now,
-                MonthlySalary = 3000
+                MonthlySalary = 3000,
+                SSN = "1234567899",
+                Address = "123 Abc St",
+                City = "New York",
+                State = "New York",
+                ZipCode = "12345",
+                PhoneNumber = "1234567899",
+                UserId = CreateUserId(context)
             };
             try
             {
@@ -577,7 +675,14 @@ namespace BlazorBugTracker.Utilities
                 EmailConfirmed = true,
                 CompanyId = company2Id,
                 DateJoined = DateTime.Now,
-                MonthlySalary = 2000
+                MonthlySalary = 2000,
+                SSN = "1234567899",
+                Address = "123 Abc St",
+                City = "New York",
+                State = "New York",
+                ZipCode = "12345",
+                PhoneNumber = "1234567899",
+                UserId = CreateUserId(context)
             };
             try
             {
@@ -808,6 +913,26 @@ namespace BlazorBugTracker.Utilities
                 Debug.WriteLine("***********************************");
                 throw;
             }
+        }
+        public static string CreateUserId(ApplicationDbContext context)
+        {
+            Random rand = new Random();
+            var RandomNumber = Enumerable.Range(0, 10)
+                                         .Select(i => new Tuple<int, int>(rand.Next(10), i))
+                                         .OrderBy(i => i.Item1)
+                                         .Select(i => i.Item2);
+            var UserId = String.Join("", string.Join(";", RandomNumber).Split('@', ',', '.', ';', '\''));
+
+
+            while (context.Users.Where(i => i.UserId == UserId).ToList().Count > 0)
+            {
+                RandomNumber = Enumerable.Range(0, 10)
+                                         .Select(i => new Tuple<int, int>(rand.Next(10), i))
+                                         .OrderBy(i => i.Item1)
+                                         .Select(i => i.Item2);
+                UserId = String.Join("", string.Join(";", RandomNumber).Split('@', ',', '.', ';', '\''));
+            }
+            return UserId;
         }
     }
 }

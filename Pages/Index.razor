@@ -1066,7 +1066,8 @@ else
             UserName = newInvite.Email,
             Email = newInvite.Email,
             EmailConfirmed = true,
-            CompanyId = company.Id
+            CompanyId = company.Id,
+            UserId = CreateUserId()
         };
         try
         {
@@ -1269,5 +1270,25 @@ else
         }
         _editModalWidth = await JSRuntime.InvokeAsync<int>("ScreenWidth", null);
         _editModalWidth = _editModalWidth * 0.5;
+    }
+    public string CreateUserId()
+    {
+        Random rand = new Random();
+        var RandomNumber = Enumerable.Range(0, 10)
+                                     .Select(i => new Tuple<int, int>(rand.Next(10), i))
+                                     .OrderBy(i => i.Item1)
+                                     .Select(i => i.Item2);
+        var UserId = String.Join("", string.Join(";", RandomNumber).Split('@', ',', '.', ';', '\''));
+
+
+        while (_context.Users.Where(i => i.UserId == UserId).ToList().Count > 0)
+        {
+            RandomNumber = Enumerable.Range(0, 10)
+                                     .Select(i => new Tuple<int, int>(rand.Next(10), i))
+                                     .OrderBy(i => i.Item1)
+                                     .Select(i => i.Item2);
+            UserId = String.Join("", string.Join(";", RandomNumber).Split('@', ',', '.', ';', '\''));
+        }
+        return UserId;
     }
 }

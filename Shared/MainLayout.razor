@@ -290,6 +290,15 @@
                         </a>
                     </li>
                 }
+                @if (IsHR)
+                {
+                    <li class="nav-item">
+                        <a href="manage/user" class="nav-link">
+                            <i class="fas fa-users"></i>
+                            <p>HR</p>
+                        </a>
+                    </li>
+                }
                 @if (IsInRoleAdmin)
                 {
                     <li class="nav-item">
@@ -383,6 +392,7 @@
     public bool IsSubmitter;
     public bool IsProjectManager;
     public bool IsNewUser;
+    public bool IsHR;
 
     protected override async Task OnInitializedAsync()
     {
@@ -399,6 +409,8 @@
             IsNewUser = currrentUser.IsInRole(Roles.NewUser.ToString());
             IsSubmitter = currrentUser.IsInRole(Roles.Submitter.ToString());
             IsProjectManager = currrentUser.IsInRole(Roles.ProjectManager.ToString());
+            IsHR = currrentUser.IsInRole(Roles.HR.ToString());
+
             currentTime = DateTime.Now;
             GetNotificationAndInbox();
             GetTime();

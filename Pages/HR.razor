@@ -1,4 +1,4 @@
-﻿@page "/timesheet/approval"
+﻿@page "/HR"
 @using BlazorBugTracker.Data
 @using Microsoft.AspNetCore.Http
 @using BlazorBugTracker.Services
@@ -83,78 +83,7 @@
                 </div>
 
             </div>
-            <div class="row mt-2 pb-2">
-                <div class="col">
-                    <div class="table-wrapper-scroll-y my-custom-scrollbar">
-                        <table class="table table-condensed">
-                            <thead>
-
-                                <tr>
-                                    <th>Date</th>
-                                    <th>In</th>
-                                    <th>Out</th>
-                                    <th>Type</th>
-                                    <th>Note</th>
-                                    <th>Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var item in currentItemList)
-                                {
-
-                                    <tr>
-                                        <td>
-                                            <input class="form-control" readonly value="@item.Start.ToString("dddd, dd MMMM yyyy")" />
-                                        </td>
-                                        <td>
-                                            <input class="form-control" type="time" @bind="item.Start" readonly />
-                                        </td>
-                                        <td>
-                                            <input class="form-control" type="time" @bind="item.End" readonly/>
-                                        </td>
-                                        <td>
-                                            <input class="form-control" readonly value="@item.Name" />
-                                           
-                                        </td>
-                                        <td>
-                                            <input class="form-control" type="text" readonly @bind="item.Note" />
-                                        </td>
-                                        <td>
-                                            @if (item.Start.DayOfWeek == DayOfWeek.Sunday || item.Start.DayOfWeek == DayOfWeek.Saturday)
-                                            {
-                                                <p>@((item.End - item.Start).Hours) Hours</p>
-                                            }
-                                            else
-                                            {
-                                                <p>@((item.End.AddHours(-1) - item.Start).Hours) Hours</p>
-                                            }
-
-                                        </td>
-                                    </tr>
-                                }
-
-                                <tr>
-                                    <td></td>
-                                    <td></td>
-                                    <td>
-                                        <h4>Total</h4>
-                                    </td>
-                                    <td>
-                                    </td>
-                                    <td>
-                                    </td>
-                                    <td>
-                                        <h4>@totalWeek hours</h4>
-                                    </td>
-                                   
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <br />
-                    <button class="btn btn-secondary btn-block" @onclick="CancelPayRollDialog">Cancel</button>
-                </div>
-            </div>
+         
         </div>
     </Content>
 </ModalDialog>
@@ -211,8 +140,6 @@
     private ModalDialog _submitPayCheckDialog;
 
 
-    public List<Models.PayRoll> ItemList = new();
-    public List<Models.PayRoll> currentItemList = new();
 
     public List<Models.PayCheckRecord> PayCheckRecordList = new();
     public Models.PayCheckRecord currentPayCheckRecord = new();
@@ -224,32 +151,14 @@
     public bool IsSubmitter;
     public bool IsProjectManager;
     public bool IsNewUser;
+    public bool IsHR;
+
     public double totalWeek;
 
     public async Task OpenViewDialog(Models.PayCheckRecord record)
     {
         currentPayCheckRecord = record;
-        currentItemList = new();
-        totalWeek = 0;
-        foreach (var item in currentPayCheckRecord.PayRollId)
-        {
-            var payroll = ItemList.FirstOrDefault(p => p.Id == item);
-            if (payroll is not null)
-            {
-                currentItemList.Add(payroll);
-            }
-        }
-        foreach (var item in currentItemList)
-        {
-            if (item.Start.DayOfWeek == DayOfWeek.Saturday || item.Start.DayOfWeek == DayOfWeek.Sunday)
-            {
-                totalWeek += (item.End - item.Start).TotalHours;
-            }
-            else
-            {
-                totalWeek += (item.End.AddHours(-1) - item.Start).TotalHours;
-            }
-        }
+      
 
         await _payCheckDialog.Open();
     }
@@ -259,7 +168,7 @@
 
         await _payCheckDialog.Close();
         currentPayCheckRecord = new();
-        currentItemList = new();
+     
     }
 
     public async Task ApproveTimeSheet()
@@ -275,20 +184,13 @@
     {
         try
         {
-            currentPayCheckRecord.IsApproved = true;
-            _context.Update(currentPayCheckRecord);
-            foreach (var item in currentItemList)
-            {
-                item.IsApproved = true;
-                _context.Update(item);
-            }
-            _context.SaveChanges();
+            
             await GetData();
             await CancelSubmitPayCheckDialog();
 
             await JSRuntime.InvokeVoidAsync("success", null);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             await JSRuntime.InvokeVoidAsync("error", null);
         }
@@ -304,7 +206,9 @@
         IsNewUser = currrentUser.IsInRole(Roles.NewUser.ToString());
         IsSubmitter = currrentUser.IsInRole(Roles.Submitter.ToString());
         IsProjectManager = currrentUser.IsInRole(Roles.ProjectManager.ToString());
-        if (IsInRoleAdmin || IsProjectManager)
+        IsHR = currrentUser.IsInRole(Roles.HR.ToString());
+
+        if (IsInRoleAdmin || IsHR)
         {
             await GetData();
         }
@@ -351,13 +255,11 @@
                 }
             }
         }
-        else if(IsInRoleAdmin)
+        else if (IsInRoleAdmin)
         {
             ProjectList = _context.Project.Include(p => p.CustomUsers).ToList();
             DeveloperUser = _context.Users.ToList();
         }
-
-
 
         DeveloperUser = DeveloperUser.Distinct().ToList();
         foreach (var item in DeveloperUser)
@@ -367,11 +269,7 @@
             {
                 PayCheckRecordList.Add(item2);
             }
-            var timeSheetSubmitted = _context.PayRoll.Include(p => p.CustomUser).Where(p => !p.IsApproved && p.IsSubmitted && p.CustomUserId == item.Id).ToList();
-            foreach (var timesheet in timeSheetSubmitted)
-            {
-                ItemList.Add(timesheet);
-            }
+           
         }
     }
 }

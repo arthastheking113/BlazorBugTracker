@@ -1,8 +1,133 @@
 ﻿@page "/contact"
+@using Microsoft.AspNetCore.Identity.UI.Services
+@inject IEmailSender _emailSender
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor _httpContextAccessor
+@using BlazorBugTracker.Data
+@inject ApplicationDbContext _context 
+@inject IJSRuntime JSRuntime 
+<br /><br /><br />
+<div class="container">
+    <div class="shadow-lg p-3 mb-5 bg-white rounded">
+        <div class="row">
+            <div class="col"></div>
+            <div class="col-3 text-center" style="border-bottom:4px solid rgb(28, 213, 219);padding-bottom: 12px;">
+                <h1>Contact</h1>
+            </div>
+            <div class="col"></div>
+        </div>
+        <br />
+        <div class="row">
+            <div class="col-2"></div>
+            <div class="col-lg-8 col-md-10 mx-auto">
+                @if (!IsSuccess)
+                {
+                    <div class="row">
+                        <div class="col">
+                            <EditForm Model="newMessage" OnValidSubmit="Send">
+                                <DataAnnotationsValidator />
+                                <ValidationSummary />
+                                <div class="control-group">
+                                    <div class="form-group floating-label-form-group controls">
+                                        <label class="form-group">Subject</label>
+                                        <input type="text" @bind="newMessage.Subject" class="form-control" placeholder="Subject" />
+                                    </div>
+                                </div>
+                                <br />
+                                <div class="control-group">
+                                    <div class="form-group">
+                                        <label class="form-group">Message</label>
+                                        <RadzenHtmlEditor @bind-Value=@newMessage.Message style="height: 350px; margin-bottom: 1rem;" Placeholder="Tell me, I'm listening" UploadUrl="upload/image">
+                                            <RadzenHtmlEditorUndo />
+                                            <RadzenHtmlEditorRedo />
+                                            <RadzenHtmlEditorSeparator />
+                                            <RadzenHtmlEditorBold />
+                                            <RadzenHtmlEditorItalic />
+                                            <RadzenHtmlEditorUnderline />
+                                            <RadzenHtmlEditorStrikeThrough />
+                                            <RadzenHtmlEditorSeparator />
+                                            <RadzenHtmlEditorColor />
+                                            <RadzenHtmlEditorBackground />
+                                            <RadzenHtmlEditorRemoveFormat />
+                                        </RadzenHtmlEditor>
+                                    </div>
+                                </div>
+                                <div class="col-12 text-center p-0">
+                                    <button class=" button-big btn-block button button-a btn-block" style="background-color:#1cd5db;font-size: 130%;font-weight: 800;letter-spacing: 1px;text-transform: uppercase;border-radius: 0;font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;color:white;border:0;" type="submit">Send Message</button>
+                                </div>
+                            </EditForm>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="row">
+                        <div class="col">
+                            <div class="text-center">
+                                <div class="post-meta">
+                                    <p style="font-size:smaller">
+                                        <blockquote class="blockquote text-center" style="border-left:15px;border-bottom: 4px solid rgb(28, 213, 219); padding: 18px; font-style: italic;">
+                                            You Successfully Send Me Your Message.<br />Take A Snack And I Will Contact You Back!
+                                            <br />
+                                            <br />
 
+                                        </blockquote>
+                                    </p>
+                                </div>
+                                <a class="btn btn-outline-primary" href="/">Home Page</a>
+                            </div>
+                        </div>
+                    </div>
+                }
 
-<h3>Contact</h3>
-
+            </div>
+            <div class="col-2"></div>
+        </div>
+        <br />
+        <br />
+        <br />
+        <br />
+    </div>
+</div>
 @code {
+    public Models.CustomUser user = new();
+    public Models.Contact newMessage = new();
+    public bool IsSuccess;
 
+    protected override async Task OnInitializedAsync()
+    {
+        var currrentUser = _httpContextAccessor.HttpContext.User;
+        user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
+    }
+
+    public async Task Send()
+    {
+        try
+        {
+            newMessage.Email = user.Email;
+            newMessage.Name = user.FullName;
+            string myEmail = "arthastheking113@gmail.com";
+
+            string subject = $"{newMessage.Name} Just Send You A Message About {newMessage.Subject}";
+
+            string body = $"Message From {newMessage.Email}: {newMessage.Message}";
+
+            string customberSubject = $"I Just Received A Message From Lan's Blog With Name {newMessage.Name} About {newMessage.Subject}";
+            string customberBody = $"I Received Message From {newMessage.Email} About: {newMessage.Subject}. I will contact back to you as soon as possible.";
+
+            await _emailSender.SendEmailAsync(myEmail, subject, body);
+
+            await _emailSender.SendEmailAsync(newMessage.Email, customberSubject, customberBody);
+            newMessage = new();
+            IsSuccess = true;
+            await JSRuntime.InvokeVoidAsync("success", null);
+
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+
+        }
+
+    }
 }

@@ -34,9 +34,12 @@ namespace BlazorBugTracker.Models
         [NotMapped]
         [DataType(DataType.Password)]
         public string NewConfirmPassword { get; set; }
-        
+
+        public string UserId { get; set; }
+
         public DateTime DateJoined { get; set; }
 
+        public string SSN { get; set; }
         [NotMapped]
         public string Role { get; set; }
 
@@ -48,11 +51,11 @@ namespace BlazorBugTracker.Models
 
         public string ZipCode { get; set; }
 
-        public long MonthlySalary { get; set; }
+        public double MonthlySalary { get; set; }
         [NotMapped]
-        public long HourSalary { get { return (MonthlySalary / 4 / 6 / 8); } }
+        public double HourSalary { get { return (MonthlySalary / 4 / 5 / 8); } }
          [NotMapped]
-        public long DaySalary { get { return (MonthlySalary / 4 / 6); } }
+        public double DaySalary { get { return (MonthlySalary / 4 / 5); } }
         [Required]
         public int CompanyId { get; set; }
         public virtual Company Company { get; set; }

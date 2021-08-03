@@ -106,12 +106,14 @@ namespace BlazorBugTracker.Data.Migrations
                     LastName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     ImageData = table.Column<byte[]>(type: "bytea", nullable: true),
                     ContentType = table.Column<string>(type: "text", nullable: true),
+                    UserId = table.Column<string>(type: "text", nullable: true),
                     DateJoined = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    SSN = table.Column<string>(type: "text", nullable: true),
                     Address = table.Column<string>(type: "text", nullable: true),
                     City = table.Column<string>(type: "text", nullable: true),
                     State = table.Column<string>(type: "text", nullable: true),
                     ZipCode = table.Column<string>(type: "text", nullable: true),
-                    MonthlySalary = table.Column<long>(type: "bigint", nullable: false),
+                    MonthlySalary = table.Column<double>(type: "double precision", nullable: false),
                     CompanyId = table.Column<int>(type: "integer", nullable: false),
                     UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
@@ -249,6 +251,43 @@ namespace BlazorBugTracker.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "HRReport",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    HourSalary = table.Column<double>(type: "double precision", nullable: false),
+                    HoursWorked = table.Column<double>(type: "double precision", nullable: false),
+                    Salary = table.Column<double>(type: "double precision", nullable: false),
+                    PayDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    Start = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    End = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    CustomUserSSN = table.Column<string>(type: "text", nullable: true),
+                    CustomUserName = table.Column<string>(type: "text", nullable: true),
+                    CustomUserAddress = table.Column<string>(type: "text", nullable: true),
+                    CustomUserPhoneNumber = table.Column<string>(type: "text", nullable: true),
+                    CustomUserEmail = table.Column<string>(type: "text", nullable: true),
+                    CustomUserId = table.Column<string>(type: "text", nullable: true),
+                    HRId = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_HRReport", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_HRReport_AspNetUsers_CustomUserId",
+                        column: x => x.CustomUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_HRReport_AspNetUsers_HRId",
+                        column: x => x.HRId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Inbox",
                 columns: table => new
                 {
@@ -362,8 +401,8 @@ namespace BlazorBugTracker.Data.Migrations
                     Start = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     End = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     NumberHourOfWorked = table.Column<float>(type: "real", nullable: false),
-                    Salary = table.Column<long>(type: "bigint", nullable: false),
-                    UserSalary = table.Column<long>(type: "bigint", nullable: false),
+                    Salary = table.Column<double>(type: "double precision", nullable: false),
+                    UserSalary = table.Column<double>(type: "double precision", nullable: false),
                     IsSubmitted = table.Column<bool>(type: "boolean", nullable: false),
                     IsApproved = table.Column<bool>(type: "boolean", nullable: false),
                     IsFinished = table.Column<bool>(type: "boolean", nullable: false),
@@ -750,6 +789,16 @@ namespace BlazorBugTracker.Data.Migrations
                 column: "ProjectsId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_HRReport_CustomUserId",
+                table: "HRReport",
+                column: "CustomUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_HRReport_HRId",
+                table: "HRReport",
+                column: "HRId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Inbox_CustomUserId",
                 table: "Inbox",
                 column: "CustomUserId");
@@ -905,6 +954,9 @@ namespace BlazorBugTracker.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "CustomUserProject");
+
+            migrationBuilder.DropTable(
+                name: "HRReport");
 
             migrationBuilder.DropTable(
                 name: "Inbox");

@@ -2,40 +2,40 @@
 @using BlazorBugTracker.Service
 @inject IImageService _imageService
 @using BlazorBugTracker.Data
-@inject ApplicationDbContext _context  
-@inject IJSRuntime JSRuntime 
+@inject ApplicationDbContext _context
+@inject IJSRuntime JSRuntime
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Identity
-@inject UserManager<CustomUser> _userManager  
-@inject ICustomRoleService _roleService 
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor _httpContextAccessor
+@inject UserManager<CustomUser> _userManager
+@inject ICustomRoleService _roleService
+@inject NavigationManager NavigationManager
 <div class="row">
     <div class="col">
         <div class="card">
             <div class="card-header bg-dark">
                 <h3 class="card-title">User Overview</h3>
-                <div class="card-tools">
-                    <div class="input-group input-group-sm">
-                        <input type="text" class="form-control" placeholder="Search Users" id="searchUser">
-                        <div class="input-group-append">
-                            <div class="btn btn-primary">
-                                <i class="fas fa-search"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
             <div class="card-body">
                 <a class="btn btn-outline-success" @onclick="OpenCreateDialog">Create New User</a>
                 <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true"
-                                FilterMode="FilterMode.Simple" PageSize="5" AllowPaging="true" AllowSorting="true" Data="@ItemList" TItem="Models.CustomUser" ColumnWidth="100%"
+                                FilterMode="FilterMode.Simple" PageSize="7" AllowPaging="true" AllowSorting="true" Data="@ItemList" TItem="Models.CustomUser" ColumnWidth="100%"
                                 FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                                 LogicalFilterOperator="LogicalFilterOperator.Or">
                     <Columns>
+                        <RadzenDataGridColumn TItem="Models.CustomUser" Title="View">
+                            <Template Context="data">
+
+                                <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="help" Click=@(() => OpenViewDialog(data)) Text="View" />
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="Models.CustomUser" Property="UserId" Title="ID" />
                         <RadzenDataGridColumn TItem="Models.CustomUser" Property="FullName" Title="Name" />
 
                         <RadzenDataGridColumn TItem="Models.CustomUser" Property="Email" Title="Email" />
-                        <RadzenDataGridColumn TItem="Models.CustomUser" Property="Role"  Title="Role" />
-                        <RadzenDataGridColumn TItem="Models.CustomUser" Property="Phone Number"  Title="Phone Number" />
+                        <RadzenDataGridColumn TItem="Models.CustomUser" Property="Role" Title="Role" />
+                        <RadzenDataGridColumn TItem="Models.CustomUser" Property="PhoneNumber" Title="Phone Number" />
                         <RadzenDataGridColumn TItem="Models.CustomUser" Property="Company" Title="Company">
                             <Template Context="data">
                                 @if (data.Company is not null)
@@ -81,7 +81,7 @@
              ShowCloseButton="_modalShowClose">
     <Header>
         @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
-        <h4>Create New</h4>
+        <h4>Create New User</h4>
     </Header>
     <Content>
         <div class="container-fluid">
@@ -105,6 +105,10 @@
                             <div class="col">
                                 <div style="margin-top:5%">Last Name</div>
                                 <input class="form-control" @bind="newItem.LastName" />
+                            </div>
+                            <div class="col">
+                                <div style="margin-top:5%">SSN</div>
+                                <input class="form-control" @bind="newItem.SSN" />
                             </div>
                         </div>
                         <div class="row">
@@ -134,7 +138,7 @@
                             </div>
                             <div class="col">
                                 <div style="margin-top:5%">City</div>
-                                <input class="form-control" required  @bind="newItem.City" />
+                                <input class="form-control" required @bind="newItem.City" />
                             </div>
 
                         </div>
@@ -195,7 +199,7 @@
              ShowCloseButton="_modalShowClose">
     <Header>
         @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
-        <h4>Edit</h4>
+        <h4>Edit User: @currentItem.FullName - ID: @currentItem.UserId</h4>
     </Header>
     <Content>
         <div class="container-fluid">
@@ -214,24 +218,33 @@
                                 <input class="form-control" @bind="currentItem.LastName" />
                             </div>
                             <div class="col">
-                                <div style="margin-top:5%">Phone Number</div>
-                                <input class="form-control" @bind="currentItem.PhoneNumber" />
+                                <div style="margin-top:5%">SSN</div>
+                                <input class="form-control" @bind="currentItem.SSN" />
                             </div>
+
                         </div>
                         <div class="row">
                             <div class="col">
                                 <div style="margin-top:5%">Email</div>
                                 <input class="form-control" @bind="currentItem.Email" />
                             </div>
+                            <div class="col">
+                                <div style="margin-top:5%">Phone Number</div>
+                                <input class="form-control" @bind="currentItem.PhoneNumber" />
+                            </div>
+                            <div class="col">
+                                <div style="margin-top:5%">User ID</div>
+                                <input class="form-control" readonly @bind="currentItem.UserId" />
+                            </div>
                         </div>
                         <div class="row">
                             <div class="col">
                                 <div style="margin-top:5%">Address</div>
-                                <input class="form-control" required  @bind="currentItem.Address" />
+                                <input class="form-control" required @bind="currentItem.Address" />
                             </div>
                             <div class="col">
                                 <div style="margin-top:5%">City</div>
-                                <input class="form-control" required  @bind="currentItem.City" />
+                                <input class="form-control" required @bind="currentItem.City" />
                             </div>
                         </div>
                         <div class="row">
@@ -292,7 +305,7 @@
              ShowCloseButton="_modalShowClose">
     <Header>
         @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
-        <h4>Delete</h4>
+        <h4>Delete User: @currentItem.FullName - ID: @currentItem.UserId</h4>
     </Header>
     <Content>
         <div class="container-fluid">
@@ -310,6 +323,10 @@
                                 <div style="margin-top:5%">Last Name</div>
                                 <input class="form-control" readonly @bind="currentItem.LastName" />
                             </div>
+                            <div class="col">
+                                <div style="margin-top:5%">SSN</div>
+                                <input class="form-control" readonly @bind="currentItem.SSN" />
+                            </div>
                         </div>
                         <div class="row">
                             <div class="col">
@@ -320,15 +337,19 @@
                                 <div style="margin-top:5%">Phone Number</div>
                                 <input class="form-control" readonly @bind="currentItem.PhoneNumber" />
                             </div>
+                            <div class="col">
+                                <div style="margin-top:5%">User ID</div>
+                                <input class="form-control" readonly @bind="currentItem.UserId" />
+                            </div>
                         </div>
                         <div class="row">
                             <div class="col">
                                 <div style="margin-top:5%">Address</div>
-                                <input class="form-control" readonly  @bind="currentItem.Address" />
+                                <input class="form-control" readonly @bind="currentItem.Address" />
                             </div>
                             <div class="col">
                                 <div style="margin-top:5%">City</div>
-                                <input class="form-control" readonly  @bind="currentItem.City" />
+                                <input class="form-control" readonly @bind="currentItem.City" />
                             </div>
 
                         </div>
@@ -375,6 +396,99 @@
 </ModalDialog>
 
 
+<ModalDialog @ref="_viewDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>View User: @currentItem.FullName - ID: @currentItem.UserId</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col">
+                    <div class="row">
+                        <div class="col">
+                            <div style="margin-top:5%">First Name</div>
+                            <input class="form-control" readonly @bind="currentItem.FirstName" />
+                        </div>
+                        <div class="col">
+                            <div style="margin-top:5%">Last Name</div>
+                            <input class="form-control" readonly @bind="currentItem.LastName" />
+                        </div>
+                        <div class="col">
+                            <div style="margin-top:5%">SSN</div>
+                            <input class="form-control" readonly @bind="currentItem.SSN" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div style="margin-top:5%">Email</div>
+                            <input class="form-control" readonly @bind="currentItem.Email" />
+                        </div>
+                        <div class="col">
+                            <div style="margin-top:5%">Phone Number</div>
+                            <input class="form-control" readonly @bind="currentItem.PhoneNumber" />
+                        </div>
+                        <div class="col">
+                            <div style="margin-top:5%">User ID</div>
+                            <input class="form-control" readonly @bind="currentItem.UserId" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div style="margin-top:5%">Address</div>
+                            <input class="form-control" readonly @bind="currentItem.Address" />
+                        </div>
+                        <div class="col">
+                            <div style="margin-top:5%">City</div>
+                            <input class="form-control" readonly @bind="currentItem.City" />
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div style="margin-top:5%">State</div>
+                            <input class="form-control" readonly @bind="currentItem.State" />
+                        </div>
+                        <div class="col">
+                            <div style="margin-top:5%">ZipCode</div>
+                            <input class="form-control" readonly @bind="currentItem.ZipCode" />
+                        </div>
+                        <div class="col">
+                            <div style="margin-top:5%">Monthly Salary</div>
+                            <input class="form-control" readonly @bind="currentItem.MonthlySalary" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div style="margin-top:5%">Company</div>
+                            @if (currentItem.Company is not null)
+                            {
+                                <input class="form-control" readonly @bind="currentItem.Company.Name" />
+                            }
+                            else
+                            {
+                                <p>None</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr />
+            <button class="btn btn-secondary btn-block" @onclick="CancelViewDialog">Cancel</button>
+        </div>
+    </Content>
+</ModalDialog>
+
+
 
 
 @code {
@@ -390,14 +504,26 @@
     private bool _modalCentered = true;
     private bool _modalShowClose = true;
 
-
+    private ModalDialog _viewDialog;
     private ModalDialog _createDialog;
     private ModalDialog _editDialog;
     private ModalDialog _deleteDialog;
-
+    public Models.CustomUser user = new();
+    public bool IsInRoleAdmin;
+    public bool IsHR;
     public Models.CustomUser newItem = new();
     public Models.CustomUser currentItem = new();
 
+    public async Task OpenViewDialog(Models.CustomUser user)
+    {
+        currentItem = user;
+        await _viewDialog.Open();
+    }
+    private async Task CancelViewDialog()
+    {
+        currentItem = new();
+        await _viewDialog.Close();
+    }
     private async Task OpenCreateDialog()
     {
         errors = null;
@@ -443,6 +569,7 @@
                 {
                     newItem.EmailConfirmed = true;
                     newItem.DateJoined = DateTime.Now;
+                    newItem.UserId = CreateUserId();
                     var result = await _userManager.CreateAsync(newItem, newItem.NewPassword);
                     if (result.Succeeded)
                     {
@@ -524,7 +651,19 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await GetData();
+        var currrentUser = _httpContextAccessor.HttpContext.User;
+        user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
+        IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
+        IsHR = currrentUser.IsInRole(Roles.HR.ToString());
+        if (IsInRoleAdmin || IsHR)
+        {
+
+            await GetData();
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/accessdenied");
+        }
     }
 
     public async Task GetData()
@@ -539,23 +678,47 @@
             CompanyList = _context.Company.ToList();
             RoleList = _context.Roles.ToList();
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             await JSRuntime.InvokeVoidAsync("error", null);
         }
 
     }
+
+    public string CreateUserId()
+    {
+        Random rand = new Random();
+        var RandomNumber = Enumerable.Range(0, 10)
+                                     .Select(i => new Tuple<int, int>(rand.Next(10), i))
+                                     .OrderBy(i => i.Item1)
+                                     .Select(i => i.Item2);
+        var UserId = String.Join("", string.Join(";", RandomNumber).Split('@', ',', '.', ';', '\''));
+
+
+        while (_context.Users.Where(i => i.UserId == UserId).ToList().Count > 0)
+        {
+            RandomNumber = Enumerable.Range(0, 10)
+                                     .Select(i => new Tuple<int, int>(rand.Next(10), i))
+                                     .OrderBy(i => i.Item1)
+                                     .Select(i => i.Item2);
+            UserId = String.Join("", string.Join(";", RandomNumber).Split('@', ',', '.', ';', '\''));
+        }
+        return UserId;
+    }
+
+
     void OnChange(object value)
     {
         var str = value is IEnumerable<object> ? string.Join(", ", (IEnumerable<object>)value) : value;
 
     }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
 
         if (firstRender)
         {
-            await JSRuntime.InvokeVoidAsync("enableTable", null);
+            //await JSRuntime.InvokeVoidAsync("enableTable", null);
         }
     }
 }
