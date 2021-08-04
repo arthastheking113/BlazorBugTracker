@@ -69,6 +69,9 @@ namespace BlazorBugTracker.Utilities
             await SeedDefaultTicketPriorityAsync(dbContextSvc);
             await SeedDefautProjectsAsync(dbContextSvc);
             await SeedDefautTicketsAsync(dbContextSvc);
+            await SeedDefaultTransactionType(dbContextSvc);
+            await SeedDefaultTransaction(dbContextSvc);
+
         }
 
         public static async Task SeedRoleAsync(RoleManager<IdentityRole> roleManager, UserManager<CustomUser> userManager)
@@ -914,6 +917,109 @@ namespace BlazorBugTracker.Utilities
                 throw;
             }
         }
+
+        public static async Task SeedDefaultTransactionType(ApplicationDbContext context)
+        {
+            var check = context.TransactionType.ToList();
+            if (check.Count == 0)
+            {
+                TransactionType ClientMeeting = new TransactionType
+                {
+                    Name = "Client Meeting"
+                };
+                TransactionType EmployeeSalary = new TransactionType
+                {
+                    Name = "Employee Salary"
+                };
+                TransactionType ClientPayment = new TransactionType
+                {
+                    Name = "Client Payment"
+                };
+                TransactionType CustomerPayment = new TransactionType
+                {
+                    Name = "Customer Payment"
+                };
+                TransactionType Renting = new TransactionType
+                {
+                    Name = "Renting"
+                };
+                await context.AddAsync(ClientMeeting);
+                await context.AddAsync(EmployeeSalary);
+                await context.AddAsync(ClientPayment);
+                await context.AddAsync(CustomerPayment);
+                await context.AddAsync(Renting);
+                await context.SaveChangesAsync();
+
+            }
+        }
+        public static async Task SeedDefaultTransaction(ApplicationDbContext context)
+        {
+            var check = context.Transaction.ToList();
+            if (check.Count == 0)
+            {
+                var transactionType = context.TransactionType.ToList();
+                var ProfitTypeId = transactionType.Where(c => c.Name == "Client Payment" || c.Name == "Customer Payment").Select(c => c.Id).ToList();
+
+                var ExpensesTypeId = transactionType.Where(c => c.Name != "Client Payment" || c.Name != "Customer Payment").Select(c => c.Id).ToList();
+
+                var transactionTypeIdList = transactionType.Select(c => c.Id).ToList();
+                Random rand = new Random();
+                Random rand2 = new Random();
+                var userList = context.Users.ToList();
+                var currentDate = DateTime.Now;
+                var DayRange = Enumerable.Range(0, 1 + currentDate.Subtract(currentDate.AddYears(-2)).Days)
+              .Select(offset => currentDate.AddYears(-2).AddDays(offset))
+              .ToList();
+                var randomString = "This is a template transaction";
+                foreach (var item in DayRange)
+                {
+                    var randomAmount = rand.Next(-600000, 1000000);
+                    var LoopTime = rand2.Next(0, 12);
+
+                    for (int i = 0; i < LoopTime; i++)
+                    {
+                        var randomUser = new Random();
+                        var randomType = new Random();
+                        var ranUser = userList[randomUser.Next(userList.Count)];
+
+                        if (randomAmount > 0)
+                        {
+                            var ranTypeId = ProfitTypeId[randomType.Next(ProfitTypeId.Count)];
+                            Transaction newTransaction = new Transaction
+                            {
+                                Amount = randomAmount,
+                                Reason = randomString,
+                                Time = item,
+                                TransactionTypeId = ranTypeId,
+                                CustomUserId = ranUser.Id,
+                                UserID = ranUser.UserId,
+                                CustomUser = ranUser
+                            };
+                            await context.AddAsync(newTransaction);
+                        }
+                        else
+                        {
+                            var ranTypeId = ExpensesTypeId[randomType.Next(ExpensesTypeId.Count)];
+                            Transaction newTransaction = new Transaction
+                            {
+                                Amount = randomAmount,
+                                Reason = randomString,
+                                Time = item,
+                                TransactionTypeId = ranTypeId,
+                                CustomUserId = ranUser.Id,
+                                UserID = ranUser.UserId,
+                                CustomUser = ranUser
+                            };
+                            await context.AddAsync(newTransaction);
+                        }
+                    }
+
+                }
+                await context.SaveChangesAsync();
+            }
+          
+        }
+
         public static string CreateUserId(ApplicationDbContext context)
         {
             Random rand = new Random();

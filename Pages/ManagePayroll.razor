@@ -1,0 +1,157 @@
+﻿@page "/manage/accountant/payrolls"
+
+@using BlazorBugTracker.Data
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Http
+@inject ApplicationDbContext _context
+@inject IHttpContextAccessor _httpContextAccessor
+@inject IJSRuntime JSRuntime
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true"
+                            FilterMode="FilterMode.Simple" PageSize="10" AllowPaging="true" AllowSorting="true" Data="@ItemList" TItem="Models.PayCheckRecord" ColumnWidth="100%"
+                            FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                            LogicalFilterOperator="LogicalFilterOperator.Or">
+                <Columns>
+                    <RadzenDataGridColumn Width="200px" TItem="Models.PayCheckRecord" Title="ID">
+                        <Template Context="data">
+                            <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="help" Click=@(() => ViewPayRoll(data)) Text="@data.Id.ToString()" />
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="Models.PayCheckRecord" Property="NumberDayOfWorked" Title="Days Worked" />
+
+                    <RadzenDataGridColumn TItem="Models.PayCheckRecord" Property="Salary" Title="Salary" />
+
+                    <RadzenDataGridColumn TItem="Models.PayCheckRecord" Property="Start" Title="Start" FormatString="{0:d}" />
+                    <RadzenDataGridColumn TItem="Models.PayCheckRecord" Property="End" Title="End" FormatString="{0:d}" />
+
+                    <RadzenDataGridColumn TItem="Models.PayCheckRecord" Property="IsSubmitted" Title="Submitted" />
+                    <RadzenDataGridColumn TItem="Models.PayCheckRecord" Property="IsApproved" Title="Approved" />
+                </Columns>
+            </RadzenDataGrid>
+        </div>
+    </div>
+</div>
+
+<ModalDialog @ref="_viewDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             Width="_editModalWidth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>View Pay Check #@currentPayCheckRecord.Id </h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col text-right">
+                    Is Submitted?
+                    <RadzenSelectBar Disabled="true" @bind-Value=@currentPayCheckRecord.IsSubmitted TValue="bool">
+                        <Items>
+                            <RadzenSelectBarItem Text="Yes" Value="true" />
+                            <RadzenSelectBarItem Text="No" Value="false" />
+                        </Items>
+                    </RadzenSelectBar>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col text-right">
+                    Is Approved?
+                    <RadzenSelectBar Disabled="true" @bind-Value=@currentPayCheckRecord.IsApproved TValue="bool">
+                        <Items>
+                            <RadzenSelectBarItem Text="Yes" Value="true" />
+                            <RadzenSelectBarItem Text="No" Value="false" />
+                        </Items>
+                    </RadzenSelectBar>
+                </div>
+            </div>
+            <div class="row mt-2 pb-2">
+                <div class="col">
+                    <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true"
+                                    FilterMode="FilterMode.Simple" PageSize="6" AllowPaging="true" AllowSorting="true" Data="@currentTimeSheet" TItem="Models.PayRoll" ColumnWidth="100%"
+                                    FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                    LogicalFilterOperator="LogicalFilterOperator.Or">
+                        <Columns>
+                            <RadzenDataGridColumn TItem="Models.PayRoll" Property="TotalHour" Title="Total Hour" />
+
+                            <RadzenDataGridColumn TItem="Models.PayRoll" Property="Name" Title="Name" />
+                            <RadzenDataGridColumn TItem="Models.PayRoll" Property="Note" Title="Note" />
+                            <RadzenDataGridColumn TItem="Models.PayRoll" Property="Start" Title="Start" FormatString="{0:d}" />
+                            <RadzenDataGridColumn TItem="Models.PayRoll" Property="End" Title="End" FormatString="{0:d}" />
+                        </Columns>
+                    </RadzenDataGrid>
+                    <br />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelViewPayRoll">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
+
+
+
+@code {
+    public List<Models.PayCheckRecord> ItemList = new();
+    public Models.PayCheckRecord currentPayCheckRecord = new();
+
+    public List<Models.PayRoll> currentTimeSheet = new();
+
+    public List<Models.PayRoll> AllTimeSheet = new();
+    public Models.CustomUser user = new();
+
+    //Fully customized dialog
+    private double _overlayOpacity = 0.3;
+    private double _modalMinHeight = 100;
+    private double _editModalWidth;
+    private double _modalMinWitdth = 100;
+    private bool _modalAnimate = true;
+    private bool _modalCloseOnClick = true;
+    private bool _modalCloseOnEsc = true;
+    private bool _modalFocus = true;
+    private bool _modalCentered = true;
+    private bool _modalShowClose = true;
+
+    private ModalDialog _viewDialog;
+
+    async Task ViewPayRoll(Models.PayCheckRecord payroll)
+    {
+        currentPayCheckRecord = payroll;
+        currentTimeSheet = new();
+        foreach (var item in payroll.PayRollId)
+        {
+            var timesheet = AllTimeSheet.FirstOrDefault(c => c.Id == item);
+            currentTimeSheet.Add(timesheet);
+        }
+        await _viewDialog.Open();
+
+    }
+    public async Task CancelViewPayRoll()
+    {
+        currentTimeSheet = new();
+        currentPayCheckRecord = new();
+        await _viewDialog.Close();
+    }
+
+    protected override void OnInitialized()
+    {
+        GetData();
+    }
+
+
+    public void GetData()
+    {
+        var currrentUser = _httpContextAccessor.HttpContext.User;
+        user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
+        ItemList = _context.PayCheckRecord.Include(c => c.CustomUser).Where(c => c.CustomUserId == user.Id && c.IsApproved).OrderByDescending(c => c.Start).ToList();
+
+        AllTimeSheet = _context.PayRoll.Include(c => c.CustomUser).Where(c => c.CustomUserId == user.Id).OrderByDescending(c => c.Start).ToList();
+    }
+}

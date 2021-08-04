@@ -31,6 +31,8 @@ namespace BlazorBugTracker.Data
         public DbSet<PayRoll> PayRoll { get; set; }
         public DbSet<PayCheckRecord> PayCheckRecord { get; set; }
         public DbSet<HRReport> HRReport { get; set; }
+        public DbSet<Transaction> Transaction { get; set; }
+        public DbSet<TransactionType> TransactionType { get; set; }
 
     }
 }

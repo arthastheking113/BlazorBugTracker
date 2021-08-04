@@ -1,0 +1,275 @@
+﻿@page "/manage/accountant/overview"
+@using BlazorBugTracker.Data
+@using System.Globalization
+@inject ApplicationDbContext _context
+<div class="container-fluid p-0">
+    <div class="row">
+        @if (ItemList.Count == 0)
+        {
+            <div class="col">
+                <div class="loader">Loading...</div>
+            </div>
+        }
+        else
+        {
+            <div class="col p-0">
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">Works Overview</h3>
+                    </div>
+                    <br />
+                    <div class="row p-2">
+                        <div class="col-md">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-percentage"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Current Month Income</span>
+
+
+                                    <span class="info-box-number">
+                                        <strong>$</strong>
+                                        @TotalIncome
+
+                                    </span>
+
+
+                                </div>
+                                <!-- /.info-box-content -->
+                            </div>
+                            <!-- /.info-box -->
+                        </div>
+                        <div class="col-md">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-exclamation"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Current Month Expenses</span>
+                                    <span class="info-box-number">
+                                        <strong>$</strong>
+                                        @TotalExpense
+                                    </span>
+                                </div>
+                                <!-- /.info-box-content -->
+                            </div>
+                            <!-- /.info-box -->
+                        </div>
+                        <div class="col-md">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-lime elevation-1"><i class="fas fa-file-alt"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Current Month Profit</span>
+                                    <span class="info-box-number">
+                                        <strong>$</strong>
+                                        @TotalProfit
+                                    </span>
+                                </div>
+                                <!-- /.info-box-content -->
+                            </div>
+                            <!-- /.info-box -->
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col p-2">
+                            <RadzenChart>
+                                <RadzenLineSeries Smooth="true" Data="@Income" CategoryProperty="Time" Title="Income" ValueProperty="Amount">
+                                </RadzenLineSeries>
+                                <RadzenLineSeries Smooth="true" Data="@Expenses" CategoryProperty="Time" Title="Expenses" ValueProperty="Amount">
+                                </RadzenLineSeries>
+
+                                <RadzenCategoryAxis Padding="20" FormatString="{0:MMM}" />
+                                <RadzenValueAxis Formatter="@FormatAsUSD">
+                                    <RadzenGridLines Visible="true" />
+                                    <RadzenAxisTitle Text="Revenue in USD" />
+                                </RadzenValueAxis>
+                            </RadzenChart>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col p-2">
+                            <RadzenChart>
+                                <RadzenLineSeries Smooth="true" Data="@Profit" CategoryProperty="Time" Title="Profit" ValueProperty="Amount">
+                                </RadzenLineSeries>
+                                <RadzenCategoryAxis Padding="20" FormatString="{0:MMM}" />
+                                <RadzenValueAxis Formatter="@FormatAsUSD">
+                                    <RadzenGridLines Visible="true" />
+                                    <RadzenAxisTitle Text="Revenue in USD" />
+                                </RadzenValueAxis>
+                            </RadzenChart>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="card-body">
+                                <p class="text-left">
+                                    <strong>Income By Category</strong>
+                                </p>
+                                <RadzenChart>
+                                    <RadzenDonutSeries Data="@IncomeDonutChart" Title="Income By Category" CategoryProperty="TicketCategory" ValueProperty="NumberOfTicket">
+                                        <TitleTemplate>
+                                            <div class="rz-donut-content">
+
+                                            </div>
+                                        </TitleTemplate>
+                                    </RadzenDonutSeries>
+                                </RadzenChart>
+
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+                        <div class="col">
+                            <div class="card-body">
+                                <p class="text-left">
+                                    <strong>Expenses By Category</strong>
+                                </p>
+                                <RadzenChart>
+                                    <RadzenDonutSeries Data="@ExpensesDonutChart" Title="Expenses By Category" CategoryProperty="TicketCategory" ValueProperty="NumberOfTicket">
+                                        <TitleTemplate>
+                                            <div class="rz-donut-content">
+
+                                            </div>
+                                        </TitleTemplate>
+                                    </RadzenDonutSeries>
+                                </RadzenChart>
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col p-2">
+                            <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true"
+                                            FilterMode="FilterMode.Simple" PageSize="5" AllowPaging="true" AllowSorting="true" Data="@ItemList" TItem="Models.Transaction" ColumnWidth="100%"
+                                            FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                            LogicalFilterOperator="LogicalFilterOperator.Or">
+                                <Columns>
+                                    <RadzenDataGridColumn TItem="Models.Transaction" Property="Time" />
+                                    <RadzenDataGridColumn TItem="Models.Transaction" Property="CustomUser" Context="data" Title="User">
+                                        <Template Context="data">
+                                            @if (@data.CustomUser is not null)
+                                            {
+                                                <p>@data.CustomUser.FullName</p>
+                                            }
+                                        </Template>
+                                    </RadzenDataGridColumn>
+                                    <RadzenDataGridColumn TItem="Models.Transaction" Property="UserID" Title="UserID" />
+                                    <RadzenDataGridColumn TItem="Models.Transaction" Property="Amount" Title="Amount" />
+                                    <RadzenDataGridColumn TItem="Models.Transaction" Property="Season" Title="Reason" />
+                                </Columns>
+                            </RadzenDataGrid>
+                        </div>
+                    </div>
+                </div>
+     
+            </div>
+        }
+
+    </div>
+</div>
+
+
+@code {
+    public List<Models.Transaction> ItemList = new();
+    public List<Models.TransactionType> TransactionTypeList = new();
+    public List<Models.TransactionTypeModel> RevenueList = new();
+    public List<Models.TransactionTypeModel> Income = new();
+    public List<Models.TransactionTypeModel> Expenses = new();
+    public List<Models.TransactionTypeModel> Profit = new();
+    public List<Models.Transaction> CurrentMonthReport = new();
+    public List<Models.ChartModel> IncomeDonutChart = new();
+    public List<Models.ChartModel> ExpensesDonutChart = new();
+
+    public DateTime currentTime = DateTime.Now;
+    public decimal TotalIncome;
+    public decimal TotalExpense;
+    public decimal TotalProfit;
+
+    public void GetData()
+    {
+        TotalIncome = 0;
+        TotalExpense = 0;
+        TotalProfit = 0;
+        ItemList = _context.Transaction.ToList();
+        CurrentMonthReport = ItemList.Where(c => c.Time.Month == currentTime.Month).ToList();
+        foreach (var item in ItemList)
+        {
+            if (item.Amount >= 0)
+            {
+                Models.TransactionTypeModel newIncome = new Models.TransactionTypeModel
+                {
+                    Amount = item.Amount,
+                    Time = item.Time
+                };
+                Income.Add(newIncome);
+
+            }
+            if (item.Amount < 0)
+            {
+                Models.TransactionTypeModel newExpenses = new Models.TransactionTypeModel
+                {
+                    Amount = item.Amount,
+                    Time = item.Time
+                };
+                Expenses.Add(newExpenses);
+
+            }
+            var itemInThatDay = ItemList.Where(c => c.Time.Month == item.Time.Month).ToList();
+            decimal amount = 0;
+            foreach (var transaction in itemInThatDay)
+            {
+                amount += transaction.Amount;
+            }
+            Models.TransactionTypeModel newProfit = new Models.TransactionTypeModel
+            {
+                Amount =amount,
+                Time = item.Time
+            };
+            if (!Profit.Contains(newProfit))
+            {
+                Profit.Add(newProfit);
+            }
+        }
+        foreach (var item in CurrentMonthReport)
+        {
+            if (item.Amount >= 0)
+            {
+
+                TotalIncome += item.Amount;
+            }
+            if (item.Amount < 0)
+            {
+
+                TotalExpense += item.Amount;
+            }
+        }
+        TotalProfit = TotalIncome + TotalExpense;
+        TotalExpense = TotalExpense * (-1);
+
+        TransactionTypeList = _context.TransactionType.ToList();
+        foreach (var item in TransactionTypeList)
+        {
+
+            ChartModel newTicketStatus = new ChartModel
+            {
+                TicketCategory = item.Name,
+                NumberOfTicket = ItemList.Where(t => t.TransactionTypeId == item.Id && t.Time.Month == currentTime.Month && t.Amount > 0).ToList().Count
+            };
+            IncomeDonutChart.Add(newTicketStatus);
+
+            ChartModel newTicketStatus2 = new ChartModel
+            {
+                TicketCategory = item.Name,
+                NumberOfTicket = ItemList.Where(t => t.TransactionTypeId == item.Id && t.Time.Month == currentTime.Month && t.Amount < 0).ToList().Count
+            };
+            ExpensesDonutChart.Add(newTicketStatus2);
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        GetData();
+    }
+
+
+    string FormatAsUSD(object value)
+    {
+        return ((double)value).ToString("C0", CultureInfo.CreateSpecificCulture("en-US"));
+    }
+}

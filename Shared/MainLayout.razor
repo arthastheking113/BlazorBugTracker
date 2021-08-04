@@ -4,13 +4,14 @@
 @inject UserManager<CustomUser> _userManager
 @inject SignInManager<CustomUser> _signInManager
 @using Microsoft.AspNetCore.Http
-@using BlazorBugTracker.Data 
-@using Microsoft.EntityFrameworkCore 
+@using BlazorBugTracker.Data
+@using Microsoft.EntityFrameworkCore
 @inject IHttpContextAccessor _httpContextAccessor
 @inject IImageService _imageService
 @inject ISessionStorageService sessionStorage
 @inject ICustomRoleService _roleService
-@inject ApplicationDbContext _context 
+@inject ApplicationDbContext _context
+@inject IJSRuntime JSRuntime 
 <header>
     <nav class="main-header navbar navbar-expand navbar-white navbar-light">
         <!-- Left navbar links -->
@@ -47,30 +48,30 @@
         <ul class="navbar-nav mr-auto">
             <!-- Messages Dropdown Menu -->
             <!--<li class="nav-item dropdown">
-                <a class="nav-link" data-toggle="dropdown" href="#">
-                    <i class="far fa-comments"></i>
+            <a class="nav-link" data-toggle="dropdown" href="#">
+                <i class="far fa-comments"></i>
 
-                    <span class="badge badge-danger navbar-badge">2</span>
-
-
-                </a>
-                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+                <span class="badge badge-danger navbar-badge">2</span>
 
 
-                    <a href="/inbox" class="dropdown-item">-->
-                        <!-- Message Start -->
-                        <!--<div class="media">
-                            <img src="img/avatar.png" alt="User Avatar" class="img-size-50 mr-3 img-circle">
-                            <div class="media-body">
-                                <h3 class="dropdown-item-title">
-                                    name
-                                </h3>
-                                <p class="text-sm">hahaha</p>
-                                <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i>1/2/3203</p>
-                            </div>
-                        </div>-->
-                        <!-- Message End -->
-                    <!--</a>
+            </a>
+            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+
+
+                <a href="/inbox" class="dropdown-item">-->
+            <!-- Message Start -->
+            <!--<div class="media">
+                <img src="img/avatar.png" alt="User Avatar" class="img-size-50 mr-3 img-circle">
+                <div class="media-body">
+                    <h3 class="dropdown-item-title">
+                        name
+                    </h3>
+                    <p class="text-sm">hahaha</p>
+                    <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i>1/2/3203</p>
+                </div>
+            </div>-->
+            <!-- Message End -->
+            <!--</a>
                     <div class="dropdown-divider"></div>
 
 
@@ -78,14 +79,13 @@
                     <a href="/inbox" class="dropdown-item dropdown-footer">See All Messages</a>
                 </div>
             </li>-->
-
             <!-- Notifications Dropdown Menu -->
             <li class="nav-item dropdown">
                 <a class="nav-link" data-toggle="dropdown" href="#">
                     <i class="far fa-bell"></i>
                     @if ((welcomeNotificationList.Count + notificationList.Count) != 0)
                     {
-                <span class="badge badge-warning navbar-badge">@(welcomeNotificationList.Count + notificationList.Count)</span>
+                        <span class="badge badge-warning navbar-badge">@(welcomeNotificationList.Count + notificationList.Count)</span>
                     }
                     else
                     {
@@ -95,7 +95,7 @@
                 <div class="dropdown-menu dropdown-menu-xl dropdown-menu-right">
                     @if ((welcomeNotificationList.Count + notificationList.Count) != 0)
                     {
-                    <span class="dropdown-item dropdown-header">@(welcomeNotificationList.Count + notificationList.Count) Notifications</span>
+                        <span class="dropdown-item dropdown-header">@(welcomeNotificationList.Count + notificationList.Count) Notifications</span>
                     }
 
 
@@ -172,7 +172,7 @@
         </ul>
         <ul class="navbar-nav ml-auto mr-auto">
             <li class="nav-item dropdown">
-                <p  class="nav-item d-none d-sm-inline-block" style="padding:0;margin:0;color:black;font-size: 14px;font-weight: 800;letter-spacing: 1px;text-transform: uppercase;border-radius: 0;font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                <p class="nav-item d-none d-sm-inline-block" style="padding:0;margin:0;color:black;font-size: 14px;font-weight: 800;letter-spacing: 1px;text-transform: uppercase;border-radius: 0;font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;">
                     @time
                 </p>
             </li>
@@ -219,7 +219,7 @@
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                 <!-- Add icons to the links using the .nav-icon class
-    with font-awesome or any other icon font library -->
+                with font-awesome or any other icon font library -->
 
                 <li class="nav-item">
                     <a href="/" class="nav-link">
@@ -270,15 +270,6 @@
                         </p>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="/payroll" class="nav-link">
-                        <i class="nav-icon fas fa-money-check"></i>
-                        <p>
-                            Pay Roll
-
-                        </p>
-                    </a>
-                </li>
                 @if (IsInRoleAdmin || IsProjectManager)
                 {
                     <li class="nav-item">
@@ -293,12 +284,35 @@
                 @if (IsHR)
                 {
                     <li class="nav-item">
-                        <a href="manage/user" class="nav-link">
-                            <i class="fas fa-users"></i>
+                        <a href="/manage/user" class="nav-link">
+                            <i class="nav-icon fas fa-users"></i>
                             <p>HR</p>
                         </a>
                     </li>
                 }
+                @if (IsInRoleAdmin || IsAccountant || IsSeniorAccountant)
+                {
+                    <li class="nav-item">
+                        <a href="/manage/accountant/overview" class="nav-link">
+                            <i class="nav-icon fas fa-chart-line"></i>
+                            <p>Finance</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/manage/accountant/transactions" class="nav-link">
+                            <i class="nav-icon fas fa-arrows-alt-h"></i>
+                            <p>Transactions</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/manage/accountant/payrolls" class="nav-link">
+                            <i class="nav-icon fas fa-money-check-alt"></i>
+                            <p>Payrolls</p>
+                        </a>
+                    </li>
+
+                }
+
                 @if (IsInRoleAdmin)
                 {
                     <li class="nav-item">
@@ -327,25 +341,25 @@
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
-                                <a href="manage/ticket/type" class="nav-link">
+                                <a href="/manage/ticket/type" class="nav-link">
                                     <i class="fas fa-filter"></i>
                                     <p>Ticket Type</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="manage/ticket/priority" class="nav-link">
+                                <a href="/manage/ticket/priority" class="nav-link">
                                     <i class="fas fa-sort-alpha-down"></i>
                                     <p>Ticket Priority</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="manage/ticket/status" class="nav-link">
+                                <a href="/manage/ticket/status" class="nav-link">
                                     <i class="fas fa-battery-three-quarters"></i>
                                     <p>Ticket Status</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="manage/user" class="nav-link">
+                                <a href="/manage/user" class="nav-link">
                                     <i class="fas fa-users"></i>
                                     <p>User Overview</p>
                                 </a>
@@ -393,6 +407,8 @@
     public bool IsProjectManager;
     public bool IsNewUser;
     public bool IsHR;
+    public bool IsAccountant;
+    public bool IsSeniorAccountant;
 
     protected override async Task OnInitializedAsync()
     {
@@ -410,6 +426,8 @@
             IsSubmitter = currrentUser.IsInRole(Roles.Submitter.ToString());
             IsProjectManager = currrentUser.IsInRole(Roles.ProjectManager.ToString());
             IsHR = currrentUser.IsInRole(Roles.HR.ToString());
+            IsAccountant = currrentUser.IsInRole(Roles.Accountant.ToString());
+            IsSeniorAccountant = currrentUser.IsInRole(Roles.SeniorAccountant.ToString());
 
             currentTime = DateTime.Now;
             GetNotificationAndInbox();

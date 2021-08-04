@@ -66,5 +66,7 @@ namespace BlazorBugTracker.Models
         public virtual ICollection<PayRoll> PayRolls { get; set; }
 
         public virtual ICollection<PayCheckRecord> PayCheckRecords { get; set; }
+        public virtual ICollection<Transaction> Transactions { get; set; }
+
     }
 }
