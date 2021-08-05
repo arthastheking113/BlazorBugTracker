@@ -19,7 +19,7 @@
 @inject IHttpContextAccessor _httpContextAccessor
 @inject ISessionStorageService sessionStorage
 @inject IJSRuntime JSRuntime
-@inject IEmailSender _emailSender  
+@inject IEmailSender _emailSender
 
 @if (currentProject is null)
 {
@@ -54,7 +54,7 @@ else
 
                         @if (IsInRoleAdmin || IsProjectManager)
                         {
-                            <button class="btn btn-outline-info mr-1 ml-1"><i class="fas fa-pencil-alt"></i> Edit Project</button>
+                            <button class="btn btn-outline-info mr-1 ml-1" @onclick="OpenEditProjectDialog"><i class="fas fa-pencil-alt"></i> Edit Project</button>
                         }
                         <a class="btn btn-outline-primary ml-1" href="/ticket"><i class="fas fa-ticket-alt"></i> View All Tickets On System</a>
 
@@ -570,6 +570,68 @@ else
 </ModalDialog>
 
 
+
+<ModalDialog @ref="_editDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             Width="_editModalWidth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>Edit Project #@currentProject.Id</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col">
+                    <EditForm Model="currentProject" OnValidSubmit="Edit">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="row">
+                            <div class="col">
+                                <img class="img-fluid" src="@_imageService.DecodeFile(currentProject.ImageData, currentProject.ContentType)" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Project Name</label>
+                            <input @bind="currentProject.Name" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Description</label>
+                            <textarea @bind="currentProject.Description" class="form-control" rows="4" required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label">Upload Image</label>
+                            <InputFile OnChange="@LoadFilesEdit" />
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Company</label>
+                            <input @bind="currentProject.Company.Name" class="form-control" readonly />
+                        </div>
+
+                        <br />
+                        <div class="row">
+                            <div class="col">
+                                <button type="submit" class="btn btn-primary btn-block">Accept Changes</button>
+                            </div>
+                        </div>
+                    </EditForm>
+                    <br />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelEditDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
+
+
 @code {
     //Fully customized dialog
     private double _overlayOpacity = 0.3;
@@ -586,6 +648,7 @@ else
 
     private ModalDialog _ProjectAttachmentDialog;
     private ModalDialog _createDialog;
+    private ModalDialog _editDialog;
 
     [Parameter]
     public string ProjectId { get; set; }
@@ -622,10 +685,41 @@ else
     }
     private async Task CancelCreateDialog()
     {
-        newItem = new();
         await _createDialog.Close();
     }
+    private async Task OpenEditProjectDialog()
+    {
+        await _editDialog.Open();
+    }
+    private async Task CancelEditDialog()
+    {
+        await _editDialog.Close();
+    }
+    private async Task LoadFilesEdit(InputFileChangeEventArgs e)
+    {
+        IBrowserFile imgFile = e.File;
+        var buffers = new byte[imgFile.Size];
+        await imgFile.OpenReadStream().ReadAsync(buffers);
+        currentProject.ImageData = buffers.ToArray();
+        currentProject.ContentType = imgFile.ContentType;
 
+    }
+    public async Task Edit()
+    {
+        try
+        {
+            _context.Update(currentProject);
+            _context.SaveChanges();
+            GetData();
+            await CancelEditDialog();
+
+            await JSRuntime.InvokeVoidAsync("success", null);
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+        }
+    }
     public async Task OpenViewAttachmentDialog(Models.ProjectAttachment file)
     {
         CurrentProjectAttachment = file;

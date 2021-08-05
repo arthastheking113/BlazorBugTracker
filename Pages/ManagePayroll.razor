@@ -14,7 +14,7 @@
                             FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                             LogicalFilterOperator="LogicalFilterOperator.Or">
                 <Columns>
-                    <RadzenDataGridColumn Width="200px" TItem="Models.PayCheckRecord" Title="ID">
+                    <RadzenDataGridColumn TItem="Models.PayCheckRecord" Title="View">
                         <Template Context="data">
                             <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="help" Click=@(() => ViewPayRoll(data)) Text="@data.Id.ToString()" />
                         </Template>

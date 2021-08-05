@@ -109,7 +109,7 @@
                         <ValidationSummary />
 
                         <div class="form-group">
-                            <label class="control-label">Project Name</label>
+                            <label class="control-label">Company Name</label>
                             <input @bind="newItem.Name" class="form-control" required />
                         </div>
                         <div class="form-group">
@@ -119,7 +119,7 @@
 
 
 
-                        <input type="submit" value="Create new Project" class="btn btn-outline-success btn-block">
+                        <input type="submit" value="Create new company" class="btn btn-outline-success btn-block">
 
 
                     </EditForm>
@@ -156,7 +156,7 @@
                         <ValidationSummary />
 
                         <div class="form-group">
-                            <label class="control-label">Project Name</label>
+                            <label class="control-label">Company Name</label>
                             <input @bind="currentItem.Name" class="form-control" required />
                         </div>
                         <div class="form-group">
@@ -213,7 +213,11 @@
                             <label class="control-label">Description</label>
                             <textarea readonly @bind="currentItem.Description" class="form-control" rows="4" required></textarea>
                         </div>
-                      
+                        <div class="row">
+                            <div class="col text-center">
+                                <p>Are you sure you want to delete this company?</p>
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="col">
                                 <button type="submit" class="btn btn-danger btn-block">Delete</button>

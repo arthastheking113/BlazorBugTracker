@@ -282,9 +282,14 @@ else
                         </div>
                         <div class="form-group">
                             <label class="control-label">Company</label>
-                            <RadzenDropDown AllowClear="true" TValue="int" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                            <RadzenDropDown Disabled="true" AllowClear="true" TValue="int" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
                                             @bind-Value="currentItem.CompanyId" Placeholder="Select Company..." Data=@CompanyList TextProperty="Name" ValueProperty="Id" />
 
+                        </div>
+                        <div class="row">
+                            <div class="col text-center">
+                                <p>Are you sure you want to delete this project?</p>
+                            </div>
                         </div>
                         <div class="row">
                             <div class="col">

@@ -4,7 +4,7 @@
 @inject ApplicationDbContext _context
 <div class="container-fluid p-0">
     <div class="row">
-        @if (ItemList.Count == 0)
+        @if (loading is true)
         {
             <div class="col">
                 <div class="loader">Loading...</div>
@@ -14,14 +14,14 @@
         {
             <div class="col p-0">
                 <div class="card card-dark">
-                    <div class="card-header">
+                    <div class="card-header pr-0">
                         <h3 class="card-title">Works Overview</h3>
                     </div>
                     <br />
                     <div class="row p-2">
                         <div class="col-md">
                             <div class="info-box">
-                                <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-percentage"></i></span>
+                                <span class="info-box-icon bg-primary elevation-1"><i class="fas fa-level-up-alt"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">Current Month Income</span>
 
@@ -40,7 +40,7 @@
                         </div>
                         <div class="col-md">
                             <div class="info-box">
-                                <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-exclamation"></i></span>
+                                <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-level-down-alt"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">Current Month Expenses</span>
                                     <span class="info-box-number">
@@ -54,7 +54,7 @@
                         </div>
                         <div class="col-md">
                             <div class="info-box">
-                                <span class="info-box-icon bg-lime elevation-1"><i class="fas fa-file-alt"></i></span>
+                                <span class="info-box-icon bg-success elevation-1"><i class="fas fa-hand-holding-usd"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">Current Month Profit</span>
                                     <span class="info-box-number">
@@ -68,7 +68,7 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col p-2">
+                        <div class="col ml-3 mr-2">
                             <RadzenChart>
                                 <RadzenLineSeries Smooth="true" Data="@Income" CategoryProperty="Time" Title="Income" ValueProperty="Amount">
                                 </RadzenLineSeries>
@@ -84,7 +84,7 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col p-2">
+                        <div class="col ml-3 mr-2">
                             <RadzenChart>
                                 <RadzenLineSeries Smooth="true" Data="@Profit" CategoryProperty="Time" Title="Profit" ValueProperty="Amount">
                                 </RadzenLineSeries>
@@ -99,7 +99,7 @@
                     <div class="row">
                         <div class="col">
                             <div class="card-body">
-                                <p class="text-left">
+                                <p class="text-center">
                                     <strong>Income By Category</strong>
                                 </p>
                                 <RadzenChart>
@@ -117,7 +117,7 @@
                         </div>
                         <div class="col">
                             <div class="card-body">
-                                <p class="text-left">
+                                <p class="text-center">
                                     <strong>Expenses By Category</strong>
                                 </p>
                                 <RadzenChart>
@@ -134,24 +134,24 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col p-2">
+                        <div class="col ml-2 mr-2">
                             <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true"
                                             FilterMode="FilterMode.Simple" PageSize="5" AllowPaging="true" AllowSorting="true" Data="@ItemList" TItem="Models.Transaction" ColumnWidth="100%"
                                             FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                                             LogicalFilterOperator="LogicalFilterOperator.Or">
                                 <Columns>
-                                    <RadzenDataGridColumn TItem="Models.Transaction" Property="Time" />
+                                    <RadzenDataGridColumn TItem="Models.Transaction" Property="Time" Title="Time" />
                                     <RadzenDataGridColumn TItem="Models.Transaction" Property="CustomUser" Context="data" Title="User">
                                         <Template Context="data">
-                                            @if (@data.CustomUser is not null)
+                                            @if (userList.FirstOrDefault(c => c.Id == data.CustomUserId) is not null)
                                             {
-                                                <p>@data.CustomUser.FullName</p>
+                                                <p>@userList.FirstOrDefault(c => c.Id == data.CustomUserId).FullName</p>
                                             }
                                         </Template>
                                     </RadzenDataGridColumn>
                                     <RadzenDataGridColumn TItem="Models.Transaction" Property="UserID" Title="UserID" />
                                     <RadzenDataGridColumn TItem="Models.Transaction" Property="Amount" Title="Amount" />
-                                    <RadzenDataGridColumn TItem="Models.Transaction" Property="Season" Title="Reason" />
+                                    <RadzenDataGridColumn TItem="Models.Transaction" Property="Reason" Title="Reason" />
                                 </Columns>
                             </RadzenDataGrid>
                         </div>
@@ -175,19 +175,21 @@
     public List<Models.Transaction> CurrentMonthReport = new();
     public List<Models.ChartModel> IncomeDonutChart = new();
     public List<Models.ChartModel> ExpensesDonutChart = new();
+    public List<Models.CustomUser> userList = new();
 
     public DateTime currentTime = DateTime.Now;
     public decimal TotalIncome;
     public decimal TotalExpense;
     public decimal TotalProfit;
-
+    public bool loading;
     public void GetData()
     {
         TotalIncome = 0;
         TotalExpense = 0;
         TotalProfit = 0;
-        ItemList = _context.Transaction.ToList();
+        ItemList = _context.Transaction.OrderByDescending(c => c.Time).ToList();
         CurrentMonthReport = ItemList.Where(c => c.Time.Month == currentTime.Month).ToList();
+        userList = _context.Users.ToList();
         foreach (var item in ItemList)
         {
             if (item.Amount >= 0)
@@ -264,7 +266,9 @@
 
     protected override void OnInitialized()
     {
+        loading = true;
         GetData();
+        loading = false;
     }
 
 
