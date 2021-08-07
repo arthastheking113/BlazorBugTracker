@@ -11,7 +11,10 @@ What is in my Bug Tracker?
 
 My Bug Tracker has every funtions of a complete production which is ready to use or sell to customer.
 
-My Bug Tracker has Authorization, Authendication, Securities, Create, Adjust Project and Ticket, Assign role to user, Assign ticket to user, Change Ticket's Priority, Status, or Type, Comment on Ticket, Attach file to Ticket and Project, Notification Alert through Email, Message system, and Overview the work of company.
+My Bug Tracker has Authorization, Authendication, Securities, Create, Adjust Project and Ticket, Assign role to user, Assign ticket to user, Change Ticket's Priority, Status, or Type, Comment on Ticket, Attach file to Ticket and Project, Notification Alert through Email, Message system, and Overview the work of company. This project also have a financial, HR, and payroll system.
+
+As you can see, this is a realize application using real business logic.
+
 This is my biggest project and I put a lot of works on this project. After finished this Bug Tracker, I used it to track other project, and I'm still working on those projects right now. You can see it when you log in with Demo Admin or Demo Project Manager
 Notes: If you log in as a Demo User, You can't create or update anything on the database. If you want to see it fully functions, contact me by clicking on the "How to contact me ?" button
 
