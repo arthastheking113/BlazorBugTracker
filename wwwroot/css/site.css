@@ -3001,3 +3001,7 @@ body {
 .info-box{
     cursor:pointer;
 }
+
+.image-one-line {
+    white-space: nowrap;
+}

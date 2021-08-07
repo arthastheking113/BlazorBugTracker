@@ -360,61 +360,69 @@
     {
         try
         {
-            var projectList = _context.Project.Include(p => p.Attachments).Where(p => p.CompanyId == currentItem.Id).ToList();
-            // delete project of company
-            foreach (var project in projectList)
+            if (!_roleService.ReturnUserRole3(user).ToLower().Contains("demo"))
             {
-                var ticketList = _context.Ticket.Include(t => t.Attachments).Include(t => t.Comments).Include(t => t.TicketHistories).Where(t => t.ProjectId == project.Id).ToList();
-                //delete ticket of this project
-                foreach (var ticket in ticketList)
+                var projectList = _context.Project.Include(p => p.Attachments).Where(p => p.CompanyId == currentItem.Id).ToList();
+                // delete project of company
+                foreach (var project in projectList)
                 {
-                    //delete all attachments in 1 ticket
-                    foreach (var attachment in ticket.Attachments)
+                    var ticketList = _context.Ticket.Include(t => t.Attachments).Include(t => t.Comments).Include(t => t.TicketHistories).Where(t => t.ProjectId == project.Id).ToList();
+                    //delete ticket of this project
+                    foreach (var ticket in ticketList)
                     {
-                        _context.Attachment.Remove(attachment);
+                        //delete all attachments in 1 ticket
+                        foreach (var attachment in ticket.Attachments)
+                        {
+                            _context.Attachment.Remove(attachment);
+                            _context.SaveChanges();
+                        }
+                        //delete all comment in 1 ticket
+                        foreach (var comment in ticket.Comments)
+                        {
+                            _context.Comment.Remove(comment);
+                            _context.SaveChanges();
+                        }
+                        //delete all History in 1 ticket
+                        foreach (var history in ticket.TicketHistories)
+                        {
+                            _context.TicketHistory.Remove(history);
+                            _context.SaveChanges();
+                        }
+                        _context.Ticket.Remove(ticket);
                         _context.SaveChanges();
                     }
-                    //delete all comment in 1 ticket
-                    foreach (var comment in ticket.Comments)
+                    //you don't need to do this foreach loop
+                    foreach (var projectAttachment in project.Attachments)
                     {
-                        _context.Comment.Remove(comment);
+                        _context.ProjectAttachment.Remove(projectAttachment);
                         _context.SaveChanges();
                     }
-                    //delete all History in 1 ticket
-                    foreach (var history in ticket.TicketHistories)
-                    {
-                        _context.TicketHistory.Remove(history);
-                        _context.SaveChanges();
-                    }
-                    _context.Ticket.Remove(ticket);
+
+                    _context.Project.Remove(project);
                     _context.SaveChanges();
                 }
-                //you don't need to do this foreach loop
-                foreach (var projectAttachment in project.Attachments)
+
+                var listUser = _context.Users.Where(u => u.CompanyId == currentItem.Id).ToList();
+                var temporaryCompanyId = _context.Company.FirstOrDefault(c => c.Name == "Temporary Company").Id;
+                foreach (var user in listUser)
                 {
-                    _context.ProjectAttachment.Remove(projectAttachment);
+                    user.CompanyId = temporaryCompanyId;
+                    _context.Users.Update(user);
                     _context.SaveChanges();
                 }
-
-                _context.Project.Remove(project);
+                //delete company
+                _context.Company.Remove(currentItem);
                 _context.SaveChanges();
-            }
+                GetData();
+                await CancelDeleteDialog();
 
-            var listUser = _context.Users.Where(u => u.CompanyId == currentItem.Id).ToList();
-            var temporaryCompanyId = _context.Company.FirstOrDefault(c => c.Name == "Temporary Company").Id;
-            foreach (var user in listUser)
+                await JSRuntime.InvokeVoidAsync("success", null);
+            }
+            else
             {
-                user.CompanyId = temporaryCompanyId;
-                _context.Users.Update(user);
-                _context.SaveChanges();
+                NavigationManager.NavigateTo("/demouserwarning");
             }
-            //delete company
-            _context.Company.Remove(currentItem);
-            _context.SaveChanges();
-            GetData();
-            await CancelDeleteDialog();
 
-            await JSRuntime.InvokeVoidAsync("success", null);
 
         }
         catch (Exception ex)

@@ -39,6 +39,16 @@ namespace BlazorBugTracker.Models
 
         public DateTime DateJoined { get; set; }
 
+        public DateTime? DayOfBirth { get; set; }
+        [NotMapped]
+        public int YearsOld { get
+        {
+                DateTime zeroTime = new DateTime(1, 1, 1);
+
+                return (zeroTime + DateTime.Now.Subtract((DateTime)DayOfBirth)).Year; 
+        } }
+
+
         public string SSN { get; set; }
         [NotMapped]
         public string Role { get; set; }

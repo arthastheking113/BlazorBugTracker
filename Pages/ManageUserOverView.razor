@@ -4,6 +4,7 @@
 @using BlazorBugTracker.Data
 @inject ApplicationDbContext _context
 @inject IJSRuntime JSRuntime
+@inject IImageService _imageService
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Http
@@ -33,10 +34,15 @@
                     <Columns>
                         <RadzenDataGridColumn TItem="Models.CustomUser" Title="View">
                             <Template Context="data">
-
                                 <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="help" Click=@(() => OpenViewDialog(data)) Text="View" />
                             </Template>
                         </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="Models.CustomUser" Width="70px" Filterable="false" Sortable="false"   TextAlign="TextAlign.Center">
+                            <Template Context="data">
+                                <img class="rounded-circle img-fluid" src="@(_imageService.DecodeFileAvatar(data.ImageData, data.ContentType))" />
+                            </Template>
+                        </RadzenDataGridColumn>
+
                         <RadzenDataGridColumn TItem="Models.CustomUser" Property="UserId" Title="ID" />
                         <RadzenDataGridColumn TItem="Models.CustomUser" Property="FullName" Title="Name" />
 
@@ -121,11 +127,15 @@
                         <div class="row">
                             <div class="col">
                                 <div style="margin-top:5%">Email</div>
-                                <input class="form-control" @bind="newItem.Email" />
+                                <input class="form-control"  type="email" @bind="newItem.Email" />
                             </div>
                             <div class="col">
                                 <div style="margin-top:5%">Phone Number</div>
                                 <input class="form-control" @bind="newItem.PhoneNumber" />
+                            </div>
+                            <div class="col">
+                                <div style="margin-top:5%">Day of Birth</div>
+                                <RadzenDatePicker @bind-Value=@newItem.DayOfBirth DateFormat="d"  />
                             </div>
                         </div>
                         <div class="row">
@@ -233,7 +243,7 @@
                         <div class="row">
                             <div class="col">
                                 <div style="margin-top:5%">Email</div>
-                                <input class="form-control" @bind="currentItem.Email" />
+                                <input class="form-control" type="email" @bind="currentItem.Email" />
                             </div>
                             <div class="col">
                                 <div style="margin-top:5%">Phone Number</div>
@@ -252,6 +262,10 @@
                             <div class="col">
                                 <div style="margin-top:5%">City</div>
                                 <input class="form-control" required @bind="currentItem.City" />
+                            </div>
+                            <div class="col">
+                                <div style="margin-top:5%">Day of Birth</div>
+                                <RadzenDatePicker @bind-Value=@newItem.DayOfBirth DateFormat="d" />
                             </div>
                         </div>
                         <div class="row">
@@ -358,7 +372,10 @@
                                 <div style="margin-top:5%">City</div>
                                 <input class="form-control" readonly @bind="currentItem.City" />
                             </div>
-
+                            <div class="col">
+                                <div style="margin-top:5%">Day of Birth</div>
+                                <input class="form-control" readonly @bind="currentItem.DayOfBirth" />
+                            </div>
                         </div>
                         <div class="row">
                             <div class="col">
@@ -458,7 +475,10 @@
                             <div style="margin-top:5%">City</div>
                             <input class="form-control" readonly @bind="currentItem.City" />
                         </div>
-
+                        <div class="col">
+                            <div style="margin-top:5%">Day of Birth</div>
+                            <input class="form-control" readonly @bind="currentItem.DayOfBirth" />
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col">
@@ -635,11 +655,19 @@
     {
         try
         {
-            await _userManager.DeleteAsync(currentItem);
+            if (!_roleService.ReturnUserRole3(user).ToLower().Contains("demo"))
+            {
+                await _userManager.DeleteAsync(currentItem);
 
-            await GetData();
-            CancelDeleteDialog();
-            await JSRuntime.InvokeVoidAsync("success", null);
+                await GetData();
+                CancelDeleteDialog();
+                await JSRuntime.InvokeVoidAsync("success", null);
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/demouserwarning");
+            }
+
 
         }
         catch (Exception ex)

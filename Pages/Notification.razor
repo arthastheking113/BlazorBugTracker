@@ -55,7 +55,7 @@
                                 }
                             </Template>
                         </RadzenDataGridColumn>
-                        <RadzenDataGridColumn TItem="Models.NotificationListModel" Property="Created" Width="250px" Title="Created">
+                        <RadzenDataGridColumn TItem="Models.NotificationListModel" Property="Created" Title="Created">
                             <Template Context="data">
                                 @if (!data.IsViewed)
                                 {
@@ -68,8 +68,8 @@
 
                             </Template>
                         </RadzenDataGridColumn>
-                        <RadzenDataGridColumn TItem="Models.NotificationListModel" Property="Sender.FullName" Width="100px" Title="From" />
-                        <RadzenDataGridColumn TItem="Models.NotificationListModel" Property="Ticket" Width="70px" Title="Ticket ID">
+                        <RadzenDataGridColumn TItem="Models.NotificationListModel" Property="Sender.FullName" Title="From" />
+                        <RadzenDataGridColumn TItem="Models.NotificationListModel" Property="Ticket" Title="Ticket ID">
                             <Template Context="data">
                                 @if (data.Ticket is not null)
                                 {
@@ -114,7 +114,7 @@
                                 }
                             </Template>
                         </RadzenDataGridColumn>
-                        <RadzenDataGridColumn Filterable="false" Sortable="false" Frozen="true" TItem="Models.NotificationListModel" Width="100px" Property="Ticket">
+                        <RadzenDataGridColumn Filterable="false" Sortable="false" Frozen="true" TItem="Models.NotificationListModel" Property="Ticket">
                             <Template Context="data">
                                 <div class="btn-group-vertical">
                                     <a class="btn text-white btn-primary btn-sm mb-1" @onclick="() => OpenViewDialog(data)"><i class="fas fa-folder"></i> View</a>

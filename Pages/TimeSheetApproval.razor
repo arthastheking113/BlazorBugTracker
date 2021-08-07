@@ -3,6 +3,8 @@
 @using Microsoft.AspNetCore.Http
 @using BlazorBugTracker.Services
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Identity.UI.Services
+@inject IEmailSender _emailSender  
 @inject ApplicationDbContext _context
 @inject IHttpContextAccessor _httpContextAccessor
 @inject NavigationManager NavigationManager
@@ -219,6 +221,8 @@
     public List<Models.CustomUser> DeveloperUser = new();
     public List<Models.Project> ProjectList = new();
     public Models.CustomUser user = new();
+    public Models.CustomUser admin = new();
+
     public bool IsInRoleAdmin;
     public bool IsDeveloper;
     public bool IsSubmitter;
@@ -283,6 +287,18 @@
                 _context.Update(item);
             }
             _context.SaveChanges();
+            Models.WelcomeNotification newNotification = new Models.WelcomeNotification
+            {
+                Created = DateTime.Now,
+                Name = "Your Time Sheet Has Been Approved",
+                Description = "Your time sheet have been approved!!!",
+                RecipientId = currentPayCheckRecord.CustomUserId,
+                SenderId = admin.Id
+                
+            };
+            _context.Add(newNotification);
+            _context.SaveChanges();
+            _emailSender.SendEmailAsync(currentPayCheckRecord.CustomUser.Email,"Your Time Sheet Has Been Approved", "Your time sheet have been approved!!!");
             await GetData();
             await CancelSubmitPayCheckDialog();
 
@@ -329,6 +345,7 @@
     public async Task GetData()
     {
         DeveloperUser = new();
+        admin = _context.Users.FirstOrDefault(c => c.Email == "arthastheking113@gmail.com");
         if (IsProjectManager)
         {
             ProjectList = _context.Project.Include(p => p.CustomUsers).Where(p => p.CompanyId == user.CompanyId).ToList();

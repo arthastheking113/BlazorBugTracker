@@ -4,6 +4,7 @@
 @using Microsoft.EntityFrameworkCore
 @using BlazorBugTracker.Services
 @inject ICustomRoleService _roleService
+@inject ICustomProjectService _projectService 
 @inject IHttpContextAccessor _httpContextAccessor
 @inject UserManager<CustomUser> _userManager
 @using BlazorBugTracker.Data
@@ -65,19 +66,31 @@ else
                                                         </p>
                                                     </Template>
                                                 </RadzenDataGridColumn>
-                                                <RadzenDataGridColumn TItem="Models.Project" Width="300px" Property="Name" Title="Name" />
+                                                <RadzenDataGridColumn TItem="Models.Project" Property="Name" Title="Name" />
+                                                <RadzenDataGridColumn TItem="Models.Project"  Filterable="false" Sortable="false"  Title="Users" >
+                                                    <Template Context="data">
+                                                        <div class="image-one-line">
+                                                            @foreach (var item in _projectService.UserOnProject(data.Id))
+                                                            {
+                                                                <img class="rounded-circle img-fluid mr-1 ml-1" style="width:10%;" src="@(_imageService.DecodeFileAvatar(data.ImageData, data.ContentType))" />
+                                                            }
+
+                                                        </div>
+                                                       
+                                                    </Template>
+                                                </RadzenDataGridColumn>
 
                                                 <RadzenDataGridColumn TItem="Models.Project" Property="Description" Title="Description" />
-                                                <RadzenDataGridColumn TItem="Models.Project" Property="Created" Width="170px" Title="Created">
+                                                <RadzenDataGridColumn TItem="Models.Project" Property="Created" Title="Created">
                                                     <Template Context="data">
-                                                        <p>
+                                                        <p class="mb-0">
                                                             @data.Created.ToString("dd MMMM yyyy - hh:mm tt")
                                                         </p>
                                                     </Template>
                                                 </RadzenDataGridColumn>
-                                                <RadzenDataGridColumn TItem="Models.Project" Property="Company" Width="100px" Title="Company">
+                                                <RadzenDataGridColumn TItem="Models.Project" Property="Company" Title="Company">
                                                     <Template Context="data">
-                                                        <p>
+                                                        <p class="mb-0">
                                                             @data.Company.Name
                                                         </p>
                                                     </Template>
@@ -443,44 +456,52 @@ else
     {
         try
         {
-            var ticketList = _context.Ticket.Include(t => t.Attachments).Include(t => t.Comments).Include(t => t.TicketHistories).Where(t => t.ProjectId == currentItem.Id).ToList();
-            //delete ticket of this project
-            foreach (var ticket in ticketList)
+            if (!_roleService.ReturnUserRole3(user).ToLower().Contains("demo"))
             {
-                //delete all attachments in 1 ticket
-                foreach (var attachment in ticket.Attachments)
+                var ticketList = _context.Ticket.Include(t => t.Attachments).Include(t => t.Comments).Include(t => t.TicketHistories).Where(t => t.ProjectId == currentItem.Id).ToList();
+                //delete ticket of this project
+                foreach (var ticket in ticketList)
                 {
-                    _context.Attachment.Remove(attachment);
+                    //delete all attachments in 1 ticket
+                    foreach (var attachment in ticket.Attachments)
+                    {
+                        _context.Attachment.Remove(attachment);
+                        _context.SaveChanges();
+                    }
+                    //delete all comment in 1 ticket
+                    foreach (var comment in ticket.Comments)
+                    {
+                        _context.Comment.Remove(comment);
+                        _context.SaveChanges();
+                    }
+                    //delete all History in 1 ticket
+                    foreach (var history in ticket.TicketHistories)
+                    {
+                        _context.TicketHistory.Remove(history);
+                        _context.SaveChanges();
+                    }
+                    _context.Ticket.Remove(ticket);
                     _context.SaveChanges();
                 }
-                //delete all comment in 1 ticket
-                foreach (var comment in ticket.Comments)
+                //you don't need to do this foreach loop
+                foreach (var projectAttachment in currentItem.Attachments)
                 {
-                    _context.Comment.Remove(comment);
+                    _context.ProjectAttachment.Remove(projectAttachment);
                     _context.SaveChanges();
                 }
-                //delete all History in 1 ticket
-                foreach (var history in ticket.TicketHistories)
-                {
-                    _context.TicketHistory.Remove(history);
-                    _context.SaveChanges();
-                }
-                _context.Ticket.Remove(ticket);
+
+                _context.Project.Remove(currentItem);
                 _context.SaveChanges();
+                await GetData();
+                await CancelDeleteDialog();
+
+                await JSRuntime.InvokeVoidAsync("success", null);
             }
-            //you don't need to do this foreach loop
-            foreach (var projectAttachment in currentItem.Attachments)
+            else
             {
-                _context.ProjectAttachment.Remove(projectAttachment);
-                _context.SaveChanges();
+                NavigationManager.NavigateTo("/demouserwarning");
             }
 
-            _context.Project.Remove(currentItem);
-            _context.SaveChanges();
-            await GetData();
-            await CancelDeleteDialog();
-
-            await JSRuntime.InvokeVoidAsync("success", null);
         }
         catch (Exception ex)
         {

@@ -1053,7 +1053,8 @@ else
             Email = newInvite.Email,
             EmailConfirmed = true,
             CompanyId = company.Id,
-            UserId = CreateUserId()
+            UserId = CreateUserId(),
+            DateJoined = DateTime.Now
         };
         try
         {

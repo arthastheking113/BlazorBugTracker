@@ -4,7 +4,8 @@
 @using Microsoft.AspNetCore.Http
 @inject IHttpContextAccessor _httpContextAccessor
 @inject NavigationManager NavigationManager
-@inject IJSRuntime JSRuntime 
+@inject IJSRuntime JSRuntime
+@inject ICustomRoleService _roleService
 
 <div class="container-fluid pl-0 pr-0">
     <div class="row">
@@ -16,7 +17,7 @@
                 <br />
                 <div class="row">
                     <div class="col ml-4 mr-2">
-                        <button class="btn btn-outline-primary"  @onclick="OpenCreateDialog">
+                        <button class="btn btn-outline-primary" @onclick="OpenCreateDialog">
                             <span class="iconify" data-icon="grommet-icons:transaction"></span>
                             Create new Transaction
                         </button>
@@ -62,7 +63,7 @@
                                     </Template>
                                 </RadzenDataGridColumn>
                                 <RadzenDataGridColumn TItem="Models.Transaction" Property="Reason" Title="Reason" />
-                                <RadzenDataGridColumn TItem="Models.Transaction" Property="TransactionType" Title="Transaction Type" >
+                                <RadzenDataGridColumn TItem="Models.Transaction" Property="TransactionType" Title="Transaction Type">
                                     <Template Context="data">
                                         @if (transactionTypes.FirstOrDefault(c => c.Id == data.TransactionTypeId) is not null)
                                         {
@@ -134,7 +135,7 @@
                                 </div>
                             </div>
                         </div>
-                 
+
 
                         <div class="form-group">
                             <label class="control-label">Reason</label>
@@ -425,13 +426,20 @@
     {
         try
         {
+            if (!_roleService.ReturnUserRole3(user).ToLower().Contains("demo"))
+            {
+                _context.Remove(currentItem);
+                _context.SaveChanges();
+                GetData();
+                await CancelDeleteDialog();
 
-            _context.Remove(currentItem);
-            _context.SaveChanges();
-            GetData();
-            await CancelDeleteDialog();
+                await JSRuntime.InvokeVoidAsync("success", null);
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/demouserwarning");
+            }
 
-            await JSRuntime.InvokeVoidAsync("success", null);
         }
         catch (Exception ex)
         {

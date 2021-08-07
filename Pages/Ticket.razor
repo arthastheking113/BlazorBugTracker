@@ -4,7 +4,7 @@
 @using Microsoft.EntityFrameworkCore
 @using BlazorBugTracker.Services
 @using Microsoft.AspNetCore.Identity.UI.Services
-@inject IEmailSender _emailSender  
+@inject IEmailSender _emailSender
 @inject ICustomRoleService _roleService
 @inject ICustomProjectService _projectService
 @inject IHttpContextAccessor _httpContextAccessor
@@ -13,7 +13,8 @@
 @inject ApplicationDbContext _context
 @inject IJSRuntime JSRuntime
 @inject ISessionStorageService sessionStorage
-@inject ICustomHistoryService _customHistoryService 
+@inject ICustomHistoryService _customHistoryService
+@inject NavigationManager NavigationManager
 
 @if (ItemList is null)
 {
@@ -41,7 +42,7 @@ else
 
                             </div>
                         </div>
-                        <br/>
+                        <br />
 
                     }
                     <div class="row">
@@ -158,7 +159,7 @@ else
 
                         </div>
                     </div>
-                  
+
                 </div>
             </div>
         </div>
@@ -190,7 +191,7 @@ else
                         <ValidationSummary />
                         <div class="form-group">
                             <label class="control-label">Name</label>
-                            <input class="form-control"  @bind="newItem.Name" />
+                            <input class="form-control" @bind="newItem.Name" />
                         </div>
                         <div class="form-group">
                             <label class="control-label">Description</label>
@@ -245,11 +246,11 @@ else
                             </div>
                             <div class="row">
                                 <div class="col">
-                                   
+
                                     <div class="form-group">
                                         <label class="control-label">Is Assigned?</label>
 
-                                        <RadzenSelectBar  Style="width:100%;" @bind-Value="newItem.IsAssigned" TValue="bool">
+                                        <RadzenSelectBar Style="width:100%;" @bind-Value="newItem.IsAssigned" TValue="bool">
                                             <Items>
                                                 <RadzenSelectBarItem Text="On" Value="true" />
                                                 <RadzenSelectBarItem Text="Off" Value="false" />
@@ -842,45 +843,53 @@ else
     {
         try
         {
-            var ticketId = currentItem.Id;
-            Models.Ticket Ticket = await _context.Ticket
-                .Include(t => t.TicketType)
-                .Include(t => t.Status)
-                .Include(t => t.Priority)
-                .Include(t => t.Developer)
-                .Include(t => t.Attachments)
-                .Include(t => t.Comments)
-                .Include(t => t.Ownner)
-                .Include(t => t.TicketHistories)
-                .ThenInclude(t => t.CustomUser)
-                .AsNoTracking().FirstOrDefaultAsync(t => t.Id == ticketId);
-
-
-            //delete all attachments in 1 ticket
-            foreach (var attachment in Ticket.Attachments)
+            if (!_roleService.ReturnUserRole3(user).ToLower().Contains("demo"))
             {
-                _context.Attachment.Remove(attachment);
-                await _context.SaveChangesAsync();
-            }
-            //delete all comment in 1 ticket
-            foreach (var comment in Ticket.Comments)
-            {
-                _context.Comment.Remove(comment);
-                await _context.SaveChangesAsync();
-            }
-            //delete all History in 1 ticket
-            foreach (var history in Ticket.TicketHistories)
-            {
-                _context.TicketHistory.Remove(history);
-                await _context.SaveChangesAsync();
-            }
-            _context.Ticket.Remove(Ticket);
-            await _context.SaveChangesAsync();
+                var ticketId = currentItem.Id;
+                Models.Ticket Ticket = await _context.Ticket
+                    .Include(t => t.TicketType)
+                    .Include(t => t.Status)
+                    .Include(t => t.Priority)
+                    .Include(t => t.Developer)
+                    .Include(t => t.Attachments)
+                    .Include(t => t.Comments)
+                    .Include(t => t.Ownner)
+                    .Include(t => t.TicketHistories)
+                    .ThenInclude(t => t.CustomUser)
+                    .AsNoTracking().FirstOrDefaultAsync(t => t.Id == ticketId);
 
 
-            GetData();
-            CancelDeleteDialog();
-            await JSRuntime.InvokeVoidAsync("success", null);
+                //delete all attachments in 1 ticket
+                foreach (var attachment in Ticket.Attachments)
+                {
+                    _context.Attachment.Remove(attachment);
+                    await _context.SaveChangesAsync();
+                }
+                //delete all comment in 1 ticket
+                foreach (var comment in Ticket.Comments)
+                {
+                    _context.Comment.Remove(comment);
+                    await _context.SaveChangesAsync();
+                }
+                //delete all History in 1 ticket
+                foreach (var history in Ticket.TicketHistories)
+                {
+                    _context.TicketHistory.Remove(history);
+                    await _context.SaveChangesAsync();
+                }
+                _context.Ticket.Remove(Ticket);
+                await _context.SaveChangesAsync();
+
+
+                GetData();
+                CancelDeleteDialog();
+                await JSRuntime.InvokeVoidAsync("success", null);
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/demouserwarning");
+            }
+
 
         }
         catch (Exception ex)
@@ -890,13 +899,13 @@ else
         }
     }
 
-    protected override  void OnInitialized()
+    protected override void OnInitialized()
     {
         GetData();
     }
 
 
-    public void  GetData()
+    public void GetData()
     {
         var currrentUser = _httpContextAccessor.HttpContext.User;
         user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);

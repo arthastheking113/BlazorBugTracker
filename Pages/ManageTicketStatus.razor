@@ -5,6 +5,8 @@
 @inject NavigationManager NavigationManager
 @using Microsoft.AspNetCore.Http
 @inject IHttpContextAccessor _httpContextAccessor
+@inject ICustomRoleService _roleService
+
 <div class="row">
     <div class="col">
         <div class="card">
@@ -280,11 +282,19 @@
     {
         try
         {
-            _context.Remove(currentItem);
-            _context.SaveChanges();
-            GetData();
-            CancelDeleteDialog();
-            await JSRuntime.InvokeVoidAsync("success", null);
+            if (!_roleService.ReturnUserRole3(user).ToLower().Contains("demo"))
+            {
+                _context.Remove(currentItem);
+                _context.SaveChanges();
+                GetData();
+                CancelDeleteDialog();
+                await JSRuntime.InvokeVoidAsync("success", null);
+
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/demouserwarning");
+            }
 
         }
         catch (Exception ex)
