@@ -586,39 +586,47 @@
     {
         try
         {
-            if (String.IsNullOrEmpty(newItem.Role) || String.IsNullOrWhiteSpace(newItem.Role))
+            if (!_roleService.ReturnUserRole3(user).ToLower().Contains("demo"))
             {
-                await JSRuntime.InvokeVoidAsync("errorMissingRole", null);
-            }
-            else
-            {
-                if (newItem.NewPassword != newItem.NewConfirmPassword)
+                if (String.IsNullOrEmpty(newItem.Role) || String.IsNullOrWhiteSpace(newItem.Role))
                 {
-                    newItem.EmailConfirmed = true;
-                    newItem.DateJoined = DateTime.Now;
-                    newItem.UserId = CreateUserId();
-                    var result = await _userManager.CreateAsync(newItem, newItem.NewPassword);
-                    if (result.Succeeded)
-                    {
-
-                        await _roleService.AddUserToRoleAsync(newItem, newItem.Role);
-
-                        CancelEditDialog();
-                        await GetData();
-                        await JSRuntime.InvokeVoidAsync("success", null);
-                    }
-                    else
-                    {
-                        errors = result.Errors;
-                        await JSRuntime.InvokeVoidAsync("error", null);
-                    }
-
+                    await JSRuntime.InvokeVoidAsync("errorMissingRole", null);
                 }
                 else
                 {
-                    await JSRuntime.InvokeVoidAsync("errorPasswordNotMatch", null);
+                    if (newItem.NewPassword != newItem.NewConfirmPassword)
+                    {
+                        newItem.EmailConfirmed = true;
+                        newItem.DateJoined = DateTime.Now;
+                        newItem.UserId = CreateUserId();
+                        var result = await _userManager.CreateAsync(newItem, newItem.NewPassword);
+                        if (result.Succeeded)
+                        {
+
+                            await _roleService.AddUserToRoleAsync(newItem, newItem.Role);
+
+                            CancelEditDialog();
+                            await GetData();
+                            await JSRuntime.InvokeVoidAsync("success", null);
+                        }
+                        else
+                        {
+                            errors = result.Errors;
+                            await JSRuntime.InvokeVoidAsync("error", null);
+                        }
+
+                    }
+                    else
+                    {
+                        await JSRuntime.InvokeVoidAsync("errorPasswordNotMatch", null);
+                    }
                 }
             }
+            else
+            {
+                NavigationManager.NavigateTo("/demouserwarning");
+            }
+
         }
         catch (Exception ex)
         {
