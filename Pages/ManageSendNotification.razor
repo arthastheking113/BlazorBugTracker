@@ -17,9 +17,15 @@
                 <br />
                 <div class="row">
                     <div class="col">
-                        <a class="btn btn-outline-success ml-4" @onclick="SendOutTimeSheetNotification">Send out time sheet Notification</a>
+                        <LoadingButton class="btn btn-outline-success ml-4" Type="ButtonTypes.Button" OnClicked="SendOutTimeSheetNotification">
+                            <Content>
+                                <i class="fas fa-paper-plane"></i> Send out time sheet Notification to All Users
+                            </Content>
+                            <LoadingContent>
+                                <i class="fa fa-spinner fa-spin"></i> Sending...
+                            </LoadingContent>
+                        </LoadingButton>
                     </div>
-
                 </div>
                 <br />
             </div>
@@ -41,11 +47,16 @@
         admin = users.FirstOrDefault(c => c.Email == "arthastheking113@gmail.com");
         url = NavigationManager.BaseUri;
     }
+    public async Task TestLoading()
+    {
+        await Task.Delay(1500);
+    }
 
     public async Task SendOutTimeSheetNotification()
     {
         try
         {
+            await Task.Delay(100);
             foreach (var item in users)
             {
 

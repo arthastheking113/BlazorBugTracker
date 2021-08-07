@@ -10,6 +10,7 @@
   <ItemGroup>
     <PackageReference Include="Blazored.SessionStorage" Version="2.1.0" />
     <PackageReference Include="MailKit" Version="2.13.0" />
+    <PackageReference Include="Majorsoft.Blazor.Components.Loading" Version="1.4.0" />
     <PackageReference Include="Majorsoft.Blazor.Components.Modal" Version="1.4.0" />
     <PackageReference Include="Microsoft.AspNet.SignalR.Client" Version="2.4.2" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="5.0.8" />
