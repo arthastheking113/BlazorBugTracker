@@ -719,7 +719,7 @@
                 item.Role = await _roleService.ReturnUserRole(item);
             }
             CompanyList = _context.Company.ToList();
-            RoleList = _context.Roles.ToList();
+            RoleList = _context.Roles.Where(c => !c.Name.ToLower().Contains("admin")).ToList();
         }
         catch (Exception ex)
         {
