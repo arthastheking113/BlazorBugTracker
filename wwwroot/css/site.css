@@ -2997,3 +2997,7 @@ body {
 .table-wrapper-scroll-y {
     display: block;
 }
+
+.info-box{
+    cursor:pointer;
+}

@@ -17,8 +17,15 @@
             <div class="card-header bg-dark">
                 <h3 class="card-title">User Overview</h3>
             </div>
-            <div class="card-body">
-                <a class="btn btn-outline-success" @onclick="OpenCreateDialog">Create New User</a>
+            <div class="card-body p-0">
+                <br />
+                <div class="row">
+                    <div class="col">
+                        <a class="btn btn-outline-success ml-4" @onclick="OpenCreateDialog">Create New User</a>
+                    </div>
+                </div>
+
+                <br />
                 <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true"
                                 FilterMode="FilterMode.Simple" PageSize="7" AllowPaging="true" AllowSorting="true" Data="@ItemList" TItem="Models.CustomUser" ColumnWidth="100%"
                                 FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
@@ -44,7 +51,7 @@
                                 }
                                 else
                                 {
-                                    <p>None</p>
+                                    <p class="mb-0">None</p>
                                 }
                             </Template>
                         </RadzenDataGridColumn>

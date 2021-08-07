@@ -1,4 +1,4 @@
-﻿@page "/manage/ticket/priority"
+﻿@page "/manage/transaction/type"
 @using BlazorBugTracker.Data
 @inject ApplicationDbContext _context
 @inject IJSRuntime JSRuntime
@@ -11,29 +11,28 @@
             <div class="card-header bg-dark">
                 <h3 class="card-title">Transaction Types</h3>
             </div>
-            <div class="card-body p-0">
-                <br />
+            <div class="card-body">
                 <div class="row">
                     <div class="col">
-                        <a class="btn btn-outline-success ml-4" @onclick="OpenCreateDialog">Create New</a>
+                        <a class="btn btn-outline-success" @onclick="OpenCreateDialog">Create New</a>
                     </div>
                 </div>
                 <br />
                 <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true"
-                                FilterMode="FilterMode.Simple" PageSize="5" AllowPaging="true" AllowSorting="true" Data="@ItemList" TItem="Models.Priority" ColumnWidth="100%"
+                                FilterMode="FilterMode.Simple" PageSize="5" AllowPaging="true" AllowSorting="true" Data="@ItemList" TItem="Models.TransactionType" ColumnWidth="100%"
                                 FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                                 LogicalFilterOperator="LogicalFilterOperator.Or">
                     <Columns>
-                        <RadzenDataGridColumn TItem="Models.Priority" Title="Id" Width="50px">
+                        <RadzenDataGridColumn TItem="Models.TransactionType" Title="Id" Width="50px">
                             <Template Context="data">
                                 <p>
                                     #@data.Id
                                 </p>
                             </Template>
                         </RadzenDataGridColumn>
-                        <RadzenDataGridColumn TItem="Models.Priority" Property="Name" Title="Name" />
+                        <RadzenDataGridColumn TItem="Models.TransactionType" Property="Name" Title="Name" />
 
-                        <RadzenDataGridColumn TItem="Models.Priority" Width="90px">
+                        <RadzenDataGridColumn TItem="Models.TransactionType" Width="90px">
                             <Template Context="data">
                                 <div class="btn-group-vertical">
                                     <a class="btn btn-info text-white btn-sm mb-1" @onclick="() => OpenEditDialog(data)"><i class="fas fa-pencil-alt"></i> Edit</a>
@@ -205,13 +204,13 @@
     private ModalDialog _deleteDialog;
 
 
-    public List<Models.Priority> ItemList = new();
+    public List<Models.TransactionType> ItemList = new();
     public Models.CustomUser user = new();
     public bool IsInRoleAdmin;
 
 
-    public Models.Priority newItem = new();
-    public Models.Priority currentItem = new();
+    public Models.TransactionType newItem = new();
+    public Models.TransactionType currentItem = new();
 
     private async Task OpenCreateDialog()
     {
@@ -221,7 +220,7 @@
     {
         await _createDialog.Close();
     }
-    private async Task OpenEditDialog(Models.Priority type)
+    private async Task OpenEditDialog(Models.TransactionType type)
     {
         currentItem = type;
         await _editDialog.Open();
@@ -231,7 +230,7 @@
         currentItem = new();
         await _editDialog.Close();
     }
-    private async Task OpenDeleteDialog(Models.Priority type)
+    private async Task OpenDeleteDialog(Models.TransactionType type)
     {
         currentItem = type;
         await _deleteDialog.Open();
@@ -312,6 +311,6 @@
 
     public void GetData()
     {
-        ItemList = _context.Priority.ToList();
+        ItemList = _context.TransactionType.ToList();
     }
 }

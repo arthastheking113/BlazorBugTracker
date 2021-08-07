@@ -1,0 +1,478 @@
+﻿@page "/manage/accountant/transactions"
+@using BlazorBugTracker.Data
+@inject ApplicationDbContext _context
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor _httpContextAccessor
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime 
+
+<div class="container-fluid pl-0 pr-0">
+    <div class="row">
+        <div class="col p-0">
+            <div class="card card-dark">
+                <div class="card-header pr-0">
+                    <h3 class="card-title">Transactions</h3>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col ml-4 mr-2">
+                        <button class="btn btn-outline-primary"  @onclick="OpenCreateDialog">
+                            <span class="iconify" data-icon="grommet-icons:transaction"></span>
+                            Create new Transaction
+                        </button>
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col ml-2 mr-2">
+                        <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true"
+                                        FilterMode="FilterMode.Simple" PageSize="7" AllowPaging="true" AllowSorting="true" Data="@ItemList" TItem="Models.Transaction" ColumnWidth="100%"
+                                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                        LogicalFilterOperator="LogicalFilterOperator.Or">
+                            <Columns>
+                                <RadzenDataGridColumn TItem="Models.Transaction" Property="Id" Context="data" Title="Id">
+                                    <Template Context="data">
+                                        #@data.Id
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="Models.Transaction" Property="Time" Title="At Time" />
+                                <RadzenDataGridColumn TItem="Models.Transaction" Property="Created" Title="Created" />
+                                <RadzenDataGridColumn TItem="Models.Transaction" Property="Updated" Title="Updated" />
+
+                                <RadzenDataGridColumn TItem="Models.Transaction" Property="CustomUser" Context="data" Title="User">
+                                    <Template Context="data">
+                                        @if (userList.FirstOrDefault(c => c.Id == data.CustomUserId) is not null)
+                                        {
+                                            <p class="mb-0">@userList.FirstOrDefault(c => c.Id == data.CustomUserId).FullName</p>
+                                        }
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="Models.Transaction" Property="UserID" Title="UserID" />
+                                <RadzenDataGridColumn TItem="Models.Transaction" Property="Amount" Title="Amount">
+                                    <Template Context="data">
+                                        @if (data.Amount >= 0)
+                                        {
+                                            <p class="mb-0"> + $@String.Format("{0:n0}", data.Amount)</p>
+                                        }
+                                        else
+                                        {
+                                            <p class="mb-0"> - $@String.Format("{0:n0}", data.Amount * (-1))</p>
+                                        }
+
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="Models.Transaction" Property="Reason" Title="Reason" />
+                                <RadzenDataGridColumn TItem="Models.Transaction" Property="TransactionType" Title="Transaction Type" >
+                                    <Template Context="data">
+                                        @if (transactionTypes.FirstOrDefault(c => c.Id == data.TransactionTypeId) is not null)
+                                        {
+                                            <p class="mb-0">@transactionTypes.FirstOrDefault(c => c.Id == data.TransactionTypeId).Name</p>
+                                        }
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="Models.Transaction" Filterable="false" Sortable="false">
+                                    <Template Context="data">
+                                        <div class="btn-group-vertical">
+                                            <a class="btn btn-info text-white btn-sm mb-1" @onclick="() => OpenEditDialog(data)"><i class="fas fa-pencil-alt"></i> Edit</a>
+                                            @if (IsInRoleAdmin || IsSeniorAccountant)
+                                            {
+                                                <button type="button" class="btn btn-danger btn-sm mb-1" @onclick="() => OpenDeleteDialog(data)">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </button>
+                                            }
+                                        </div>
+                                    </Template>
+                                </RadzenDataGridColumn>
+
+                            </Columns>
+                        </RadzenDataGrid>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<ModalDialog @ref="_createDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             Width="_editModalWidth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>Create New Transaction</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col">
+                    <EditForm Model="newItem" OnValidSubmit="Add">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label class="control-label">Time</label>
+                                    <RadzenDatePicker TValue="DateTime" @bind-Value="newItem.Time" ShowTime="true" ShowSeconds="true" Style="width:100%;" DateFormat="MM/dd/yyyy HH:mm" />
+                                </div>
+                            </div>
+                            <div class="col">
+
+                                <div class="form-group">
+                                    <label class="control-label">Transaction Type</label>
+                                    <RadzenDropDown AllowClear="true" TValue="int" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                    @bind-Value="newItem.TransactionTypeId" Placeholder="Select Transaction Type..." Data=@transactionTypes TextProperty="Name" ValueProperty="Id" />
+
+                                </div>
+                            </div>
+                        </div>
+                 
+
+                        <div class="form-group">
+                            <label class="control-label">Reason</label>
+                            <textarea @bind="newItem.Reason" class="form-control" rows="4" required></textarea>
+                        </div>
+
+
+                        <div class="form-group">
+                            <label class="control-label">User</label>
+                            <RadzenDropDown AllowClear="true" TValue="string" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                            @bind-Value="newItem.CustomUserId" Placeholder="Select User..." Data=@userList TextProperty="FullName" ValueProperty="Id" />
+
+                        </div>
+
+                        <input type="submit" value="Create new Transaction" class="btn btn-outline-success btn-block">
+
+
+                    </EditForm>
+                    <br />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelCreateDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
+
+
+<ModalDialog @ref="_editDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             Width="_editModalWidth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>Edit Transaction #@currentItem.Id</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col">
+                    <EditForm Model="currentItem" OnValidSubmit="Edit">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label class="control-label">Time</label>
+                                    <RadzenDatePicker TValue="DateTime" @bind-Value="currentItem.Time" ShowTime="true" ShowSeconds="true" Style="width:100%;" DateFormat="MM/dd/yyyy HH:mm" />
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label class="control-label">Transaction Type</label>
+                                    <RadzenDropDown AllowClear="true" TValue="int" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                    @bind-Value="currentItem.TransactionTypeId" Placeholder="Select Transaction Type..." Data=@transactionTypes TextProperty="Name" ValueProperty="Id" />
+
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="form-group">
+                            <label class="control-label">Reason</label>
+                            <textarea @bind="currentItem.Reason" class="form-control" rows="4" required></textarea>
+                        </div>
+
+
+
+                        <div class="form-group">
+                            <label class="control-label">User</label>
+                            <RadzenDropDown AllowClear="true" TValue="string" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                            @bind-Value="currentItem.CustomUserId" Placeholder="Select User..." Data=@userList TextProperty="FullName" ValueProperty="Id" />
+
+                        </div>
+
+                        <br />
+                        <div class="row">
+                            <div class="col">
+                                <button type="submit" class="btn btn-primary btn-block">Accept Changes</button>
+                            </div>
+                        </div>
+                    </EditForm>
+                    <br />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelEditDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
+
+
+<ModalDialog @ref="_deleteDialog"
+             OverlayOpacity="_overlayOpacity"
+             MinHeight="@_modalMinHeight"
+             MinWidth="@_modalMinWitdth"
+             Width="_editModalWidth"
+             CloseOnOverlayClick="_modalCloseOnClick"
+             CloseOnEscapeKey="_modalCloseOnEsc"
+             Focus="_modalFocus"
+             Animate="_modalAnimate"
+             Centered="_modalCentered"
+             ShowCloseButton="_modalShowClose">
+    <Header>
+        @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
+        <h4>Delete transaction #@currentItem.Id</h4>
+    </Header>
+    <Content>
+        <div class="container-fluid">
+            <div class="row pb-2">
+                <div class="col">
+                    <EditForm Model="currentItem" OnValidSubmit="Delete">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label class="control-label">Time</label>
+                                    <input readonly class="form-control" @bind="currentItem.Time" />
+                                </div>
+                            </div>
+                            <div class="col">
+
+                                <div class="form-group">
+                                    <label class="control-label">Transaction Type</label>
+                                    @if (currentItem.TransactionType is not null)
+                                    {
+                                        <input readonly class="form-control" @bind="currentItem.TransactionType.Name" />
+                                    }
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Reason</label>
+                            <input readonly class="form-control" @bind="currentItem.Reason" />
+                        </div>
+
+                        @if (currentItem.CustomUser is not null)
+                        {
+                            <div class="form-group">
+                                <label class="control-label">User</label>
+                                @if (currentItem.CustomUser is not null)
+                                {
+                                    <RadzenDropDown Disabled="true" AllowClear="true" TValue="string" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
+                                                    @bind-Value="currentItem.CustomUserId" Placeholder="Select User..." Data=@userList TextProperty="FullName" ValueProperty="Id" />
+
+                                }
+
+                            </div>
+                        }
+
+                        <div class="row">
+                            <div class="col text-center">
+                                <p>Are you sure you want to delete this transaction?</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <button type="submit" class="btn btn-danger btn-block">Delete</button>
+                            </div>
+                        </div>
+                    </EditForm>
+                    <br />
+                    <button class="btn btn-secondary btn-block" @onclick="CancelDeleteDialog">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </Content>
+</ModalDialog>
+
+
+
+@code {
+    public List<Models.Transaction> ItemList = new();
+    public List<Models.CustomUser> userList = new();
+    public List<Models.TransactionType> transactionTypes = new();
+
+    public Models.Transaction newItem = new();
+    public Models.Transaction currentItem = new();
+    public Models.CustomUser user = new();
+
+    public bool IsInRoleAdmin;
+    public bool IsDeveloper;
+    public bool IsSubmitter;
+    public bool IsAccountant;
+    public bool IsSeniorAccountant;
+    public bool IsNewUser;
+
+
+    private double _overlayOpacity = 0.3;
+    private double _modalMinHeight = 100;
+    private double _editModalWidth;
+    private double _modalMinWitdth = 100;
+    private bool _modalAnimate = true;
+    private bool _modalCloseOnClick = true;
+    private bool _modalCloseOnEsc = true;
+    private bool _modalFocus = true;
+    private bool _modalCentered = true;
+    private bool _modalShowClose = true;
+
+
+    private ModalDialog _createDialog;
+    private ModalDialog _editDialog;
+    private ModalDialog _deleteDialog;
+
+    private async Task OpenCreateDialog()
+    {
+        newItem = new();
+        newItem.Time = DateTime.Now;
+        await _createDialog.Open();
+    }
+    private async Task CancelCreateDialog()
+    {
+        newItem = new();
+        await _createDialog.Close();
+    }
+    private async Task OpenEditDialog(Models.Transaction transaction)
+    {
+        currentItem = transaction;
+        currentItem.TransactionType = transactionTypes.FirstOrDefault(t => t.Id == currentItem.TransactionTypeId);
+        currentItem.CustomUser = userList.FirstOrDefault(t => t.Id == currentItem.CustomUserId);
+
+        await _editDialog.Open();
+    }
+    private async Task CancelEditDialog()
+    {
+        currentItem = new();
+        await _editDialog.Close();
+    }
+    private async Task OpenDeleteDialog(Models.Transaction transaction)
+    {
+        currentItem = transaction;
+        currentItem.TransactionType = transactionTypes.FirstOrDefault(t => t.Id == currentItem.TransactionTypeId);
+        currentItem.CustomUser = userList.FirstOrDefault(t => t.Id == currentItem.CustomUserId);
+
+        await _deleteDialog.Open();
+    }
+    private async Task CancelDeleteDialog()
+    {
+        currentItem = new();
+        await _deleteDialog.Close();
+    }
+
+    public async Task Add()
+    {
+        try
+        {
+            newItem.Created = DateTime.Now;
+            newItem.Updated = newItem.Created;
+
+            _context.Add(newItem);
+            _context.SaveChanges();
+            GetData();
+            await CancelCreateDialog();
+
+            await JSRuntime.InvokeVoidAsync("success", null);
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+        }
+    }
+    public async Task Edit()
+    {
+        try
+        {
+            currentItem.Updated = DateTime.Now;
+            _context.Update(currentItem);
+            _context.SaveChanges();
+            GetData();
+            await CancelEditDialog();
+
+            await JSRuntime.InvokeVoidAsync("success", null);
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+        }
+    }
+    public async Task Delete()
+    {
+        try
+        {
+
+            _context.Remove(currentItem);
+            _context.SaveChanges();
+            GetData();
+            await CancelDeleteDialog();
+
+            await JSRuntime.InvokeVoidAsync("success", null);
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+        }
+    }
+
+
+    protected override void OnInitialized()
+    {
+        var currrentUser = _httpContextAccessor.HttpContext.User;
+        user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
+        IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
+        IsSeniorAccountant = currrentUser.IsInRole(Roles.SeniorAccountant.ToString());
+        IsAccountant = currrentUser.IsInRole(Roles.Accountant.ToString());
+        if (IsInRoleAdmin || IsSeniorAccountant || IsAccountant)
+        {
+            GetData();
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/accessdenied");
+        }
+
+    }
+
+    public void GetData()
+    {
+        ItemList = _context.Transaction.OrderByDescending(c => c.Time).ToList();
+        userList = _context.Users.ToList();
+        transactionTypes = _context.TransactionType.ToList();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            //await JSRuntime.InvokeVoidAsync("enableTable", null);
+
+        }
+        _editModalWidth = await JSRuntime.InvokeAsync<int>("ScreenWidth", null);
+        _editModalWidth = _editModalWidth * 0.5;
+    }
+}

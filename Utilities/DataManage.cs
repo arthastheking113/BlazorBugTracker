@@ -963,8 +963,8 @@ namespace BlazorBugTracker.Utilities
                 var ExpensesTypeId = transactionType.Where(c => c.Name != "Client Payment" || c.Name != "Customer Payment").Select(c => c.Id).ToList();
 
                 var transactionTypeIdList = transactionType.Select(c => c.Id).ToList();
-                Random rand = new Random();
-                Random rand2 = new Random();
+             
+               
                 var userList = context.Users.ToList();
                 var currentDate = DateTime.Now;
                 var DayRange = Enumerable.Range(0, 1 + currentDate.Subtract(currentDate.AddYears(-2)).Days)
@@ -973,7 +973,7 @@ namespace BlazorBugTracker.Utilities
                 var randomString = "This is a template transaction";
                 foreach (var item in DayRange)
                 {
-                    var randomAmount = rand.Next(-600000, 1000000);
+                    Random rand2 = new Random();
                     var LoopTime = rand2.Next(0, 12);
 
                     for (int i = 0; i < LoopTime; i++)
@@ -981,7 +981,8 @@ namespace BlazorBugTracker.Utilities
                         var randomUser = new Random();
                         var randomType = new Random();
                         var ranUser = userList[randomUser.Next(userList.Count)];
-
+                        Random rand = new Random();
+                        var randomAmount = rand.Next(-600000, 1000000);
                         if (randomAmount > 0)
                         {
                             var ranTypeId = ProfitTypeId[randomType.Next(ProfitTypeId.Count)];
@@ -993,7 +994,9 @@ namespace BlazorBugTracker.Utilities
                                 TransactionTypeId = ranTypeId,
                                 CustomUserId = ranUser.Id,
                                 UserID = ranUser.UserId,
-                                CustomUser = ranUser
+                                CustomUser = ranUser,
+                                Created = item,
+                                Updated = item
                             };
                             await context.AddAsync(newTransaction);
                         }
@@ -1008,7 +1011,9 @@ namespace BlazorBugTracker.Utilities
                                 TransactionTypeId = ranTypeId,
                                 CustomUserId = ranUser.Id,
                                 UserID = ranUser.UserId,
-                                CustomUser = ranUser
+                                CustomUser = ranUser,
+                                Created = item,
+                                Updated = item
                             };
                             await context.AddAsync(newTransaction);
                         }

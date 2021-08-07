@@ -9,35 +9,47 @@
     <div class="col">
         <div class="card">
             <div class="card-header bg-dark">
-                <h3 class="card-title">Ticket Status</h3>
+                <h3 class="card-title">Transaction Types</h3>
             </div>
-            <div class="card-body">
-                <a class="btn btn-outline-success" @onclick="OpenCreateDialog">Create New</a>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>
-                                Name
-                            </th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in ItemList)
-                        {
-                            var id = item.Id;
-                            <tr>
-                                <td>
-                                    @item.Name
-                                </td>
-                                <td>
-                                    <a class="btn btn-outline-primary" @onclick="() => OpenEditDialog(id)">Edit</a>
-                                    <a class="btn btn-outline-danger" @onclick="() => OpenDeleteDialog(id)">Delete</a>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+            <div class="card-body p-0">
+                <br />
+                <div class="row">
+                    <div class="col">
+                        <a class="btn btn-outline-success ml-4" @onclick="OpenCreateDialog">Create New</a>
+                    </div>
+                </div>
+                <br />
+                <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true"
+                                FilterMode="FilterMode.Simple" PageSize="5" AllowPaging="true" AllowSorting="true" Data="@ItemList" TItem="Models.Status" ColumnWidth="100%"
+                                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                LogicalFilterOperator="LogicalFilterOperator.Or">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="Models.Status" Title="Id" Width="50px">
+                            <Template Context="data">
+                                <p>
+                                    #@data.Id
+                                </p>
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="Models.Status" Property="Name" Title="Name" />
+
+                        <RadzenDataGridColumn TItem="Models.Status" Width="90px">
+                            <Template Context="data">
+                                <div class="btn-group-vertical">
+                                    <a class="btn btn-info text-white btn-sm mb-1" @onclick="() => OpenEditDialog(data)"><i class="fas fa-pencil-alt"></i> Edit</a>
+
+                                    <button type="button" class="btn btn-danger btn-sm mb-1" @onclick="() => OpenDeleteDialog(data)">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+
+                                </div>
+
+
+                            </Template>
+                        </RadzenDataGridColumn>
+
+                    </Columns>
+                </RadzenDataGrid>
             </div>
         </div>
     </div>
@@ -192,8 +204,11 @@
     private ModalDialog _editDialog;
     private ModalDialog _deleteDialog;
 
+
+    public List<Models.Status> ItemList = new();
     public Models.CustomUser user = new();
     public bool IsInRoleAdmin;
+
 
     public Models.Status newItem = new();
     public Models.Status currentItem = new();
@@ -206,9 +221,9 @@
     {
         await _createDialog.Close();
     }
-    private async Task OpenEditDialog(int id)
+    private async Task OpenEditDialog(Models.Status type)
     {
-        currentItem = ItemList.FirstOrDefault(i => i.Id == id);
+        currentItem = type;
         await _editDialog.Open();
     }
     private async Task CancelEditDialog()
@@ -216,9 +231,9 @@
         currentItem = new();
         await _editDialog.Close();
     }
-    private async Task OpenDeleteDialog(int id)
+    private async Task OpenDeleteDialog(Models.Status type)
     {
-        currentItem = ItemList.FirstOrDefault(i => i.Id == id);
+        currentItem = type;
         await _deleteDialog.Open();
     }
     private async Task CancelDeleteDialog()
@@ -279,8 +294,6 @@
         }
     }
 
-
-    public List<Models.Status> ItemList = new();
 
     protected override void OnInitialized()
     {

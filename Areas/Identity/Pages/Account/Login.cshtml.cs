@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
+using BlazorBugTracker.Data;
 
 namespace BlazorBugTracker.Areas.Identity.Pages.Account
 {
@@ -21,15 +22,19 @@ namespace BlazorBugTracker.Areas.Identity.Pages.Account
     {
         private readonly UserManager<CustomUser> _userManager;
         private readonly IConfiguration _configuration;
+        private readonly ApplicationDbContext _context;
         private readonly SignInManager<CustomUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
 
         public LoginModel(SignInManager<CustomUser> signInManager,
             ILogger<LoginModel> logger,
-            UserManager<CustomUser> userManager, IConfiguration configuration)
+            UserManager<CustomUser> userManager, 
+            IConfiguration configuration,
+            ApplicationDbContext context)
         {
             _userManager = userManager;
             _configuration = configuration;
+            _context = context;
             _signInManager = signInManager;
             _logger = logger;
         }
@@ -89,6 +94,7 @@ namespace BlazorBugTracker.Areas.Identity.Pages.Account
 
                 if (result.Succeeded)
                 {
+                    
                     _logger.LogInformation("User logged in.");
 
                     return LocalRedirect(returnUrl);

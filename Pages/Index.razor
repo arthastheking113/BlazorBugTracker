@@ -304,23 +304,9 @@ else
                     <div class="card-header bg-dark">
                         <h5 class="card-title">My Tickets</h5>
                     </div>
-                    <div class="card-header">
-                        <h3 class="card-title">Manage All of my Tickets</h3>
-                        <div class="card-tools">
-                            <div class="input-group input-group-sm">
-                                <input type="text" class="form-control" placeholder="Search Ticket" id="myInputHomeField">
-                                <div class="input-group-append">
-                                    <div class="btn btn-primary">
-                                        <i class="fas fa-search"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- /.card-tools -->
-                    </div>
                     <!-- /.card-header -->
                     <!-- /.card-header -->
-                    <div class="card-body">
+                    <div class="card-body p-0">
                         <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true"
                                         FilterMode="FilterMode.Simple" PageSize="5" AllowPaging="true" AllowSorting="true" Data="@ItemList" TItem="Models.Ticket" ColumnWidth="100%"
                                         FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
@@ -350,7 +336,7 @@ else
                                         </p>
                                     </Template>
                                 </RadzenDataGridColumn>
-                                <RadzenDataGridColumn TItem="Models.Ticket" Property="Developer" Title="Updated">
+                                <RadzenDataGridColumn TItem="Models.Ticket" Property="Developer" Title="Developer">
                                     <Template Context="data">
                                         @if (data.Developer is not null)
                                         {
@@ -363,7 +349,7 @@ else
                                         @if (data.Ownner is not null)
                                         {
                                             <p>@data.Ownner.FullName</p>
-                                        }
+                                        }   
                                     </Template>
                                 </RadzenDataGridColumn>
                                 <RadzenDataGridColumn TItem="Models.Ticket" Property="Project" Title="Project">
@@ -374,7 +360,7 @@ else
                                         }
                                     </Template>
                                 </RadzenDataGridColumn>
-                                <RadzenDataGridColumn TItem="Models.Ticket" Property="IsAssigned" Width="70px" Title="Assign?">
+                                <RadzenDataGridColumn TItem="Models.Ticket" Property="IsAssigned"  Title="Assign?">
                                     <Template Context="data">
                                         @if (data.IsAssigned)
                                         {
@@ -386,7 +372,7 @@ else
                                         }
                                     </Template>
                                 </RadzenDataGridColumn>
-                                <RadzenDataGridColumn TItem="Models.Ticket" Width="100px" Property="Status" Title="Status">
+                                <RadzenDataGridColumn TItem="Models.Ticket" Property="Status" Title="Status">
                                     <Template Context="data">
                                         @if (data.Status is not null)
                                         {
@@ -394,7 +380,7 @@ else
                                         }
                                     </Template>
                                 </RadzenDataGridColumn>
-                                <RadzenDataGridColumn TItem="Models.Ticket" Width="100px" Property="Priority" Title="Priority">
+                                <RadzenDataGridColumn TItem="Models.Ticket"Property="Priority" Title="Priority">
                                     <Template Context="data">
                                         @if (data.Priority is not null)
                                         {
@@ -410,7 +396,7 @@ else
                                         }
                                     </Template>
                                 </RadzenDataGridColumn>
-                                <RadzenDataGridColumn TItem="Models.Ticket" Width="90px">
+                                <RadzenDataGridColumn TItem="Models.Ticket" Filterable="false" Sortable="false">
                                     <Template Context="data">
                                         <div class="btn-group-vertical">
                                             <a class="btn btn-primary btn-sm mb-1" href="/ticket/details/@data.Id"><i class="fas fa-folder"></i> View</a>

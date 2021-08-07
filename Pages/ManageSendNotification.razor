@@ -1,0 +1,72 @@
+﻿@page "/manage/notification"
+@using BlazorBugTracker.Data
+@inject ApplicationDbContext _context
+@using Microsoft.AspNetCore.Identity.UI.Services
+@inject IEmailSender _emailSender
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor _httpContextAccessor
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime  
+<div class="row">
+    <div class="col">
+        <div class="card">
+            <div class="card-header bg-dark">
+                <h3 class="card-title">Send out notification</h3>
+            </div>
+            <div class="card-body p-0">
+                <br />
+                <div class="row">
+                    <div class="col">
+                        <a class="btn btn-outline-success ml-4" @onclick="SendOutTimeSheetNotification">Send out time sheet Notification</a>
+                    </div>
+
+                </div>
+                <br />
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<Models.CustomUser> users = new();
+    public Models.CustomUser admin = new();
+    public string url;
+    protected override void OnInitialized()
+    {
+        GetData();
+    }
+    public void GetData()
+    {
+        users = _context.Users.ToList();
+        admin = users.FirstOrDefault(c => c.Email == "arthastheking113@gmail.com");
+        url = NavigationManager.BaseUri;
+    }
+
+    public async Task SendOutTimeSheetNotification()
+    {
+        try
+        {
+            foreach (var item in users)
+            {
+
+                Models.WelcomeNotification newNotification = new Models.WelcomeNotification
+                {
+                    Name = "Remember to submit your timesheet",
+                    Description = "Please submit your timesheet to the system. You can submit timesheet in Time Sheet page in the left navigation bar.",
+                    RecipientId = item.Id,
+                    SenderId = admin.Id,
+                    Created = DateTime.Now
+                };
+                _context.Add(newNotification);
+                _emailSender.SendEmailAsync(item.Email, "Remember your timesheet", $"<a target='_blank' href='{url}'><h3>Please login and submit your timesheet to the system.</h3></a> <br> <h4>You can submit timesheet in Time Sheet page in the left navigation bar.</h4>");
+            }
+            _context.SaveChanges();
+            await JSRuntime.InvokeVoidAsync("success", null);
+        }
+        catch(Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("error", null);
+        }
+
+    }
+}

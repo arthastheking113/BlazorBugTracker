@@ -219,7 +219,7 @@
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                 <!-- Add icons to the links using the .nav-icon class
-                with font-awesome or any other icon font library -->
+    with font-awesome or any other icon font library -->
 
                 <li class="nav-item">
                     <a href="/" class="nav-link">
@@ -312,7 +312,15 @@
                     </li>
 
                 }
-
+                @if (IsInRoleAdmin || IsAccountant || IsSeniorAccountant || IsHR || IsProjectManager)
+                {
+                    <li class="nav-item">
+                        <a href="/manage/notification" class="nav-link">
+                            <i class="nav-icon fas fa-envelope"></i>
+                            <p>Send Notification</p>
+                        </a>
+                    </li>
+                }
                 @if (IsInRoleAdmin)
                 {
                     <li class="nav-item">

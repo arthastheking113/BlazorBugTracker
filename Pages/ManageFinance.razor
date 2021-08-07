@@ -2,6 +2,9 @@
 @using BlazorBugTracker.Data
 @using System.Globalization
 @inject ApplicationDbContext _context
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor _httpContextAccessor
 <div class="container-fluid p-0">
     <div class="row">
         @if (loading is true)
@@ -28,7 +31,7 @@
 
                                     <span class="info-box-number">
                                         <strong>$</strong>
-                                        @TotalIncome
+                                        @String.Format("{0:n0}", TotalIncome)
 
                                     </span>
 
@@ -45,7 +48,7 @@
                                     <span class="info-box-text">Current Month Expenses</span>
                                     <span class="info-box-number">
                                         <strong>$</strong>
-                                        @TotalExpense
+                                        @String.Format("{0:n0}", TotalExpense)
                                     </span>
                                 </div>
                                 <!-- /.info-box-content -->
@@ -59,7 +62,36 @@
                                     <span class="info-box-text">Current Month Profit</span>
                                     <span class="info-box-number">
                                         <strong>$</strong>
-                                        @TotalProfit
+                                        @String.Format("{0:n0}", TotalProfit)
+
+                                    </span>
+                                </div>
+                                <!-- /.info-box-content -->
+                            </div>
+                            <!-- /.info-box -->
+                        </div>
+                        <div class="col-md">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-purple elevation-1"><i class="fas fa-money-check"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Current Month Transactions</span>
+                                    <span class="info-box-number">
+                                        @CurrentMonthReport.Count
+                                        <small> Transactions</small>
+                                    </span>
+                                </div>
+                                <!-- /.info-box-content -->
+                            </div>
+                            <!-- /.info-box -->
+                        </div>
+                        <div class="col-md">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-orange elevation-1"><i class="fas fa-percentage"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Compare To Last Month</span>
+                                    <span class="info-box-number">
+                                        @ComparePersentLastMonth.ToString("F")
+                                        <small>%</small>
                                     </span>
                                 </div>
                                 <!-- /.info-box-content -->
@@ -75,7 +107,7 @@
                                 <RadzenLineSeries Smooth="true" Data="@Expenses" CategoryProperty="Time" Title="Expenses" ValueProperty="Amount">
                                 </RadzenLineSeries>
 
-                                <RadzenCategoryAxis Padding="20" FormatString="{0:MMM}" />
+                                <RadzenCategoryAxis Padding="20" FormatString="{0:MMM yyyy}" />
                                 <RadzenValueAxis Formatter="@FormatAsUSD">
                                     <RadzenGridLines Visible="true" />
                                     <RadzenAxisTitle Text="Revenue in USD" />
@@ -88,7 +120,7 @@
                             <RadzenChart>
                                 <RadzenLineSeries Smooth="true" Data="@Profit" CategoryProperty="Time" Title="Profit" ValueProperty="Amount">
                                 </RadzenLineSeries>
-                                <RadzenCategoryAxis Padding="20" FormatString="{0:MMM}" />
+                                <RadzenCategoryAxis Padding="20" FormatString="{0:MMM yyyy}" />
                                 <RadzenValueAxis Formatter="@FormatAsUSD">
                                     <RadzenGridLines Visible="true" />
                                     <RadzenAxisTitle Text="Revenue in USD" />
@@ -141,23 +173,45 @@
                                             LogicalFilterOperator="LogicalFilterOperator.Or">
                                 <Columns>
                                     <RadzenDataGridColumn TItem="Models.Transaction" Property="Time" Title="Time" />
+                                    <RadzenDataGridColumn TItem="Models.Transaction" Property="Created" Title="Created" />
+                                    <RadzenDataGridColumn TItem="Models.Transaction" Property="Updated" Title="Updated" />
+
                                     <RadzenDataGridColumn TItem="Models.Transaction" Property="CustomUser" Context="data" Title="User">
                                         <Template Context="data">
                                             @if (userList.FirstOrDefault(c => c.Id == data.CustomUserId) is not null)
                                             {
-                                                <p>@userList.FirstOrDefault(c => c.Id == data.CustomUserId).FullName</p>
+                                                <p class="mb-0">@userList.FirstOrDefault(c => c.Id == data.CustomUserId).FullName</p>
                                             }
                                         </Template>
                                     </RadzenDataGridColumn>
                                     <RadzenDataGridColumn TItem="Models.Transaction" Property="UserID" Title="UserID" />
-                                    <RadzenDataGridColumn TItem="Models.Transaction" Property="Amount" Title="Amount" />
+                                    <RadzenDataGridColumn TItem="Models.Transaction" Property="TransactionType" Title="Transaction Type">
+                                        <Template Context="data">
+                                            @if (TransactionTypeList.FirstOrDefault(c => c.Id == data.TransactionTypeId) is not null)
+                                            {
+                                                <p class="mb-0">@TransactionTypeList.FirstOrDefault(c => c.Id == data.TransactionTypeId).Name</p>
+                                            }
+                                        </Template>
+                                    </RadzenDataGridColumn>
+                                    <RadzenDataGridColumn TItem="Models.Transaction" Property="Amount" Title="Amount">
+                                        <Template Context="data">
+                                            @if (data.Amount >= 0)
+                                            {
+                                                <p class="mb-0"> + $@String.Format("{0:n0}", data.Amount)</p>
+                                            }
+                                            else
+                                            {
+                                                <p class="mb-0"> - $@String.Format("{0:n0}", data.Amount * (-1))</p>
+                                            }
+                                        </Template>
+                                    </RadzenDataGridColumn>
                                     <RadzenDataGridColumn TItem="Models.Transaction" Property="Reason" Title="Reason" />
                                 </Columns>
                             </RadzenDataGrid>
                         </div>
                     </div>
                 </div>
-     
+
             </div>
         }
 
@@ -173,6 +227,7 @@
     public List<Models.TransactionTypeModel> Expenses = new();
     public List<Models.TransactionTypeModel> Profit = new();
     public List<Models.Transaction> CurrentMonthReport = new();
+    public List<Models.Transaction> LastMonthReport = new();
     public List<Models.ChartModel> IncomeDonutChart = new();
     public List<Models.ChartModel> ExpensesDonutChart = new();
     public List<Models.CustomUser> userList = new();
@@ -181,14 +236,32 @@
     public decimal TotalIncome;
     public decimal TotalExpense;
     public decimal TotalProfit;
+
+    public decimal lastMonthTotalIncome;
+    public decimal lastMonthTotalExpense;
+    public decimal lastMonthTotalProfit;
+
+    public decimal ComparePersentLastMonth;
     public bool loading;
+
+    public Models.CustomUser user = new();
+
+    public bool IsInRoleAdmin;
+    public bool IsDeveloper;
+    public bool IsSubmitter;
+    public bool IsAccountant;
+    public bool IsSeniorAccountant;
+    public bool IsNewUser;
+
+
     public void GetData()
     {
         TotalIncome = 0;
         TotalExpense = 0;
         TotalProfit = 0;
-        ItemList = _context.Transaction.OrderByDescending(c => c.Time).ToList();
+        ItemList = _context.Transaction.Where(c => c.Time.Year == currentTime.Year).OrderByDescending(c => c.Time).ToList();
         CurrentMonthReport = ItemList.Where(c => c.Time.Month == currentTime.Month).ToList();
+        LastMonthReport = ItemList.Where(c => c.Time.Month == currentTime.AddMonths(-1).Month).ToList();
         userList = _context.Users.ToList();
         foreach (var item in ItemList)
         {
@@ -220,7 +293,7 @@
             }
             Models.TransactionTypeModel newProfit = new Models.TransactionTypeModel
             {
-                Amount =amount,
+                Amount = amount,
                 Time = item.Time
             };
             if (!Profit.Contains(newProfit))
@@ -243,7 +316,22 @@
         }
         TotalProfit = TotalIncome + TotalExpense;
         TotalExpense = TotalExpense * (-1);
+        foreach (var item in LastMonthReport)
+        {
+            if (item.Amount >= 0)
+            {
 
+                lastMonthTotalIncome += item.Amount;
+            }
+            if (item.Amount < 0)
+            {
+
+                lastMonthTotalExpense += item.Amount;
+            }
+        }
+        lastMonthTotalProfit = lastMonthTotalIncome + lastMonthTotalExpense;
+        lastMonthTotalExpense = lastMonthTotalExpense * (-1);
+        ComparePersentLastMonth = TotalProfit / lastMonthTotalProfit * 100;
         TransactionTypeList = _context.TransactionType.ToList();
         foreach (var item in TransactionTypeList)
         {
@@ -266,9 +354,23 @@
 
     protected override void OnInitialized()
     {
-        loading = true;
-        GetData();
-        loading = false;
+        var currrentUser = _httpContextAccessor.HttpContext.User;
+        user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
+        IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
+        IsSeniorAccountant = currrentUser.IsInRole(Roles.SeniorAccountant.ToString());
+        IsAccountant = currrentUser.IsInRole(Roles.Accountant.ToString());
+        if (IsInRoleAdmin || IsSeniorAccountant || IsAccountant)
+        {
+
+            loading = true;
+            GetData();
+            loading = false;
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/accessdenied");
+        }
+
     }
 
 
