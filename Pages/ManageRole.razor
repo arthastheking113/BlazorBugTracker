@@ -127,6 +127,8 @@
 
 @code {
     public List<Models.CustomUser> UserList = new();
+    public Models.CustomUser user = new();
+
     public List<IdentityRole> Roles = new();
     public IEnumerable<string> UserSelected = Enumerable.Empty<string>();
     public bool IsInRoleAdmin;
@@ -137,6 +139,7 @@
     protected override void OnInitialized()
     {
         var currrentUser = _httpContextAccessor.HttpContext.User;
+        user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
         IsInRoleAdmin = currrentUser.IsInRole(BlazorBugTracker.Data.Enums.Roles.Admin.ToString());
         if (IsInRoleAdmin)
         {
@@ -160,23 +163,32 @@
     {
         try
         {
-            foreach (var id in UserSelected)
+            if (!_roleService.ReturnUserRole3(user).ToLower().Contains("demo"))
             {
-                var user = _context.Users.FirstOrDefault(u => u.Id == id);
-                var isUserInRole = _context.UserRoles.FirstOrDefault(r => r.UserId == id && r.RoleId == RoleSelected);
-                if (isUserInRole is null)
+                foreach (var id in UserSelected)
                 {
-                    var userRole = _roleService.ReturnUserRole3(user).Split(",").ToList();
-                    foreach (var roles in userRole)
+                    var user = _context.Users.FirstOrDefault(u => u.Id == id);
+                    var isUserInRole = _context.UserRoles.FirstOrDefault(r => r.UserId == id && r.RoleId == RoleSelected);
+                    if (isUserInRole is null)
                     {
-                        await _roleService.RemoveUserFromRoleAsync(user, roles);
+                        var userRole = _roleService.ReturnUserRole3(user).Split(",").ToList();
+                        foreach (var roles in userRole)
+                        {
+                            await _roleService.RemoveUserFromRoleAsync(user, roles);
+                        }
+                        await _roleService.AddUserToRoleAsync(user, RoleSelected);
                     }
-                    await _roleService.AddUserToRoleAsync(user, RoleSelected);
                 }
+                UserSelected = Enumerable.Empty<string>();
+                RoleSelected = null;
+                await JSRuntime.InvokeVoidAsync("success", null);
             }
-            UserSelected = Enumerable.Empty<string>();
-            RoleSelected = null;
-            await JSRuntime.InvokeVoidAsync("success", null);
+            else
+            {
+                NavigationManager.NavigateTo("/demouserwarning");
+            }
+
+
         }
         catch (Exception ex)
         {
