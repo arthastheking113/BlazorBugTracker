@@ -72,7 +72,11 @@ else
                                                         <div class="image-one-line">
                                                             @foreach (var item in _projectService.UserOnProject(data.Id))
                                                             {
-                                                                <img class="rounded-circle img-fluid mr-1 ml-1" style="width:10%;" src="@(_imageService.DecodeFileAvatar(data.ImageData, data.ContentType))" />
+                                                                var imageData = item.ImageData;
+                                                                var imageContentType = item.ContentType;
+
+                                                                <img class="rounded-circle img-fluid mr-1 ml-1" style="width:10%;" src="@_imageService.DecodeFileAvatar(imageData, imageContentType)" />
+
                                                             }
 
                                                         </div>
