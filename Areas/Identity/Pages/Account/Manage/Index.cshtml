@@ -25,7 +25,7 @@
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <form id="profile-form" method="post" enctype="multipart/form-data">
                     <div class="text-center">
-                        <img class="profile-user-img img-fluid img-circle" style="width:30%;"
+                        <img class="profile-user-img img-fluid img-circle" style="width:30%;border-radius:50%;"
                              src="@imageService.DecodeFileAvatar(Model.Input.ImageData,Model.Input.ContentType)"
                              alt="User profile picture">
                     </div>

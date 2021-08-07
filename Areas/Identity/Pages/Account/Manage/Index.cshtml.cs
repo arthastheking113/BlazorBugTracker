@@ -137,7 +137,8 @@ namespace BlazorBugTracker.Areas.Identity.Pages.Account.Manage
                     return RedirectToPage();
                 }
             }
-            await _context.SaveChangesAsync();
+            await _userManager.UpdateAsync(user);
+            //await _context.SaveChangesAsync();
             await _signInManager.RefreshSignInAsync(user);
             StatusMessage = "Your profile has been updated";
             return RedirectToPage();
