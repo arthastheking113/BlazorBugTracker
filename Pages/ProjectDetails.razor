@@ -21,7 +21,7 @@
 @inject IJSRuntime JSRuntime
 @inject IEmailSender _emailSender
 
-@if (currentProject is null)
+@if (currentProject.Name is null)
 {
     <div class="loader">Loading...</div>
 }
@@ -137,7 +137,7 @@ else
                                     </div>
                                 </div>
                                 <hr class="mt-0" />
-                                @if (ticketInProject is not null)
+                                @if (ticketInProject.Count != 0)
                                 {
                                     if (ticketInProject.Count >= 5)
                                     {
@@ -933,7 +933,7 @@ else
 
     public async Task GetData()
     {
-        await Task.Delay(100);
+        await Task.Delay(1);
         currentProject = _context.Project
             .Include(p => p.Attachments)
             .Include(p => p.Company)
