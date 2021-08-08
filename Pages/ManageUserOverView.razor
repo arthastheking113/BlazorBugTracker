@@ -722,7 +722,7 @@
             ItemList = _context.Users.Include(i => i.Company).ToList();
             foreach (var item in ItemList)
             {
-                item.Role = await _roleService.ReturnUserRole(item);
+                item.Role = _roleService.ReturnUserRole3(item).Replace(",", "");
             }
             CompanyList = _context.Company.ToList();
             RoleList = _context.Roles.Where(c => !c.Name.ToLower().Contains("admin")).ToList();
