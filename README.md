@@ -19,9 +19,14 @@ This is my biggest project and I put a lot of works on this project. After finis
 Notes: If you log in as a Demo User, You can't create or update anything on the database. If you want to see it fully functions, contact me by clicking on the "How to contact me ?" button
 
 
+
 In order to test the Bug Tracker, you can simply click on "Login as Demo User" and choose either Admin, Project Manager, Developer, or Submitter. To test all of the Bug Tracker functions, I recommend you to login as Demo Admin.
 Different role has different permission to do their work in the system. For example, Admin has every permission on the system, Project Manager have almost every permissions but can't modify the role of Admin. Developer and Submitter only can update ticket and submit file to the system.
 
 If you want to test my web application. Go to this link: http://duylanle-tracker.herokuapp.com/
 
 Notes: My Bug Tracker is hosted on a free Hehoku server, so, It will take a minute to boot up.
+
+![blazortracker](https://user-images.githubusercontent.com/76194081/128619899-347aec9a-d462-44dc-ad4c-886639a6f9c8.png)
+
+![blazortracker2](https://user-images.githubusercontent.com/76194081/128619903-0e43f353-2f7a-4850-bc65-42c52988b66c.png)
