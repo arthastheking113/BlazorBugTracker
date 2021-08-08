@@ -1,4 +1,4 @@
-# Bug Tracker
+# Blazor Bug Tracker
 
 What is a Bug Tracker?
 An issue tracking system (also ITS, trouble ticket system, support ticket, request management or incident ticket system) is a computer software package that manages and maintains lists of issues. 
