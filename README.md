@@ -29,4 +29,3 @@ Notes: My Bug Tracker is hosted on a free Hehoku server, so, It will take a minu
 
 ![blazortracker](https://user-images.githubusercontent.com/76194081/128619899-347aec9a-d462-44dc-ad4c-886639a6f9c8.png)
 
-![blazortracker2](https://user-images.githubusercontent.com/76194081/128619903-0e43f353-2f7a-4850-bc65-42c52988b66c.png)
