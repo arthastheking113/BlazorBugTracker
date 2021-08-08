@@ -5,6 +5,11 @@
 @inject ApplicationDbContext _context
 @inject IHttpContextAccessor _httpContextAccessor
 @inject IJSRuntime JSRuntime
+<LoadingPage OnLoading="@GetData">
+    <LoadingContent>
+        <div class="loader">Loading...</div>
+    </LoadingContent>
+</LoadingPage>
 <div class="container-fluid">
     <div class="row">
         <div class="col">
@@ -128,7 +133,18 @@
 
                                         </td>
                                         <td>
-                                            <button class="btn btn-outline-primary" @onclick="() => Save(item)">Save</button>
+                                            @if (_isButtonLoading)
+                                            {
+                                                <button type="button" disabled class="btn btn-outline-primary">
+                                                    <i class="fa fa-spinner fa-spin"></i> Loading...
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button type="button" @onclick="() => Save(item)" class="btn btn-outline-primary">
+                                                    <span class="iconify" data-icon="entypo:save"></span> Save
+                                                </button>
+                                            }
                                         </td>
                                     </tr>
                                 }
@@ -184,7 +200,18 @@
             </div>
             <div class="row mt-2">
                 <div class="col text-center">
-                    <button class="btn btn-outline-primary" @onclick="ConfirmSubmitPayCheck">Yes, submit this time sheet</button>
+                    @if (_isButtonLoading)
+                    {
+                        <button type="button" disabled class="btn btn-outline-primary">
+                            <i class="fa fa-spinner fa-spin"></i> Loading...
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" @onclick="ConfirmSubmitPayCheck" class="btn btn-outline-primary">
+                            <span class="iconify" data-icon="entypo:save"></span> Yes, submit this time sheet
+                        </button>
+                    }
                     <button class="btn btn-outline-secondary" @onclick="CancelSubmitPayCheckDialog">No, I'm not ready</button>
                 </div>
             </div>
@@ -195,6 +222,8 @@
 
 
 @code {
+    private bool _isButtonLoading = false;
+
     //Fully customized dialog
     private double _overlayOpacity = 0.3;
     private double _modalMinHeight = 100;
@@ -253,6 +282,7 @@
     {
         try
         {
+            _isButtonLoading = true;
             List<int> numberList = new List<int>();
             float numberOfWork = 0;
             foreach (var item in currentItemList)
@@ -304,7 +334,7 @@
             }
             _context.SaveChanges();
 
-            GetData();
+            await GetData();
             GetTimeSheet();
             await CancelSubmitPayCheckDialog();
             await CancelPayRollDialog();
@@ -314,6 +344,10 @@
         catch (Exception ex)
         {
             await JSRuntime.InvokeVoidAsync("error", null);
+        }
+        finally
+        {
+            _isButtonLoading = false;
         }
 
     }
@@ -462,6 +496,7 @@
     {
         try
         {
+            _isButtonLoading = true;
             if (string.IsNullOrEmpty(payroll.Name))
             {
                 await JSRuntime.InvokeVoidAsync("errorTimeSheetNameMissing", null);
@@ -484,7 +519,7 @@
                     _context.Add(payroll);
                     _context.SaveChanges();
                 }
-                GetData();
+                await GetData();
                 GetTimeSheet();
 
                 await JSRuntime.InvokeVoidAsync("success", null);
@@ -494,6 +529,10 @@
         catch(Exception ex)
         {
             await JSRuntime.InvokeVoidAsync("error", null);
+        }
+        finally
+        {
+            _isButtonLoading = false;
         }
 
 
@@ -510,16 +549,17 @@
     }
 
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        GetData();
+        await GetData();
         GetDropDown();
 
 
     }
 
-    public void GetData()
+    public async Task GetData()
     {
+        await Task.Delay(100);
         var currrentUser = _httpContextAccessor.HttpContext.User;
         user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
 

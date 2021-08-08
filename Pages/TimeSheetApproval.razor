@@ -4,13 +4,17 @@
 @using BlazorBugTracker.Services
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Identity.UI.Services
-@inject IEmailSender _emailSender  
+@inject IEmailSender _emailSender
 @inject ApplicationDbContext _context
 @inject IHttpContextAccessor _httpContextAccessor
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject ICustomProjectService _projectService
-
+<LoadingPage OnLoading="@GetData">
+    <LoadingContent>
+        <div class="loader">Loading...</div>
+    </LoadingContent>
+</LoadingPage>
 <div class="container-fluid">
     <div class="row">
         <div class="col">
@@ -112,11 +116,11 @@
                                             <input class="form-control" type="time" @bind="item.Start" readonly />
                                         </td>
                                         <td>
-                                            <input class="form-control" type="time" @bind="item.End" readonly/>
+                                            <input class="form-control" type="time" @bind="item.End" readonly />
                                         </td>
                                         <td>
                                             <input class="form-control" readonly value="@item.Name" />
-                                           
+
                                         </td>
                                         <td>
                                             <input class="form-control" type="text" readonly @bind="item.Note" />
@@ -148,7 +152,7 @@
                                     <td>
                                         <h4>@totalWeek hours</h4>
                                     </td>
-                                   
+
                                 </tr>
                             </tbody>
                         </table>
@@ -186,7 +190,20 @@
             </div>
             <div class="row mt-2">
                 <div class="col text-center">
-                    <button class="btn btn-outline-primary" @onclick="ConfirmSubmitPayCheck">Yes, Approve this time sheet</button>
+                    <button class=""></button>
+                    @if (_isButtonLoading)
+                    {
+                        <button type="button" disabled class="btn btn-outline-primary">
+                            <i class="fa fa-spinner fa-spin"></i> Loading...
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-outline-primary"  @onclick="ConfirmSubmitPayCheck">
+                            <span class="iconify" data-icon="dashicons:yes-alt"></span> Yes, Approve this time sheet
+                        </button>
+                    }
+
                     <button class="btn btn-outline-secondary" @onclick="CancelSubmitPayCheckDialog">No, I'm not ready</button>
                 </div>
             </div>
@@ -197,6 +214,8 @@
 
 
 @code {
+    private bool _isButtonLoading = false;
+
     //Fully customized dialog
     private double _overlayOpacity = 0.3;
     private double _modalMinHeight = 100;
@@ -279,6 +298,7 @@
     {
         try
         {
+            _isButtonLoading = true;
             currentPayCheckRecord.IsApproved = true;
             _context.Update(currentPayCheckRecord);
             foreach (var item in currentItemList)
@@ -294,19 +314,23 @@
                 Description = "Your time sheet have been approved!!!",
                 RecipientId = currentPayCheckRecord.CustomUserId,
                 SenderId = admin.Id
-                
+
             };
             _context.Add(newNotification);
             _context.SaveChanges();
-            _emailSender.SendEmailAsync(currentPayCheckRecord.CustomUser.Email,"Your Time Sheet Has Been Approved", "Your time sheet have been approved!!!");
+            _emailSender.SendEmailAsync(currentPayCheckRecord.CustomUser.Email, "Your Time Sheet Has Been Approved", "Your time sheet have been approved!!!");
             await GetData();
             await CancelSubmitPayCheckDialog();
 
             await JSRuntime.InvokeVoidAsync("success", null);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             await JSRuntime.InvokeVoidAsync("error", null);
+        }
+        finally
+        {
+            _isButtonLoading = false;
         }
 
 
@@ -344,6 +368,7 @@
 
     public async Task GetData()
     {
+        await Task.Delay(100);
         DeveloperUser = new();
         admin = _context.Users.FirstOrDefault(c => c.Email == "arthastheking113@gmail.com");
         if (IsProjectManager)
@@ -368,7 +393,7 @@
                 }
             }
         }
-        else if(IsInRoleAdmin)
+        else if (IsInRoleAdmin)
         {
             ProjectList = _context.Project.Include(p => p.CustomUsers).ToList();
             DeveloperUser = _context.Users.ToList();

@@ -6,7 +6,11 @@
 @using Microsoft.AspNetCore.Http
 @inject IHttpContextAccessor _httpContextAccessor
 @inject ICustomRoleService _roleService
-
+<LoadingPage OnLoading="@GetData">
+    <LoadingContent>
+        <div class="loader">Loading...</div>
+    </LoadingContent>
+</LoadingPage>
 <div class="row">
     <div class="col">
         <div class="card">
@@ -251,7 +255,7 @@
             _context.Add(newItem);
             _context.SaveChanges();
             CancelEditDialog();
-            GetData();
+            await GetData();
             await JSRuntime.InvokeVoidAsync("success", null);
 
         }
@@ -267,7 +271,7 @@
         {
             _context.Update(currentItem);
             _context.SaveChanges();
-            GetData();
+            await GetData();
             CancelEditDialog();
             await JSRuntime.InvokeVoidAsync("success", null);
 
@@ -286,7 +290,7 @@
             {
                 _context.Remove(currentItem);
                 _context.SaveChanges();
-                GetData();
+                await GetData();
                 CancelDeleteDialog();
                 await JSRuntime.InvokeVoidAsync("success", null);
             }
@@ -305,14 +309,14 @@
     }
 
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         var currrentUser = _httpContextAccessor.HttpContext.User;
         user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
         IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
         if (IsInRoleAdmin)
         {
-            GetData();
+            await GetData();
         }
         else
         {
@@ -320,8 +324,9 @@
         }
     }
 
-    public void GetData()
+    public async Task GetData()
     {
+        await Task.Delay(100);
         ItemList = _context.TicketType.ToList();
     }
 }

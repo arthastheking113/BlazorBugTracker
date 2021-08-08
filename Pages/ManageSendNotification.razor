@@ -7,6 +7,11 @@
 @inject IHttpContextAccessor _httpContextAccessor
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime  
+<LoadingPage OnLoading="@GetData">
+    <LoadingContent>
+        <div class="loader">Loading...</div>
+    </LoadingContent>
+</LoadingPage>
 <div class="row">
     <div class="col">
         <div class="card">
@@ -37,12 +42,13 @@
     public List<Models.CustomUser> users = new();
     public Models.CustomUser admin = new();
     public string url;
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        GetData();
+        await GetData();
     }
-    public void GetData()
+    public async Task GetData()
     {
+        await Task.Delay(100);
         users = _context.Users.ToList();
         admin = users.FirstOrDefault(c => c.Email == "arthastheking113@gmail.com");
         url = NavigationManager.BaseUri;

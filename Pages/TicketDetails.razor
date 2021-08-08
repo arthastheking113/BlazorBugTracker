@@ -25,7 +25,11 @@
 }
 else
 {
-
+    <LoadingPage OnLoading="@GetData">
+        <LoadingContent>
+            <div class="loader">Loading...</div>
+        </LoadingContent>
+    </LoadingPage>
     <div class="row">
 
         <div class="col-5">
@@ -115,7 +119,7 @@ else
                         <div class="col">
 
                             <!-- Button trigger modal -->
-                            <button type="button" class="btn btn-primary mr-1">
+                            <button type="button" @onclick="OpenEditDialog" class="btn btn-primary mr-1">
                                 <span class="iconify" data-icon="ant-design:edit-filled" data-inline="true"></span> Edit
                             </button>
 
@@ -124,7 +128,7 @@ else
                             {
 
                                 <!-- Button trigger modal -->
-                                <button type="button" class="btn btn-danger ml-1 mr-1">
+                                <button type="button" @onclick="OpenDeleteDialog" class="btn btn-danger ml-1 mr-1">
                                     <i class="fas fa-trash"></i> Delete
                                 </button>
 
@@ -157,7 +161,19 @@ else
                             </div>
                             <div class="row">
                                 <div class="col text-center">
-                                    <button type="submit" class="btn btn-outline-secondary md-btn-flat">Upload</button>
+                                    <button type="submit" class="">Upload</button>
+                                    @if (_isButtonLoading)
+                                    {
+                                        <button type="button" disabled class="btn btn-outline-secondary md-btn-flat">
+                                            <i class="fa fa-spinner fa-spin"></i> Loading...
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="submit" class="btn btn-outline-secondary md-btn-flat">
+                                            <span class="iconify" data-icon="bx:bxs-cloud-upload"></span> Upload
+                                        </button>
+                                    }
                                 </div>
                             </div>
                         </EditForm>
@@ -272,7 +288,19 @@ else
                                     </RadzenHtmlEditor>
                                 </div>
 
-                                <input type="submit" value="Comment" class="btn btn-secondary" />
+                                @if (_isButtonLoading)
+                                {
+                                    <button type="button" disabled class="btn btn-primary">
+                                        <i class="fa fa-spinner fa-spin"></i> Loading...
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="btn btn-primary">
+                                        <span class="iconify" data-icon="dashicons:yes-alt"></span> Comment
+                                    </button>
+                                }
+
                             </EditForm>
                         </div>
                     </div>
@@ -317,8 +345,8 @@ else
                                                         @if (IsInRoleAdmin || IsProjectManager)
                                                         {
                                                             <div class="col text-right">
-                                                                <a class="btn btn-secondary text-white" >Edit</a>
-                                                                <a class="btn btn-secondary text-white" >Delete</a>
+                                                                <a class="btn btn-secondary text-white">Edit</a>
+                                                                <a class="btn btn-secondary text-white">Delete</a>
                                                             </div>
                                                         }
 
@@ -433,7 +461,7 @@ else
                                     <div class="form-group">
                                         <label class="control-label">Owner</label>
                                         <RadzenDropDown AllowClear="true" TValue="string" @bind-Value="currentTicket.OwnnerId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
-                                                        Placeholder="Select Developer..." Data=@OwnerList TextProperty="FullName" ValueProperty="Id" />
+                                                        Placeholder="Select Owner..." Data=@OwnerList TextProperty="FullName" ValueProperty="Id" />
 
                                     </div>
                                 </div>
@@ -571,7 +599,19 @@ else
                         <br />
                         <div class="row">
                             <div class="col">
-                                <button type="submit" class="btn btn-primary btn-block">Accept Changes</button>
+                                @if (_isButtonLoading)
+                                {
+                                    <button type="button" disabled class="btn btn-primary btn-block">
+                                        <i class="fa fa-spinner fa-spin"></i> Loading...
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="btn btn-primary btn-block">
+                                        <span class="iconify" data-icon="dashicons:yes-alt"></span> Accept Changes
+                                    </button>
+                                }
+
                             </div>
                         </div>
                     </EditForm>
@@ -662,7 +702,18 @@ else
 
                         <div class="row">
                             <div class="col">
-                                <button type="submit" class="btn btn-danger btn-block">Delete</button>
+                                @if (_isButtonLoading)
+                                {
+                                    <button type="button" disabled class="btn btn-danger btn-block">
+                                        <i class="fa fa-spinner fa-spin"></i> Loading...
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="btn btn-danger btn-block">
+                                        <span class="iconify" data-icon="fluent:delete-28-filled"></span> Delete
+                                    </button>
+                                }
                             </div>
                         </div>
                     </EditForm>
@@ -719,6 +770,8 @@ else
 
 
 @code {
+    private bool _isButtonLoading = false;
+
     [Parameter]
     public string TicketId { get; set; }
     public Models.CustomUser user = new();
@@ -757,7 +810,7 @@ else
     private ModalDialog _editDialog;
     private ModalDialog _deleteDialog;
 
-    protected override void  OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         if (!String.IsNullOrEmpty(TicketId))
         {
@@ -769,10 +822,14 @@ else
             IsSubmitter = currrentUser.IsInRole(Roles.Submitter.ToString());
             IsProjectManager = currrentUser.IsInRole(Roles.ProjectManager.ToString());
 
-            GetData();
+
             if (!IsInRoleAdmin && _projectService.ProjectManagerOnProject(currentTicket.ProjectId).Id != user.Id && currentTicket.OwnnerId != user.Id && currentTicket.DeveloperId != user.Id)
             {
                 NavigationManager.NavigateTo("/accessdenied");
+            }
+            else
+            {
+                await GetData();
             }
 
         }
@@ -825,6 +882,7 @@ else
     {
         try
         {
+            _isButtonLoading = true;
             var ticketId = currentTicket.Id;
             Models.Ticket oldTicket = await _context.Ticket
                 .Include(t => t.TicketType)
@@ -856,11 +914,16 @@ else
             await JSRuntime.InvokeVoidAsync("error", null);
 
         }
+        finally
+        {
+            _isButtonLoading = false;
+        }
     }
     public async Task Delete()
     {
         try
         {
+            _isButtonLoading = true;
             if (!_roleService.ReturnUserRole3(user).ToLower().Contains("demo"))
             {
                 var ticketId = currentTicket.Id;
@@ -916,6 +979,10 @@ else
             await JSRuntime.InvokeVoidAsync("error", null);
 
         }
+        finally
+        {
+            _isButtonLoading = false;
+        }
     }
 
 
@@ -923,6 +990,7 @@ else
     {
         try
         {
+            _isButtonLoading = true;
             newTicketComment.Created = DateTime.Now;
             newTicketComment.Updated = newTicketComment.Created;
             newTicketComment.CustomUserId = user.Id;
@@ -963,6 +1031,10 @@ else
         {
             await JSRuntime.InvokeVoidAsync("error", null);
         }
+        finally
+        {
+            _isButtonLoading = false;
+        }
 
     }
     public async Task AddNewAttachment()
@@ -975,6 +1047,8 @@ else
         {
             try
             {
+                _isButtonLoading = true;
+
                 newTicketAttachment.Created = DateTimeOffset.Now;
                 newTicketAttachment.CustomUserId = user.Id;
                 newTicketAttachment.TicketId = currentTicket.Id;
@@ -1016,12 +1090,17 @@ else
             {
                 await JSRuntime.InvokeVoidAsync("error", null);
             }
+            finally
+            {
+                _isButtonLoading = false;
+            }
 
         }
     }
 
-    public void  GetData()
+    public async Task GetData()
     {
+        await Task.Delay(100);
         var id = int.Parse(TicketId);
         currentTicket = _context.Ticket
             .Include(t => t.Ownner)
@@ -1042,7 +1121,7 @@ else
         TicketStatusList = _context.Status.ToList();
         OwnerList = _context.Users.ToList();
         ProjectList = _context.Project.ToList();
-        DeveloperList = _context.Users.ToList();
+        DeveloperList = _projectService.DeveloperOnProject(currentTicket.ProjectId).ToList();
 
 
     }
@@ -1057,11 +1136,11 @@ else
         //IsProjectManager = await sessionStorage.GetItemAsync<bool>("IsProjectManager");
         if (firstRender)
         {
-            await JSRuntime.InvokeVoidAsync("enableTable", null);
+            //await JSRuntime.InvokeVoidAsync("enableTable", null);
+
         }
         _editModalWidth = await JSRuntime.InvokeAsync<int>("ScreenWidth", null);
         _editModalWidth = _editModalWidth * 0.7;
-        StateHasChanged();
     }
 
     protected override async Task OnParametersSetAsync()

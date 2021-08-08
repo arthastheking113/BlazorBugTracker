@@ -22,6 +22,11 @@
 }
 else
 {
+    <LoadingPage OnLoading="@GetData">
+        <LoadingContent>
+            <div class="loader">Loading...</div>
+        </LoadingContent>
+    </LoadingPage>
     <div class="row">
         <div class="col">
             <div class="card">
@@ -201,7 +206,7 @@ else
                         <div class="form-group">
                             <label class="control-label">Project</label>
                             <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="newItem.ProjectId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
-                                            Placeholder="Select Project..." Change=@(args => OnChangeSelectProject(args)) Data=@ProjectList TextProperty="Name" ValueProperty="Id" />
+                                            Placeholder="Select Project..." Change=@(args => OnChangeProjectSelect(args)) Data=@ProjectList TextProperty="Name" ValueProperty="Id" />
 
                         </div>
                         @if (IsInRoleAdmin || IsProjectManager)
@@ -221,7 +226,7 @@ else
                                     <div class="form-group">
                                         <label class="control-label">Owner</label>
                                         <RadzenDropDown AllowClear="true" TValue="string" @bind-Value="newItem.OwnnerId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
-                                                        Placeholder="Select Developer..." Data=@OwnerList TextProperty="FullName" ValueProperty="Id" />
+                                                        Placeholder="Select Owner..." Data=@OwnerList TextProperty="FullName" ValueProperty="Id" />
 
                                     </div>
                                 </div>
@@ -277,7 +282,19 @@ else
                         <br />
                         <div class="row">
                             <div class="col">
-                                <button type="submit" class="btn btn-success btn-block">Create</button>
+                                @if (_isButtonLoading)
+                                {
+                                    <button type="button" disabled class="btn btn-outline-success btn-block">
+                                        <i class="fa fa-spinner fa-spin"></i> Loading...
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="btn btn-outline-success btn-block">
+                                        <span class="iconify" data-icon="fluent:add-square-24-filled"></span> Create new Ticket
+                                    </button>
+                                }
+
                             </div>
                         </div>
                     </EditForm>
@@ -324,7 +341,7 @@ else
                             <div class="form-group">
                                 <label class="control-label">Project</label>
                                 <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="currentItem.ProjectId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
-                                                Placeholder="Select Project..." Data=@ProjectList Change=@(args => OnChangeSelectProject(args)) TextProperty="Name" ValueProperty="Id" />
+                                                Placeholder="Select Project..." Data=@ProjectList Change=@(args => OnChangeProjectSelect(args)) TextProperty="Name" ValueProperty="Id" />
 
                             </div>
                             <div class="row">
@@ -362,7 +379,7 @@ else
                                     <div class="form-group">
                                         <label class="control-label">Owner</label>
                                         <RadzenDropDown AllowClear="true" TValue="string" @bind-Value="currentItem.OwnnerId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
-                                                        Placeholder="Select Developer..." Data=@OwnerList TextProperty="FullName" ValueProperty="Id" />
+                                                        Placeholder="Select Owner..." Data=@OwnerList TextProperty="FullName" ValueProperty="Id" />
 
                                     </div>
                                 </div>
@@ -398,7 +415,7 @@ else
                             <div class="form-group">
                                 <label class="control-label">Project</label>
                                 <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="currentItem.ProjectId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
-                                                Disabled="true" Placeholder="Select Project..." Data=@ProjectList Change=@(args => OnChangeSelectProject(args)) TextProperty="Name" ValueProperty="Id" />
+                                                Disabled="true" Placeholder="Select Project..." Data=@ProjectList Change=@(args => OnChangeProjectSelect(args)) TextProperty="Name" ValueProperty="Id" />
 
                             </div>
                             <div class="row">
@@ -437,7 +454,7 @@ else
                             <div class="form-group">
                                 <label class="control-label">Project</label>
                                 <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="currentItem.ProjectId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
-                                                Disabled="true" Placeholder="Select Project..." Data=@ProjectList Change=@(args => OnChangeSelectProject(args)) TextProperty="Name" ValueProperty="Id" />
+                                                Disabled="true" Placeholder="Select Project..." Data=@ProjectList Change=@(args => OnChangeProjectSelect(args)) TextProperty="Name" ValueProperty="Id" />
 
                             </div>
                             <div class="form-group">
@@ -453,7 +470,19 @@ else
                         <br />
                         <div class="row">
                             <div class="col">
-                                <button type="submit" class="btn btn-primary btn-block">Accept Changes</button>
+                                @if (_isButtonLoading)
+                                {
+                                    <button type="button" disabled class="btn btn-primary btn-block">
+                                        <i class="fa fa-spinner fa-spin"></i> Loading...
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="btn btn-primary btn-block">
+                                        <span class="iconify" data-icon="dashicons:yes-alt"></span> Accept Changes
+                                    </button>
+                                }
+
                             </div>
                         </div>
                     </EditForm>
@@ -572,7 +601,18 @@ else
                         </div>
                         <div class="row">
                             <div class="col">
-                                <button type="submit" class="btn btn-danger btn-block">Delete</button>
+                                @if (_isButtonLoading)
+                                {
+                                    <button type="button" disabled class="btn btn-danger btn-block">
+                                        <i class="fa fa-spinner fa-spin"></i> Loading...
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="btn btn-danger btn-block">
+                                        <span class="iconify" data-icon="fluent:delete-28-filled"></span> Delete
+                                    </button>
+                                }
                             </div>
                         </div>
                     </EditForm>
@@ -589,6 +629,8 @@ else
 
 
 @code {
+    private bool _isButtonLoading = false;
+
     public Models.CustomUser user = new();
     public bool IsInRoleAdmin;
     public bool IsDeveloper;
@@ -635,33 +677,36 @@ else
     private async Task OpenEditDialog(int id)
     {
         currentItem = ItemList.FirstOrDefault(i => i.Id == id);
+        DeveloperList = _projectService.DeveloperOnProject(id).ToList();
         await _editDialog.Open();
     }
     private async Task CancelEditDialog()
     {
         currentItem = new();
+        DeveloperList = new();
         await _editDialog.Close();
 
     }
     private async Task OpenDeleteDialog(int id)
     {
         currentItem = ItemList.FirstOrDefault(i => i.Id == id);
-
+        DeveloperList = _projectService.DeveloperOnProject(id).ToList();
         await _deleteDialog.Open();
     }
     private async Task CancelDeleteDialog()
     {
         currentItem = new();
+        DeveloperList = new();
         await _deleteDialog.Close();
 
     }
-    public void OnChangeSelectProject(object value)
+    public async Task OnChangeProjectSelect(object value)
     {
         var str = value is IEnumerable<object> ? string.Join(", ", (IEnumerable<object>)value) : value;
-        if (str is not null)
+        if (!string.IsNullOrEmpty(str.ToString()) && int.Parse(str.ToString()) != 0)
         {
-            var developerOnProject = _projectService.DeveloperOnProject(Convert.ToInt32(str.ToString()));
-            DeveloperList = developerOnProject.ToList();
+            var id = int.Parse(str.ToString());
+            DeveloperList = _projectService.DeveloperOnProject(id).ToList();
         }
         else
         {
@@ -669,11 +714,11 @@ else
         }
     }
 
-
     public async Task Add()
     {
         try
         {
+            _isButtonLoading = true;
             newItem.OwnnerId = user.Id;
             newItem.Created = DateTime.Now;
             newItem.Updated = newItem.Created;
@@ -709,7 +754,7 @@ else
                 string subject = "New Ticket Assignment";
                 string message = $"You have been Assigned a new ticket {newItem.Name} about {newItem.Description} for project: {projectName}";
 
-                await _emailSender.SendEmailAsync(devEmail, subject, message);
+                _emailSender.SendEmailAsync(devEmail, subject, message);
 
             }
             //access project name
@@ -737,7 +782,7 @@ else
                 string subject = "New Ticket Has Been Created by Submitter";
                 string message = $"A new ticket {newItem.Name} has been created by Submitter {user.FullName} about {newItem.Description} for project: {projectName}, and waiting approval from you.";
 
-                await _emailSender.SendEmailAsync(PMEmail, subject, message);
+                _emailSender.SendEmailAsync(PMEmail, subject, message);
 
                 //notification to current user
                 Models.Notification notification2 = new Models.Notification
@@ -775,7 +820,7 @@ else
                 string subject = "New Ticket Has Been Created by Developer";
                 string message = $"A new ticket {newItem.Name} has been created by Developer {user.FullName} about {newItem.Description} for project: {projectName}, and waiting approval from you.";
 
-                await _emailSender.SendEmailAsync(PMEmail, subject, message);
+                _emailSender.SendEmailAsync(PMEmail, subject, message);
 
                 Models.Notification notification2 = new Models.Notification
                 {
@@ -794,7 +839,7 @@ else
 
 
             CancelCreateDialog();
-            GetData();
+            await GetData();
             await JSRuntime.InvokeVoidAsync("success", null);
         }
         catch (Exception ex)
@@ -802,11 +847,16 @@ else
             await JSRuntime.InvokeVoidAsync("error", null);
 
         }
+        finally
+        {
+            _isButtonLoading = false;
+        }
     }
     public async Task Edit()
     {
         try
         {
+            _isButtonLoading = true;
             var ticketId = currentItem.Id;
             Models.Ticket oldTicket = await _context.Ticket
                 .Include(t => t.TicketType)
@@ -828,7 +878,7 @@ else
             await _customHistoryService.AddHistoryAsync(oldTicket, newTicket, userId);
 
 
-            GetData();
+            await GetData();
             CancelEditDialog();
             await JSRuntime.InvokeVoidAsync("success", null);
 
@@ -838,11 +888,16 @@ else
             await JSRuntime.InvokeVoidAsync("error", null);
 
         }
+        finally
+        {
+            _isButtonLoading = false;
+        }
     }
     public async Task Delete()
     {
         try
         {
+            _isButtonLoading = true;
             if (!_roleService.ReturnUserRole3(user).ToLower().Contains("demo"))
             {
                 var ticketId = currentItem.Id;
@@ -881,7 +936,7 @@ else
                 await _context.SaveChangesAsync();
 
 
-                GetData();
+                await GetData();
                 CancelDeleteDialog();
                 await JSRuntime.InvokeVoidAsync("success", null);
             }
@@ -897,16 +952,21 @@ else
             await JSRuntime.InvokeVoidAsync("error", null);
 
         }
+        finally
+        {
+            _isButtonLoading = false;
+        }
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        GetData();
+        await GetData();
     }
 
 
-    public void GetData()
+    public async Task GetData()
     {
+        await Task.Delay(100);
         var currrentUser = _httpContextAccessor.HttpContext.User;
         user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
         IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());

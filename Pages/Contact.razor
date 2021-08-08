@@ -53,7 +53,22 @@
                                     </div>
                                 </div>
                                 <div class="col-12 text-center p-0">
-                                    <button class=" button-big btn-block button button-a btn-block" style="background-color:#1cd5db;font-size: 130%;font-weight: 800;letter-spacing: 1px;text-transform: uppercase;border-radius: 0;font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;color:white;border:0;" type="submit">Send Message</button>
+
+                                    @if (_isButtonLoading)
+                                    {
+                                        <button class=" button-big btn-block button button-a btn-block" disabled style="background-color:#1cd5db;font-size: 130%;font-weight: 800;letter-spacing: 1px;text-transform: uppercase;border-radius: 0;font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;color:white;border:0;" type="button">
+                                            <i class="fa fa-spinner fa-spin"></i> Sending...
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button class=" button-big btn-block button button-a btn-block" style="background-color:#1cd5db;font-size: 130%;font-weight: 800;letter-spacing: 1px;text-transform: uppercase;border-radius: 0;font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;color:white;border:0;" type="submit">
+                                            <span class="iconify" data-icon="carbon:send-alt-filled"></span>
+                                            Send Message
+                                        </button>
+
+                                    }
+
                                 </div>
                             </EditForm>
                         </div>
@@ -90,6 +105,8 @@
     </div>
 </div>
 @code {
+    private bool _isButtonLoading = false;
+
     public Models.CustomUser user = new();
     public Models.Contact newMessage = new();
     public bool IsSuccess;
@@ -104,6 +121,7 @@
     {
         try
         {
+            _isButtonLoading = true;
             newMessage.Email = user.Email;
             newMessage.Name = user.FullName;
             string myEmail = "arthastheking113@gmail.com";
@@ -115,9 +133,9 @@
             string customberSubject = $"I Just Received A Message From Lan's Blog With Name {newMessage.Name} About {newMessage.Subject}";
             string customberBody = $"I Received Message From {newMessage.Email} About: {newMessage.Subject}. I will contact back to you as soon as possible.";
 
-            await _emailSender.SendEmailAsync(myEmail, subject, body);
+            _emailSender.SendEmailAsync(myEmail, subject, body);
 
-            await _emailSender.SendEmailAsync(newMessage.Email, customberSubject, customberBody);
+            _emailSender.SendEmailAsync(newMessage.Email, customberSubject, customberBody);
             newMessage = new();
             IsSuccess = true;
             await JSRuntime.InvokeVoidAsync("success", null);
@@ -127,6 +145,10 @@
         {
             await JSRuntime.InvokeVoidAsync("error", null);
 
+        }
+        finally
+        {
+            _isButtonLoading = false;
         }
 
     }

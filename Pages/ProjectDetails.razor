@@ -27,6 +27,11 @@
 }
 else
 {
+    <LoadingPage OnLoading="@GetData">
+        <LoadingContent>
+            <div class="loader">Loading...</div>
+        </LoadingContent>
+    </LoadingPage>
     <section class="content">
 
         <!-- Default box -->
@@ -557,7 +562,18 @@ else
                         <br />
                         <div class="row">
                             <div class="col">
-                                <button type="submit" class="btn btn-success btn-block">Create</button>
+                                @if (_isButtonLoading)
+                                {
+                                    <button type="button" disabled class="btn btn-outline-success btn-block">
+                                        <i class="fa fa-spinner fa-spin"></i> Loading...
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="btn btn-outline-success btn-block">
+                                        <span class="iconify" data-icon="fluent:add-square-24-filled"></span> Create new Ticket
+                                    </button>
+                                }
                             </div>
                         </div>
                     </EditForm>
@@ -619,7 +635,18 @@ else
                         <br />
                         <div class="row">
                             <div class="col">
-                                <button type="submit" class="btn btn-primary btn-block">Accept Changes</button>
+                                @if (_isButtonLoading)
+                                {
+                                    <button type="button" disabled class="btn btn-primary btn-block">
+                                        <i class="fa fa-spinner fa-spin"></i> Loading...
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="btn btn-primary btn-block">
+                                        <span class="iconify" data-icon="dashicons:yes-alt"></span> Accept Changes
+                                    </button>
+                                }
                             </div>
                         </div>
                     </EditForm>
@@ -633,6 +660,8 @@ else
 
 
 @code {
+    private bool _isButtonLoading = false;
+
     //Fully customized dialog
     private double _overlayOpacity = 0.3;
     private double _modalMinHeight = 500;
@@ -708,6 +737,8 @@ else
     {
         try
         {
+            _isButtonLoading = true;
+
             _context.Update(currentProject);
             _context.SaveChanges();
             GetData();
@@ -718,6 +749,10 @@ else
         catch (Exception ex)
         {
             await JSRuntime.InvokeVoidAsync("error", null);
+        }
+        finally
+        {
+            _isButtonLoading = false;
         }
     }
     public async Task OpenViewAttachmentDialog(Models.ProjectAttachment file)
@@ -734,6 +769,8 @@ else
     {
         try
         {
+            _isButtonLoading = true;
+
             newItem.OwnnerId = user.Id;
             newItem.Created = DateTime.Now;
             newItem.Updated = newItem.Created;
@@ -854,17 +891,20 @@ else
 
 
             CancelCreateDialog();
-            GetData();
+            await GetData();
             await JSRuntime.InvokeVoidAsync("success", null);
         }
         catch (Exception ex)
         {
             await JSRuntime.InvokeVoidAsync("error", null);
-
+        }
+        finally
+        {
+            _isButtonLoading = false;
         }
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
 
         var currrentUser = _httpContextAccessor.HttpContext.User;
@@ -877,7 +917,7 @@ else
         var developerOnProject = _projectService.DeveloperOnProject(Convert.ToInt32(ProjectId));
         if (IsInRoleAdmin || IsProjectManager || developerOnProject.Contains(user))
         {
-            GetData();
+            await GetData();
         }
         else
         {
@@ -891,8 +931,9 @@ else
         _context.SaveChanges();
     }
 
-    public void GetData()
+    public async Task GetData()
     {
+        await Task.Delay(100);
         currentProject = _context.Project
             .Include(p => p.Attachments)
             .Include(p => p.Company)

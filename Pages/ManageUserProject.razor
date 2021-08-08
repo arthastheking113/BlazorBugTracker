@@ -12,6 +12,11 @@
 @inject ICustomProjectService _projectService
 @inject IHttpContextAccessor _httpContextAccessor
 @inject NavigationManager NavigationManager 
+<LoadingPage OnLoading="@GetData">
+    <LoadingContent>
+        <div class="loader">Loading...</div>
+    </LoadingContent>
+</LoadingPage>
 <div class="container-fluid">
     <div class="shadow-lg mb-5 bg-white rounded">
         <div class="row">
@@ -121,9 +126,21 @@
                                 </div>
                             </div>
 
-                            <div class="row">
-                                <div class="col text-center">
-                                    <input type="submit" class="btn btn-secondary" value="         Save         " />
+                            <div class="row justify-content-center">
+                                <div class="col-4 text-center">
+                                    @if (_isButtonLoading)
+                                    {
+                                        <button type="button" disabled class="btn btn-primary btn-block">
+                                            <i class="fa fa-spinner fa-spin"></i> Loading...
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="submit" class="btn btn-primary btn-block">
+                                            <span class="iconify" data-icon="dashicons:yes-alt"></span> Save
+                                        </button>
+                                    }
+
                                 </div>
                             </div>
                         </EditForm>
@@ -181,6 +198,8 @@
 </div>
 
 @code {
+    private bool _isButtonLoading = false;
+
     public List<Models.CustomUser> AllUser = new();
     public List<Models.CustomUser> DeveloperList = new();
     public List<Models.CustomUser> SubmitterList = new();
@@ -197,7 +216,7 @@
     public int ViewProjectSelected;
     public string ProjectManagerSelected;
 
-    protected override void  OnInitialized()
+    protected override async Task  OnInitializedAsync()
     {
         var currrentUser = _httpContextAccessor.HttpContext.User;
         IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
@@ -205,7 +224,7 @@
 
         if (IsInRoleAdmin)
         {
-            GetData();
+            await GetData();
         }
         else
         {
@@ -214,8 +233,9 @@
 
     }
 
-    public void GetData()
+    public async Task GetData()
     {
+        await Task.Delay(100);
         DeveloperList = new();
         SubmitterList = new();
         ProjectManagerList = new();
@@ -253,6 +273,7 @@
     {
         try
         {
+            _isButtonLoading = true;
             if (!_roleService.ReturnUserRole3(user).ToLower().Contains("demo"))
             {
                 List<Models.CustomUser> UserToAdd = new();
@@ -302,6 +323,10 @@
         catch (Exception ex)
         {
             await JSRuntime.InvokeVoidAsync("error", null);
+        }
+        finally
+        {
+            _isButtonLoading = false;
         }
 
 

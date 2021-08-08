@@ -5,7 +5,12 @@
 @inject NavigationManager NavigationManager
 @using Microsoft.AspNetCore.Http
 @inject IHttpContextAccessor _httpContextAccessor
-@inject ICustomRoleService _roleService 
+@inject ICustomRoleService _roleService
+<LoadingPage OnLoading="@GetData">
+    <LoadingContent>
+        <div class="loader">Loading...</div>
+    </LoadingContent>
+</LoadingPage>
 <div class="row">
     <div class="col">
         <div class="card">
@@ -303,14 +308,14 @@
     }
 
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         var currrentUser = _httpContextAccessor.HttpContext.User;
         user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
         IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
         if (IsInRoleAdmin)
         {
-            GetData();
+            await GetData();
         }
         else
         {
@@ -318,8 +323,9 @@
         }
     }
 
-    public void GetData()
+    public async Task GetData()
     {
+        await Task.Delay(100);
         ItemList = _context.TransactionType.ToList();
     }
 }

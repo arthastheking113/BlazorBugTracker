@@ -5,6 +5,11 @@
 @inject ApplicationDbContext _context
 @inject IHttpContextAccessor _httpContextAccessor
 @inject IJSRuntime JSRuntime
+<LoadingPage OnLoading="@GetData">
+    <LoadingContent>
+        <div class="loader">Loading...</div>
+    </LoadingContent>
+</LoadingPage>
 <div class="container-fluid">
     <div class="row">
         <div class="col">
@@ -53,7 +58,7 @@
             <div class="row">
                 <div class="col text-right">
                     Is Submitted?
-                    <RadzenSelectBar Disabled="true" @bind-Value=@currentPayCheckRecord.IsSubmitted  TValue="bool">
+                    <RadzenSelectBar Disabled="true" @bind-Value=@currentPayCheckRecord.IsSubmitted TValue="bool">
                         <Items>
                             <RadzenSelectBarItem Text="Yes" Value="true" />
                             <RadzenSelectBarItem Text="No" Value="false" />
@@ -139,14 +144,15 @@
         await _viewDialog.Close();
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        GetData();
+        await GetData();
     }
 
 
-    public void GetData()
+    public async Task GetData()
     {
+        await Task.Delay(100);
         var currrentUser = _httpContextAccessor.HttpContext.User;
         user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
         ItemList = _context.PayCheckRecord.Include(c => c.CustomUser).Where(c => c.CustomUserId == user.Id && c.IsApproved).OrderByDescending(c => c.Start).ToList();

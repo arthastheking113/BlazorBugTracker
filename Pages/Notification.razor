@@ -14,7 +14,11 @@
 @inject IJSRuntime JSRuntime
 @inject ISessionStorageService sessionStorage
 @inject ICustomHistoryService _customHistoryService
-
+<LoadingPage OnLoading="@GetData">
+    <LoadingContent>
+        <div class="loader">Loading...</div>
+    </LoadingContent>
+</LoadingPage>
 <div class="row">
 
 
@@ -291,6 +295,7 @@
 
     public async Task GetData()
     {
+        await Task.Delay(100);
         var currrentUser = _httpContextAccessor.HttpContext.User;
         user = await _userManager.GetUserAsync(currrentUser);
         IsInRoleAdmin = await _roleService.IsUserInRoleAsync(user, Roles.Admin.ToString());

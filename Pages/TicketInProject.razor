@@ -14,13 +14,18 @@
 @inject IJSRuntime JSRuntime
 @inject ISessionStorageService sessionStorage
 @inject ICustomHistoryService _customHistoryService
-@inject NavigationManager NavigationManager 
+@inject NavigationManager NavigationManager
 @if (ItemList is null)
 {
     <div class="loader">Loading...</div>
 }
 else
 {
+    <LoadingPage OnLoading="@GetData">
+        <LoadingContent>
+            <div class="loader">Loading...</div>
+        </LoadingContent>
+    </LoadingPage>
     <div class="row">
         <div class="col">
             <div class="card">
@@ -35,19 +40,19 @@ else
                     {
                         <div class="row">
                             <div class="col">
-                                <a href="/ticket" class="btn btn-outline-dark mr-1" >
+                                <a href="/ticket" class="btn btn-outline-dark mr-1">
                                     <span class="iconify" data-icon="ion:arrow-back-circle-sharp" data-inline="true"></span> Back To All Ticket
                                 </a>
-                                <a href="/project/details/@ProjectId" class="btn btn-outline-primary ml-1 mr-1" >
+                                <a href="/project/details/@ProjectId" class="btn btn-outline-primary ml-1 mr-1">
                                     <span class="iconify" data-icon="ion:arrow-back-circle-sharp" data-inline="true"></span> Back To Project
                                 </a>
-                                <button @onclick="OpenCreateDialog" type="button" class="btn btn-outline-success ml-1" >
+                                <button @onclick="OpenCreateDialog" type="button" class="btn btn-outline-success ml-1">
                                     <i class="fas fa-plus-square"></i> Create New Ticket
                                 </button>
 
                             </div>
                         </div>
-                       <br/>
+                        <br />
 
 
                     }
@@ -169,7 +174,7 @@ else
 
                         </div>
                     </div>
-                   
+
                 </div>
             </div>
         </div>
@@ -286,7 +291,19 @@ else
                         <br />
                         <div class="row">
                             <div class="col">
-                                <button type="submit" class="btn btn-success btn-block">Create</button>
+                                @if (_isButtonLoading)
+                                {
+                                    <button type="button" disabled class="btn btn-outline-success btn-block">
+                                        <i class="fa fa-spinner fa-spin"></i> Loading...
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="btn btn-outline-success btn-block">
+                                        <span class="iconify" data-icon="fluent:add-square-24-filled"></span> Create new Ticket
+                                    </button>
+                                }
+
                             </div>
                         </div>
                     </EditForm>
@@ -509,7 +526,18 @@ else
                         <br />
                         <div class="row">
                             <div class="col">
-                                <button type="submit" class="btn btn-primary btn-block">Accept Changes</button>
+                                @if (_isButtonLoading)
+                                {
+                                    <button type="button" disabled class="btn btn-primary btn-block">
+                                        <i class="fa fa-spinner fa-spin"></i> Loading...
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="btn btn-primary btn-block">
+                                        <span class="iconify" data-icon="dashicons:yes-alt"></span> Accept Changes
+                                    </button>
+                                }
                             </div>
                         </div>
                     </EditForm>
@@ -600,7 +628,18 @@ else
 
                         <div class="row">
                             <div class="col">
-                                <button type="submit" class="btn btn-danger btn-block">Delete</button>
+                                @if (_isButtonLoading)
+                                {
+                                    <button type="button" disabled class="btn btn-danger btn-block">
+                                        <i class="fa fa-spinner fa-spin"></i> Loading...
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="btn btn-danger btn-block">
+                                        <span class="iconify" data-icon="fluent:delete-28-filled"></span> Delete
+                                    </button>
+                                }
                             </div>
                         </div>
                     </EditForm>
@@ -617,6 +656,8 @@ else
 
 
 @code {
+    private bool _isButtonLoading = false;
+
     [Parameter]
     public string ProjectId { get; set; }
     public Models.CustomUser user = new();
@@ -688,6 +729,7 @@ else
     {
         try
         {
+            _isButtonLoading = true;
             newItem.OwnnerId = user.Id;
             newItem.Created = DateTime.Now;
             newItem.Updated = newItem.Created;
@@ -816,11 +858,16 @@ else
             await JSRuntime.InvokeVoidAsync("error", null);
 
         }
+        finally
+        {
+            _isButtonLoading = false;
+        }
     }
     public async Task Edit()
     {
         try
         {
+            _isButtonLoading = true;
             var ticketId = currentItem.Id;
             Models.Ticket oldTicket = await _context.Ticket
                 .Include(t => t.TicketType)
@@ -852,11 +899,16 @@ else
             await JSRuntime.InvokeVoidAsync("error", null);
 
         }
+        finally
+        {
+            _isButtonLoading = false;
+        }
     }
     public async Task Delete()
     {
         try
         {
+            _isButtonLoading = true;
             if (!_roleService.ReturnUserRole3(user).ToLower().Contains("demo"))
             {
                 var ticketId = currentItem.Id;
@@ -911,9 +963,13 @@ else
             await JSRuntime.InvokeVoidAsync("error", null);
 
         }
+        finally
+        {
+            _isButtonLoading = false;
+        }
     }
 
-    protected override async Task  OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
         await GetData();
     }
@@ -921,6 +977,7 @@ else
 
     public async Task GetData()
     {
+        await Task.Delay(100);
         ItemList = _context.Ticket
             .Include(t => t.Attachments)
             .Include(t => t.Comments)

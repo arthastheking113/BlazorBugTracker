@@ -15,6 +15,12 @@
         }
         else
         {
+            <LoadingPage OnLoading="@GetData">
+                <LoadingContent>
+                    <div class="loader">Loading...</div>
+                </LoadingContent>
+            </LoadingPage>
+
             <div class="col p-0">
                 <div class="card card-dark">
                     <div class="card-header pr-0">
@@ -254,8 +260,9 @@
     public bool IsNewUser;
 
 
-    public void GetData()
+    public async Task GetData()
     {
+        await Task.Delay(100);
         TotalIncome = 0;
         TotalExpense = 0;
         TotalProfit = 0;
@@ -352,7 +359,7 @@
         }
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         var currrentUser = _httpContextAccessor.HttpContext.User;
         user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
@@ -363,7 +370,7 @@
         {
 
             loading = true;
-            GetData();
+            await GetData();
             loading = false;
         }
         else

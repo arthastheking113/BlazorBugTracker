@@ -26,6 +26,11 @@
 }
 else
 {
+    <LoadingPage OnLoading="@GetData">
+        <LoadingContent>
+            <div class="loader">Loading...</div>
+        </LoadingContent>
+    </LoadingPage>
     <div class="container-fluid">
         <div class="row mt-2">
             @if (IsInRoleAdmin || IsProjectManager)
@@ -349,7 +354,7 @@ else
                                         @if (data.Ownner is not null)
                                         {
                                             <p>@data.Ownner.FullName</p>
-                                        }   
+                                        }
                                     </Template>
                                 </RadzenDataGridColumn>
                                 <RadzenDataGridColumn TItem="Models.Ticket" Property="Project" Title="Project">
@@ -360,7 +365,7 @@ else
                                         }
                                     </Template>
                                 </RadzenDataGridColumn>
-                                <RadzenDataGridColumn TItem="Models.Ticket" Property="IsAssigned"  Title="Assign?">
+                                <RadzenDataGridColumn TItem="Models.Ticket" Property="IsAssigned" Title="Assign?">
                                     <Template Context="data">
                                         @if (data.IsAssigned)
                                         {
@@ -380,7 +385,7 @@ else
                                         }
                                     </Template>
                                 </RadzenDataGridColumn>
-                                <RadzenDataGridColumn TItem="Models.Ticket"Property="Priority" Title="Priority">
+                                <RadzenDataGridColumn TItem="Models.Ticket" Property="Priority" Title="Priority">
                                     <Template Context="data">
                                         @if (data.Priority is not null)
                                         {
@@ -454,7 +459,7 @@ else
                         <div class="form-group">
                             <label class="control-label">Project</label>
                             <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="newTicketItem.ProjectId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
-                                            Placeholder="Select Project..." Data=@ProjectList TextProperty="Name" ValueProperty="Id" />
+                                            Change=@(args => OnChangeProjectSelect(args)) Placeholder="Select Project..." Data=@ProjectList TextProperty="Name" ValueProperty="Id" />
 
                         </div>
                         @if (IsInRoleAdmin || IsProjectManager)
@@ -474,7 +479,7 @@ else
                                     <div class="form-group">
                                         <label class="control-label">Owner</label>
                                         <RadzenDropDown AllowClear="true" TValue="string" @bind-Value="newTicketItem.OwnnerId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
-                                                        Placeholder="Select Developer..." Data=@OwnerList TextProperty="FullName" ValueProperty="Id" />
+                                                        Placeholder="Select Owner..." Data=@OwnerList TextProperty="FullName" ValueProperty="Id" />
 
                                     </div>
                                 </div>
@@ -514,7 +519,7 @@ else
                                 <div class="col">
 
                                     <div class="form-group">
-                                        <label class="control-label">TicketType</label>
+                                        <label class="control-label">Ticket Type</label>
                                         <RadzenDropDown AllowClear="true" TValue="int" @bind-Value="newTicketItem.TicketTypeId" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width:100%;"
                                                         Placeholder="Select Ticket Type..." Data=@TicketTypeList TextProperty="Name" ValueProperty="Id" />
 
@@ -530,7 +535,19 @@ else
                         <br />
                         <div class="row">
                             <div class="col">
-                                <button type="submit" class="btn btn-success btn-block">Create</button>
+                                @if (_isButtonLoading)
+                                {
+                                    <button type="button" disabled class="btn btn-outline-success btn-block">
+                                        <i class="fa fa-spinner fa-spin"></i> Loading...
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="btn btn-outline-success btn-block">
+                                        <span class="iconify" data-icon="fluent:add-square-24-filled"></span> Create new Ticket
+                                    </button>
+                                }
+
                             </div>
                         </div>
                     </EditForm>
@@ -590,7 +607,18 @@ else
 
                         </div>
 
-                        <input type="submit" value="Create new Project" class="btn btn-outline-success btn-block">
+                        @if (_isButtonLoading)
+                        {
+                            <button type="button" disabled class="btn btn-outline-success btn-block">
+                                <i class="fa fa-spinner fa-spin"></i> Loading...
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="submit" class="btn btn-outline-success btn-block">
+                                <span class="iconify" data-icon="fluent:add-square-24-filled"></span> Create new Project
+                            </button>
+                        }
 
 
                     </EditForm>
@@ -653,7 +681,19 @@ else
                         <br />
                         <div class="row">
                             <div class="col">
-                                <button type="submit" class="btn btn-outline-success btn-block">Send Invitaion</button>
+                                @if (_isButtonLoading)
+                                {
+                                    <button type="button" disabled class="btn btn-outline-success btn-block">
+                                        <i class="fa fa-spinner fa-spin"></i> Sending...
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="btn btn-outline-success btn-block">
+                                        <span class="iconify" data-icon="carbon:send-alt-filled"></span> Send Invitaion
+                                    </button>
+                                }
+
                             </div>
                         </div>
                     </EditForm>
@@ -684,7 +724,7 @@ else
     public int TicketDoneInPast7Day;
     public DateTime currentTime;
 
-
+    private bool _isButtonLoading = false;
     //Fully customized dialog
     private double _overlayOpacity = 0.3;
     private double _modalMinHeight = 100;
@@ -721,6 +761,7 @@ else
     public List<Models.CustomUser> DeveloperList = new();
     public List<Models.CustomUser> OwnerList = new();
     public List<IdentityRole> RoleList = new();
+
     protected override async Task OnInitializedAsync()
     {
         if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
@@ -729,10 +770,23 @@ else
         }
 
     }
-
+    public async Task OnChangeProjectSelect(object value)
+    {
+        var str = value is IEnumerable<object> ? string.Join(", ", (IEnumerable<object>)value) : value;
+        if (!string.IsNullOrEmpty(str.ToString()) && int.Parse(str.ToString()) != 0)
+        {
+            var id = int.Parse(str.ToString());
+            DeveloperList = _projectService.DeveloperOnProject(id).ToList();
+        }
+        else
+        {
+            DeveloperList = new();
+        }
+    }
 
     public async Task GetData()
     {
+        await Task.Delay(100);
         currentTime = DateTime.Now;
         var currrentUser = _httpContextAccessor.HttpContext.User;
         user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
@@ -743,6 +797,7 @@ else
         IsProjectManager = currrentUser.IsInRole(Roles.ProjectManager.ToString());
 
         AllUser = _context.Users.ToList();
+        OwnerList = AllUser;
         ProjectList = _context.Project.ToList();
         var projectOfUser = new List<Models.Project>();
         if (!IsInRoleAdmin)
@@ -876,6 +931,7 @@ else
     {
         try
         {
+            _isButtonLoading = true;
             newTicketItem.OwnnerId = user.Id;
             newTicketItem.Created = DateTime.Now;
             newTicketItem.Updated = newTicketItem.Created;
@@ -998,11 +1054,16 @@ else
             CancelCreateTicketDialog();
             await GetData();
             await JSRuntime.InvokeVoidAsync("success", null);
+
         }
         catch (Exception ex)
         {
             await JSRuntime.InvokeVoidAsync("error", null);
 
+        }
+        finally
+        {
+            _isButtonLoading = false;
         }
     }
 
@@ -1010,6 +1071,7 @@ else
     {
         try
         {
+            _isButtonLoading = true;
             newProjectItem.Created = DateTime.Now;
             _context.Add(newProjectItem);
             _context.SaveChanges();
@@ -1022,45 +1084,51 @@ else
         {
             await JSRuntime.InvokeVoidAsync("error", null);
         }
+        finally
+        {
+            _isButtonLoading = false;
+        }
     }
     public async Task SendInvite()
     {
-        var loginUser = user;
-        Models.Company company = new Models.Company();
-        if (IsInRoleAdmin)
-        {
-            company = new Models.Company
-            {
-                Name = newInvite.CompanyName,
-                Description = $"This is a temporary description for Company: {newInvite.CompanyName}, you can change this description anytime."
-            };
-            _context.Company.Add(company);
-            _context.SaveChanges();
-        }
-        else
-        {
-            company = _context.Company.FirstOrDefault(c => c.Id == loginUser.CompanyId);
-        }
-
-        newInvite.CompanyToken = Guid.NewGuid();
-        newInvite.CompanyId = company.Id;
-        var number_of_user_on_system = _context.Users.ToList().Count + 1;
-        CustomUser newUser = new CustomUser
-        {
-            FirstName = "Invite",
-            LastName = $"User #{number_of_user_on_system}",
-            UserName = newInvite.Email,
-            Email = newInvite.Email,
-            EmailConfirmed = true,
-            CompanyId = company.Id,
-            UserId = CreateUserId(),
-            DateJoined = DateTime.Now
-        };
         try
         {
-            var newUserFind = _context.Users.FirstOrDefault(u => u.Email == newUser.Email);
+            _isButtonLoading = true;
+
+            var newUserFind = _context.Users.FirstOrDefault(u => u.Email == newInvite.Email);
             if (newUserFind == null)
             {
+                            var loginUser = user;
+            Models.Company company = new Models.Company();
+            if (IsInRoleAdmin)
+            {
+                company = new Models.Company
+                {
+                    Name = newInvite.CompanyName,
+                    Description = $"This is a temporary description for Company: {newInvite.CompanyName}, you can change this description anytime."
+                };
+                _context.Company.Add(company);
+                _context.SaveChanges();
+            }
+            else
+            {
+                company = _context.Company.FirstOrDefault(c => c.Id == loginUser.CompanyId);
+            }
+
+            newInvite.CompanyToken = Guid.NewGuid();
+            newInvite.CompanyId = company.Id;
+            var number_of_user_on_system = _context.Users.ToList().Count + 1;
+            CustomUser newUser = new CustomUser
+            {
+                FirstName = "Invite",
+                LastName = $"User #{number_of_user_on_system}",
+                UserName = newInvite.Email,
+                Email = newInvite.Email,
+                EmailConfirmed = true,
+                CompanyId = company.Id,
+                UserId = CreateUserId(),
+                DateJoined = DateTime.Now
+            };
                 var result = await _userManager.CreateAsync(newUser, "Abc123!");
                 if (result.Succeeded)
                 {
@@ -1184,7 +1252,7 @@ else
                     _context.SaveChanges();
 
                     await CancelInviteDialog();
-
+                    await JSRuntime.InvokeVoidAsync("success", null);
                 }
             }
             else
@@ -1197,8 +1265,12 @@ else
             await JSRuntime.InvokeVoidAsync("error", null);
             throw;
         }
+        finally
+        {
+            _isButtonLoading = false;
+        }
 
-        await JSRuntime.InvokeVoidAsync("success", null);
+
     }
 
     public void GetDataChart()

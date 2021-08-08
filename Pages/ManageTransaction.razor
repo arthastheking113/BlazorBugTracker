@@ -6,7 +6,11 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject ICustomRoleService _roleService
-
+<LoadingPage OnLoading="@GetData">
+    <LoadingContent>
+        <div class="loader">Loading...</div>
+    </LoadingContent>
+</LoadingPage>
 <div class="container-fluid pl-0 pr-0">
     <div class="row">
         <div class="col p-0">
@@ -150,7 +154,18 @@
 
                         </div>
 
-                        <input type="submit" value="Create new Transaction" class="btn btn-outline-success btn-block">
+                        @if (_isButtonLoading)
+                        {
+                            <button type="button" disabled class="btn btn-outline-success btn-block">
+                                <i class="fa fa-spinner fa-spin"></i> Loading...
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="submit" class="btn btn-outline-success btn-block">
+                                <span class="iconify" data-icon="fluent:add-square-24-filled"></span> Create new Transaction
+                            </button>
+                        }
 
 
                     </EditForm>
@@ -220,7 +235,19 @@
                         <br />
                         <div class="row">
                             <div class="col">
-                                <button type="submit" class="btn btn-primary btn-block">Accept Changes</button>
+                                @if (_isButtonLoading)
+                                {
+                                    <button type="button" disabled class="btn btn-primary btn-block">
+                                        <i class="fa fa-spinner fa-spin"></i> Loading...
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="btn btn-primary btn-block">
+                                        <span class="iconify" data-icon="dashicons:yes-alt"></span> Accept Changes
+                                    </button>
+                                }
+
                             </div>
                         </div>
                     </EditForm>
@@ -301,7 +328,18 @@
                         </div>
                         <div class="row">
                             <div class="col">
-                                <button type="submit" class="btn btn-danger btn-block">Delete</button>
+                                @if (_isButtonLoading)
+                                {
+                                    <button type="button" disabled class="btn btn-danger btn-block">
+                                        <i class="fa fa-spinner fa-spin"></i> Loading...
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="btn btn-danger btn-block">
+                                        <span class="iconify" data-icon="fluent:delete-28-filled"></span> Delete
+                                    </button>
+                                }
                             </div>
                         </div>
                     </EditForm>
@@ -316,6 +354,8 @@
 
 
 @code {
+    private bool _isButtonLoading = false;
+
     public List<Models.Transaction> ItemList = new();
     public List<Models.CustomUser> userList = new();
     public List<Models.TransactionType> transactionTypes = new();
@@ -390,12 +430,13 @@
     {
         try
         {
+            _isButtonLoading = true;
             newItem.Created = DateTime.Now;
             newItem.Updated = newItem.Created;
 
             _context.Add(newItem);
             _context.SaveChanges();
-            GetData();
+            await GetData();
             await CancelCreateDialog();
 
             await JSRuntime.InvokeVoidAsync("success", null);
@@ -404,15 +445,20 @@
         {
             await JSRuntime.InvokeVoidAsync("error", null);
         }
+        finally
+        {
+            _isButtonLoading = false;
+        }
     }
     public async Task Edit()
     {
         try
         {
+            _isButtonLoading = true;
             currentItem.Updated = DateTime.Now;
             _context.Update(currentItem);
             _context.SaveChanges();
-            GetData();
+            await GetData();
             await CancelEditDialog();
 
             await JSRuntime.InvokeVoidAsync("success", null);
@@ -421,16 +467,21 @@
         {
             await JSRuntime.InvokeVoidAsync("error", null);
         }
+        finally
+        {
+            _isButtonLoading = false;
+        }
     }
     public async Task Delete()
     {
         try
         {
+            _isButtonLoading = true;
             if (!_roleService.ReturnUserRole3(user).ToLower().Contains("demo"))
             {
                 _context.Remove(currentItem);
                 _context.SaveChanges();
-                GetData();
+                await GetData();
                 await CancelDeleteDialog();
 
                 await JSRuntime.InvokeVoidAsync("success", null);
@@ -445,10 +496,14 @@
         {
             await JSRuntime.InvokeVoidAsync("error", null);
         }
+        finally
+        {
+            _isButtonLoading = false;
+        }
     }
 
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         var currrentUser = _httpContextAccessor.HttpContext.User;
         user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
@@ -457,7 +512,7 @@
         IsAccountant = currrentUser.IsInRole(Roles.Accountant.ToString());
         if (IsInRoleAdmin || IsSeniorAccountant || IsAccountant)
         {
-            GetData();
+            await GetData();
         }
         else
         {
@@ -466,8 +521,9 @@
 
     }
 
-    public void GetData()
+    public async Task GetData()
     {
+        await Task.Delay(100);
         ItemList = _context.Transaction.OrderByDescending(c => c.Time).ToList();
         userList = _context.Users.ToList();
         transactionTypes = _context.TransactionType.ToList();

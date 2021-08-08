@@ -6,7 +6,11 @@
 @using Microsoft.AspNetCore.Http
 @inject IHttpContextAccessor _httpContextAccessor
 @inject ICustomRoleService _roleService
-
+<LoadingPage OnLoading="@GetData">
+    <LoadingContent>
+        <div class="loader">Loading...</div>
+    </LoadingContent>
+</LoadingPage>
 <div class="row">
     <div class="col">
         <div class="card">
@@ -69,7 +73,7 @@
              ShowCloseButton="_modalShowClose">
     <Header>
         @*If you want to hide Header remove the whole Header definition and set ShowCloseButton="false"*@
-        <h4>Create New</h4>
+        <h4>Create New Ticket Status</h4>
     </Header>
     <Content>
         <div class="container-fluid">
@@ -87,7 +91,19 @@
                         <br />
                         <div class="row">
                             <div class="col">
-                                <button type="submit" class="btn btn-success btn-block">Create</button>
+                                @if (_isButtonLoading)
+                                {
+                                    <button type="button" disabled class="btn btn-outline-success btn-block">
+                                        <i class="fa fa-spinner fa-spin"></i> Loading...
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="btn btn-outline-success btn-block">
+                                        <span class="iconify" data-icon="fluent:add-square-24-filled"></span> Create
+                                    </button>
+                                }
+
                             </div>
                         </div>
                     </EditForm>
@@ -129,7 +145,19 @@
                         <br />
                         <div class="row">
                             <div class="col">
-                                <button type="submit" class="btn btn-primary btn-block">Accept Changes</button>
+                                @if (_isButtonLoading)
+                                {
+                                    <button type="button" disabled class="btn btn-primary btn-block">
+                                        <i class="fa fa-spinner fa-spin"></i> Loading...
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="btn btn-primary btn-block">
+                                        <span class="iconify" data-icon="dashicons:yes-alt"></span> Accept Changes
+                                    </button>
+                                }
+
                             </div>
                         </div>
                     </EditForm>
@@ -172,7 +200,18 @@
                         <br />
                         <div class="row">
                             <div class="col">
-                                <button type="submit" class="btn btn-danger btn-block">Delete</button>
+                                @if (_isButtonLoading)
+                                {
+                                    <button type="button" disabled class="btn btn-danger btn-block">
+                                        <i class="fa fa-spinner fa-spin"></i> Loading...
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="btn btn-danger btn-block">
+                                        <span class="iconify" data-icon="fluent:delete-28-filled"></span> Delete
+                                    </button>
+                                }
                             </div>
                         </div>
                     </EditForm>
@@ -189,6 +228,7 @@
 
 
 @code {
+    private bool _isButtonLoading = false;
 
     //Fully customized dialog
     private double _overlayOpacity = 0.3;
@@ -248,10 +288,12 @@
     {
         try
         {
+            _isButtonLoading = true;
+
             _context.Add(newItem);
             _context.SaveChanges();
             CancelEditDialog();
-            GetData();
+            await GetData();
             await JSRuntime.InvokeVoidAsync("success", null);
 
         }
@@ -259,15 +301,21 @@
         {
             await JSRuntime.InvokeVoidAsync("error", null);
 
+        }
+        finally
+        {
+            _isButtonLoading = false;
         }
     }
     public async Task Edit()
     {
         try
         {
+            _isButtonLoading = true;
+
             _context.Update(currentItem);
             _context.SaveChanges();
-            GetData();
+            await GetData();
             CancelEditDialog();
             await JSRuntime.InvokeVoidAsync("success", null);
 
@@ -277,16 +325,22 @@
             await JSRuntime.InvokeVoidAsync("error", null);
 
         }
+        finally
+        {
+            _isButtonLoading = false;
+        }
     }
     public async Task Delete()
     {
         try
         {
+            _isButtonLoading = true;
+
             if (!_roleService.ReturnUserRole3(user).ToLower().Contains("demo"))
             {
                 _context.Remove(currentItem);
                 _context.SaveChanges();
-                GetData();
+                await GetData();
                 CancelDeleteDialog();
                 await JSRuntime.InvokeVoidAsync("success", null);
 
@@ -302,17 +356,21 @@
             await JSRuntime.InvokeVoidAsync("error", null);
 
         }
+        finally
+        {
+            _isButtonLoading = false;
+        }
     }
 
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         var currrentUser = _httpContextAccessor.HttpContext.User;
         user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
         IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
         if (IsInRoleAdmin)
         {
-            GetData();
+            await GetData();
         }
         else
         {
@@ -320,8 +378,9 @@
         }
     }
 
-    public void GetData()
+    public async Task GetData()
     {
+        await Task.Delay(100);
         ItemList = _context.Status.ToList();
     }
 }
