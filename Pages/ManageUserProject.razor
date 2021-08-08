@@ -278,28 +278,24 @@
             {
                 List<Models.CustomUser> UserToAdd = new();
                 Models.Project project = ProjectList.FirstOrDefault(p => p.Id == ProjectSelected);
-                foreach (var user in project.CustomUsers)
+                foreach (var user in project.CustomUsers.ToList())
                 {
                     project.CustomUsers.Remove(user);
                 }
                 var ProjectManagerToAdd = AllUser.FirstOrDefault(p => p.Id == ProjectManagerSelected);
                 UserToAdd.Add(ProjectManagerToAdd);
 
-                foreach (var developer in DeveloperSelected)
+                foreach (var developer in DeveloperSelected.ToList())
                 {
                     var user = AllUser.FirstOrDefault(u => u.Id == developer);
 
                     UserToAdd.Add(user);
-
-
                 }
-                foreach (var submitter in SubmitterSelected)
+                foreach (var submitter in SubmitterSelected.ToList())
                 {
                     var user = AllUser.FirstOrDefault(u => u.Id == submitter);
 
                     UserToAdd.Add(user);
-
-
                 }
 
 
@@ -311,6 +307,7 @@
                 ProjectManagerSelected = null;
                 DeveloperSelected = Enumerable.Empty<string>();
                 SubmitterSelected = Enumerable.Empty<string>();
+                ProjectSelected = 0;
                 GetData();
                 await JSRuntime.InvokeVoidAsync("success", null);
             }
