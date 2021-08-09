@@ -38,7 +38,7 @@
                                         <div class="col">
                                             <div class="form-group">
                                                 <RadzenListBox AllowFiltering="true" AllowClear="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value=@ProjectSelected Data=@ProjectList TextProperty="Name" ValueProperty="Id"
-                                                               Change="@(args => OnChangeSelectProjet(args))" TValue="int" Placeholder="Select Project..." Style="height:300px;width:100%" />
+                                                               TValue="int" Placeholder="Select Project..." Style="height:300px;width:100%" />
                                             </div>
 
 
@@ -78,7 +78,7 @@
 
 
                                                             <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value="DeveloperSelected" TValue="IEnumerable<string>" Multiple="true" Data=@DeveloperList
-                                                                           Change=@(args => OnChangeSelectDeveloper(args)) Placeholder="Select Developer..." TextProperty="FullName" ValueProperty="Id" Style="height:300px;width:100%" />
+                                                                          Placeholder="Select Developer..." TextProperty="FullName" ValueProperty="Id" Style="height:300px;width:100%" />
 
 
                                                             <!-- /.form-group -->
@@ -109,7 +109,7 @@
 
 
                                                             <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value="SubmitterSelected" TValue="IEnumerable<string>" Multiple="true" Data=@SubmitterList
-                                                                           Change=@(args => OnChangeSelectSubmitter(args)) Placeholder="Select Submitter..." TextProperty="FullName" ValueProperty="Id" Style="height:300px;width:100%" />
+                                                                         Placeholder="Select Submitter..." TextProperty="FullName" ValueProperty="Id" Style="height:300px;width:100%" />
 
 
                                                             <!-- /.form-group -->
