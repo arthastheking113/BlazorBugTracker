@@ -15,9 +15,15 @@
 @inject ISessionStorageService sessionStorage
 @inject ICustomHistoryService _customHistoryService
 @inject NavigationManager NavigationManager
-@if (ItemList is null)
+@if (ItemList.Count == 0)
 {
-    <div class="loader">Loading...</div>
+    <div id="preloader">
+        <div class="center">
+            <p style="text-align: center;font-size: 14px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; border-radius: 0; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                Just A Second, I'm Loading...
+            </p>
+        </div>
+    </div>
 }
 else
 {
@@ -89,7 +95,7 @@ else
                                                 </p>
                                             </Template>
                                         </RadzenDataGridColumn>
-                                        <RadzenDataGridColumn TItem="Models.Ticket" Property="Developer" Title="Updated">
+                                        <RadzenDataGridColumn TItem="Models.Ticket" Property="Developer" Title="Developer">
                                             <Template Context="data">
                                                 @if (data.Developer is not null)
                                                 {
