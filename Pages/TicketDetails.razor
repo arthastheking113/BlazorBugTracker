@@ -245,7 +245,7 @@ else
                         <Columns>
                             <RadzenDataGridColumn TItem="Models.TicketHistory" Title="Created">
                                 <Template Context="data">
-                                    <p>
+                                    <p class="mb-0">
                                         @data.Created.ToString("dddd dd MMMM - yyyy hh:mm tt")
                                     </p>
                                 </Template>
@@ -257,7 +257,7 @@ else
 
                             <RadzenDataGridColumn TItem="Models.TicketHistory" Property="CustomUser" Title="User">
                                 <Template Context="data">
-                                    <p>
+                                    <p class="mb-0">
                                         @data.CustomUser.FullName
                                     </p>
 

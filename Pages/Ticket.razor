@@ -59,7 +59,7 @@ else
                                 <Columns>
                                     <RadzenDataGridColumn TItem="Models.Ticket" Title="Id" Width="50px">
                                         <Template Context="data">
-                                            <p>
+                                            <p class="mb-0">
                                                 #@data.Id
                                             </p>
                                         </Template>
@@ -69,14 +69,14 @@ else
                                     <RadzenDataGridColumn TItem="Models.Ticket" Property="Description" Title="Description" />
                                     <RadzenDataGridColumn TItem="Models.Ticket" Property="Created" Title="Created">
                                         <Template Context="data">
-                                            <p>
+                                            <p class="mb-0">
                                                 @data.Created.ToString("dd MMMM yyyy - hh:mm tt")
                                             </p>
                                         </Template>
                                     </RadzenDataGridColumn>
                                     <RadzenDataGridColumn TItem="Models.Ticket" Property="Updated" Title="Updated">
                                         <Template Context="data">
-                                            <p>
+                                            <p class="mb-0">
                                                 @data.Updated.ToString("dd MMMM yyyy - hh:mm tt")
                                             </p>
                                         </Template>
@@ -85,7 +85,7 @@ else
                                         <Template Context="data">
                                             @if (data.Developer is not null)
                                             {
-                                                <p>@data.Developer.FullName</p>
+                                                <p class="mb-0">@data.Developer.FullName</p>
                                             }
                                         </Template>
                                     </RadzenDataGridColumn>
@@ -93,7 +93,7 @@ else
                                         <Template Context="data">
                                             @if (data.Ownner is not null)
                                             {
-                                                <p>@data.Ownner.FullName</p>
+                                                <p class="mb-0">@data.Ownner.FullName</p>
                                             }
                                         </Template>
                                     </RadzenDataGridColumn>
@@ -101,7 +101,7 @@ else
                                         <Template Context="data">
                                             @if (data.Project is not null)
                                             {
-                                                <p>@data.Project.Name</p>
+                                                <p class="mb-0">@data.Project.Name</p>
                                             }
                                         </Template>
                                     </RadzenDataGridColumn>
@@ -109,11 +109,11 @@ else
                                         <Template Context="data">
                                             @if (data.IsAssigned)
                                             {
-                                                <p>Y</p>
+                                                <p class="mb-0">Y</p>
                                             }
                                             else
                                             {
-                                                <p>N</p>
+                                                <p class="mb-0">N</p>
                                             }
                                         </Template>
                                     </RadzenDataGridColumn>
@@ -121,7 +121,7 @@ else
                                         <Template Context="data">
                                             @if (data.Status is not null)
                                             {
-                                                <p>@data.Status.Name</p>
+                                                <p class="mb-0">@data.Status.Name</p>
                                             }
                                         </Template>
                                     </RadzenDataGridColumn>
@@ -129,7 +129,7 @@ else
                                         <Template Context="data">
                                             @if (data.Priority is not null)
                                             {
-                                                <p>@data.Priority.Name</p>
+                                                <p class="mb-0">@data.Priority.Name</p>
                                             }
                                         </Template>
                                     </RadzenDataGridColumn>
@@ -137,7 +137,7 @@ else
                                         <Template Context="data">
                                             @if (data.TicketType is not null)
                                             {
-                                                <p>@data.TicketType.Name</p>
+                                                <p class="mb-0">@data.TicketType.Name</p>
                                             }
                                         </Template>
                                     </RadzenDataGridColumn>
@@ -690,13 +690,11 @@ else
     private async Task OpenDeleteDialog(int id)
     {
         currentItem = ItemList.FirstOrDefault(i => i.Id == id);
-        DeveloperList = _projectService.DeveloperOnProject(id).ToList();
         await _deleteDialog.Open();
     }
     private async Task CancelDeleteDialog()
     {
         currentItem = new();
-        DeveloperList = new();
         await _deleteDialog.Close();
 
     }

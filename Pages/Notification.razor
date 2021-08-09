@@ -39,11 +39,11 @@
                             <Template Context="data">
                                 @if (!data.IsViewed)
                                 {
-                                    <b >@data.Name</b>
+                                    <b class="mb-0" >@data.Name</b>
                                 }
                                 else
                                 {
-                                    <span>@data.Name</span>
+                                    <span class="mb-0">@data.Name</span>
                                 }
                             </Template>
                         </RadzenDataGridColumn>
@@ -51,11 +51,11 @@
                             <Template Context="data">
                                 @if (!data.IsViewed)
                                 {
-                                    <b>@data.Description</b>
+                                    <b class="mb-0">@data.Description</b>
                                 }
                                 else
                                 {
-                                    <span>@data.Description</span>
+                                    <span class="mb-0">@data.Description</span>
                                 }
                             </Template>
                         </RadzenDataGridColumn>
@@ -63,11 +63,11 @@
                             <Template Context="data">
                                 @if (!data.IsViewed)
                                 {
-                                    <b>@data.Created.ToString("dd MMMM yyyy - hh:mm tt")</b>
+                                    <b class="mb-0">@data.Created.ToString("dd MMMM yyyy - hh:mm tt")</b>
                                 }
                                 else
                                 {
-                                    <span>@data.Created.ToString("dd MMMM yyyy - hh:mm tt")</span>
+                                    <span class="mb-0">@data.Created.ToString("dd MMMM yyyy - hh:mm tt")</span>
                                 }
 
                             </Template>
@@ -79,11 +79,11 @@
                                 {
                                     @if (!data.IsViewed)
                                     {
-                                        <b>@data.Ticket.Id</b>
+                                        <b class="mb-0">@data.Ticket.Id</b>
                                     }
                                     else
                                     {
-                                         <span>@data.Ticket.Id</span>
+                                         <span class="mb-0">@data.Ticket.Id</span>
                                     }
                                 }
                             </Template>
@@ -94,11 +94,11 @@
                                 {
                                     @if (!data.IsViewed)
                                     {
-                                        <b>@data.Ticket.Name</b>
+                                        <b class="mb-0">@data.Ticket.Name</b>
                                     }
                                     else
                                     {
-                                        <span>@data.Ticket.Name</span>
+                                        <span class="mb-0">@data.Ticket.Name</span>
                                     }
                                 }
                             </Template>
@@ -109,11 +109,11 @@
                                 {
                                     @if (!data.IsViewed)
                                     {
-                                        <b>@data.Ticket.Description</b>
+                                        <b class="mb-0">@data.Ticket.Description</b>
                                     }
                                     else
                                     {
-                                        <span>@data.Ticket.Description</span>
+                                        <span class="mb-0">@data.Ticket.Description</span>
                                     }
                                 }
                             </Template>

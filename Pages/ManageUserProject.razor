@@ -160,7 +160,7 @@
                                             <Template Context="data">
                                                 @if (_projectService.ProjectManagerOnProject(data.Id) is not null)
                                                 {
-                                                    <p>@_projectService.ProjectManagerOnProject(data.Id).FullName</p>
+                                                    <p class="mb-0">@_projectService.ProjectManagerOnProject(data.Id).FullName</p>
                                                 }
 
 
@@ -170,7 +170,7 @@
                                             <Template Context="data">
                                                 @foreach (var item in _projectService.DeveloperOnProject(data.Id).ToList())
                                                 {
-                                                    <p>@item.FullName</p>
+                                                    <p class="mb-0">@item.FullName</p>
                                                 }
 
                                             </Template>
@@ -179,7 +179,7 @@
                                             <Template Context="data">
                                                 @foreach (var item in _projectService.SubmitterOnProject(data.Id).ToList())
                                                 {
-                                                    <p>@item.FullName</p>
+                                                    <p class="mb-0">@item.FullName</p>
                                                 }
 
                                             </Template>
