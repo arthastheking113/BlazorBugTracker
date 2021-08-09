@@ -9,9 +9,15 @@
     <div class="row">
         @if (loading is true)
         {
-            <div class="col">
-                <div class="loader">Loading...</div>
+        <div class="col">
+            <div id="preloader">
+                <div class="center">
+                    <p style="text-align: center;font-size: 14px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; border-radius: 0; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                        Just A Second, I'm Loading...
+                    </p>
+                </div>
             </div>
+        </div>
         }
         else
         {

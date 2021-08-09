@@ -216,6 +216,8 @@
     public int ViewProjectSelected;
     public string ProjectManagerSelected;
 
+
+
     protected override async Task  OnInitializedAsync()
     {
         var currrentUser = _httpContextAccessor.HttpContext.User;
@@ -308,8 +310,10 @@
                 DeveloperSelected = Enumerable.Empty<string>();
                 SubmitterSelected = Enumerable.Empty<string>();
                 ProjectSelected = 0;
-                GetData();
+                ProjectList = new();
+                await GetData();
                 await JSRuntime.InvokeVoidAsync("success", null);
+                StateHasChanged();
             }
             else
             {
@@ -331,51 +335,51 @@
 
     public void OnChangeSelectProjet(object value)
     {
-        ProjectManagerSelected = null;
-        DeveloperSelected = Enumerable.Empty<string>();
-        SubmitterSelected = Enumerable.Empty<string>();
-        var str = value is IEnumerable<object> ? string.Join(",", (IEnumerable<object>)value) : value;
-        ProjectSelected = Convert.ToInt32(str.ToString());
-        var projectManagerOnProject = _projectService.ProjectManagerOnProject(ProjectSelected);
-        if (projectManagerOnProject is not null)
-        {
-            ProjectManagerSelected = projectManagerOnProject.Id;
+        //ProjectManagerSelected = null;
+        //DeveloperSelected = Enumerable.Empty<string>();
+        //SubmitterSelected = Enumerable.Empty<string>();
+        //var str = value is IEnumerable<object> ? string.Join(",", (IEnumerable<object>)value) : value;
+        //ProjectSelected = Convert.ToInt32(str.ToString());
+        //var projectManagerOnProject = _projectService.ProjectManagerOnProject(ProjectSelected);
+        //if (projectManagerOnProject is not null)
+        //{
+        //    ProjectManagerSelected = projectManagerOnProject.Id;
 
-        }
-        var DeveloperOnProject = _projectService.DeveloperOnProject(ProjectSelected).ToList().Select(d => d.Id).ToList();
-        if (DeveloperOnProject.Count != 0)
-        {
-            DeveloperSelected = DeveloperOnProject;
-        }
-        var SubmitterOnProject = _projectService.SubmitterOnProject(ProjectSelected).ToList().Select(d => d.Id).ToList();
-        if (SubmitterOnProject.Count != 0)
-        {
-            SubmitterSelected = SubmitterOnProject;
-        }
+        //}
+        //var DeveloperOnProject = _projectService.DeveloperOnProject(ProjectSelected).ToList().Select(d => d.Id).ToList();
+        //if (DeveloperOnProject.Count != 0)
+        //{
+        //    DeveloperSelected = DeveloperOnProject;
+        //}
+        //var SubmitterOnProject = _projectService.SubmitterOnProject(ProjectSelected).ToList().Select(d => d.Id).ToList();
+        //if (SubmitterOnProject.Count != 0)
+        //{
+        //    SubmitterSelected = SubmitterOnProject;
+        //}
 
     }
 
 
     public void OnChangeSelectDeveloper(object value)
     {
-        var str = value is IEnumerable<object> ? string.Join(", ", (IEnumerable<object>)value) : value;
-        if (str is not null)
-        {
-            var develop = str.ToString().Replace(" ", "");
-            var users = develop.Split(",").ToList();
-            DeveloperSelected = users;
-        }
+        //var str = value is IEnumerable<object> ? string.Join(", ", (IEnumerable<object>)value) : value;
+        //if (str is not null)
+        //{
+        //    var develop = str.ToString().Replace(" ", "");
+        //    var users = develop.Split(",").ToList();
+        //    DeveloperSelected = users;
+        //}
     }
 
     public void OnChangeSelectSubmitter(object value)
     {
-        var str = value is IEnumerable<object> ? string.Join(", ", (IEnumerable<object>)value) : value;
-        if (str is not null)
-        {
-            var submit = str.ToString().Replace(" ", "");
-            var users = submit.Split(",").ToList();
-            SubmitterSelected = users;
-        }
+        //var str = value is IEnumerable<object> ? string.Join(", ", (IEnumerable<object>)value) : value;
+        //if (str is not null)
+        //{
+        //    var submit = str.ToString().Replace(" ", "");
+        //    var users = submit.Split(",").ToList();
+        //    SubmitterSelected = users;
+        //}
     }
 
 
