@@ -145,10 +145,10 @@ else
                                         <Template Context="data">
                                             <div class="btn-group-vertical">
                                                 <a class="btn btn-primary btn-sm mb-1" href="/ticket/details/@data.Id"><i class="fas fa-folder"></i> View</a>
-                                                <a class="btn text-white btn-info btn-sm mb-1" @onclick="() => OpenEditDialog(data.Id)"><i class="fas fa-pencil-alt"></i> Edit</a>
+                                                <a class="btn text-white btn-info btn-sm mb-1" @onclick="() => OpenEditDialog(data)"><i class="fas fa-pencil-alt"></i> Edit</a>
                                                 @if (IsInRoleAdmin || IsProjectManager)
                                                 {
-                                                    <button type="button" class="btn btn-danger btn-sm mb-1" @onclick="() => OpenDeleteDialog(data.Id)">
+                                                    <button type="button" class="btn btn-danger btn-sm mb-1" @onclick="() => OpenDeleteDialog(data)">
                                                         <i class="fas fa-trash"></i> Delete
                                                     </button>
                                                 }
@@ -674,10 +674,11 @@ else
 
         await _createDialog.Close();
     }
-    private async Task OpenEditDialog(int id)
+    private async Task OpenEditDialog(Models.Ticket ticket)
     {
-        currentItem = ItemList.FirstOrDefault(i => i.Id == id);
-        DeveloperList = _projectService.DeveloperOnProject(id).ToList();
+        currentItem = ticket;
+        var project = ProjectList.FirstOrDefault(c => c.Id == currentItem.ProjectId);
+        DeveloperList = _projectService.DeveloperOnProject2(project).ToList();
         await _editDialog.Open();
     }
     private async Task CancelEditDialog()
@@ -687,9 +688,9 @@ else
         await _editDialog.Close();
 
     }
-    private async Task OpenDeleteDialog(int id)
+    private async Task OpenDeleteDialog(Models.Ticket ticket)
     {
-        currentItem = ItemList.FirstOrDefault(i => i.Id == id);
+        currentItem = ticket;
         await _deleteDialog.Open();
     }
     private async Task CancelDeleteDialog()
@@ -964,7 +965,7 @@ else
 
     public async Task GetData()
     {
-        await Task.Delay(100);
+        await Task.Delay(1);
         var currrentUser = _httpContextAccessor.HttpContext.User;
         user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
         IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
@@ -977,7 +978,7 @@ else
         TicketPriorityList = _context.Priority.ToList();
         TicketStatusList = _context.Status.ToList();
 
-        ProjectList = _context.Project.ToList();
+        ProjectList = _context.Project.Include(c => c.CustomUsers).ToList();
         OwnerList = _context.Users.ToList();
 
         var projectOfUser = new List<Models.Project>();

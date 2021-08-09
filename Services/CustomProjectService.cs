@@ -86,10 +86,30 @@ namespace BlazorBugTracker.Services
             var developerOnProject = developers.Intersect(onProject).ToList();
             return developerOnProject;
         }
+        public IEnumerable<CustomUser> DeveloperOnProject2(Project project)
+        {
+            var roles = _context.Roles.FirstOrDefault(r => r.Name == Roles.Developer.ToString());
+            var allUser = _context.Users.ToList();
+            var user = _context.UserRoles.Where(u => u.RoleId == roles.Id).Select(u => u.UserId).ToList();
+            List<CustomUser> developers = new List<CustomUser>();
+            foreach (var item in user)
+            {
+                var eachUser = allUser.FirstOrDefault(u => u.Id == item);
+                developers.Add(eachUser);
+            }
+            var onProject = UserOnProject2(project, developers);
+            var developerOnProject = developers.Intersect(onProject).ToList();
+            return developerOnProject;
+        }
 
         public bool IsUserOnProject(string userId, int projectId)
         {
             var project = _context.Project.Include(p => p.CustomUsers).First(c => c.Id == projectId);
+            var user = project.CustomUsers.Any(u => u.Id == userId);
+            return user;
+        }
+        public bool IsUserOnProject2(string userId, Project project)
+        {
             var user = project.CustomUsers.Any(u => u.Id == userId);
             return user;
         }
@@ -190,6 +210,19 @@ namespace BlazorBugTracker.Services
             foreach (var user in userss)
             {
                 if(IsUserOnProject(user.Id, projectId))
+                {
+                    output.Add(user);
+                }
+            }
+            return output;
+        }
+
+        public IEnumerable<CustomUser> UserOnProject2(Project project, List<CustomUser> users)
+        {
+            var output = new List<CustomUser>();
+            foreach (var user in users)
+            {
+                if (IsUserOnProject2(user.Id, project))
                 {
                     output.Add(user);
                 }

@@ -174,7 +174,7 @@
 
     public async Task GetData()
     {
-        await Task.Delay(100);
+        await Task.Delay(1);
         UserList = _context.Users.ToList();
         Roles = _context.Roles.ToList();
     }

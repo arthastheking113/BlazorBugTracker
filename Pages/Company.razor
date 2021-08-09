@@ -62,9 +62,9 @@
                                         <RadzenDataGridColumn TItem="Models.Company" Width="90px">
                                             <Template Context="data">
                                                 <div class="btn-group-vertical">
-                                                    <a class="btn btn-info text-white btn-sm mb-1" @onclick="() => OpenEditDialog(data.Id)"><i class="fas fa-pencil-alt"></i> Edit</a>
+                                                    <a class="btn btn-info text-white btn-sm mb-1" @onclick="() => OpenEditDialog(data)"><i class="fas fa-pencil-alt"></i> Edit</a>
 
-                                                    <button type="button" class="btn btn-danger btn-sm mb-1" @onclick="() => OpenDeleteDialog(data.Id)">
+                                                    <button type="button" class="btn btn-danger btn-sm mb-1" @onclick="() => OpenDeleteDialog(data)">
                                                         <i class="fas fa-trash"></i> Delete
                                                     </button>
 
@@ -335,9 +335,9 @@
         newItem = new();
         await _createDialog.Close();
     }
-    private async Task OpenEditDialog(int id)
+    private async Task OpenEditDialog(Models.Company company)
     {
-        currentItem = ItemList.FirstOrDefault(i => i.Id == id);
+        currentItem = company;
         await _editDialog.Open();
     }
     private async Task CancelEditDialog()
@@ -345,9 +345,9 @@
         currentItem = new();
         await _editDialog.Close();
     }
-    private async Task OpenDeleteDialog(int id)
+    private async Task OpenDeleteDialog(Models.Company company)
     {
-        currentItem = ItemList.FirstOrDefault(i => i.Id == id);
+        currentItem = company;
 
         await _deleteDialog.Open();
     }
@@ -486,7 +486,7 @@
 
     public async Task  GetData()
     {
-        await Task.Delay(100);
+        await Task.Delay(1);
         ItemList = _context.Company.ToList();
 
 

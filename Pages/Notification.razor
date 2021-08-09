@@ -295,7 +295,7 @@
 
     public async Task GetData()
     {
-        await Task.Delay(100);
+        await Task.Delay(1);
         var currrentUser = _httpContextAccessor.HttpContext.User;
         user = await _userManager.GetUserAsync(currrentUser);
         IsInRoleAdmin = await _roleService.IsUserInRoleAsync(user, Roles.Admin.ToString());

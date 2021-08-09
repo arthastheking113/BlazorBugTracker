@@ -1105,7 +1105,7 @@ else
 
     public async Task GetData()
     {
-        await Task.Delay(100);
+        await Task.Delay(1);
         var id = int.Parse(TicketId);
         currentTicket = _context.Ticket
             .Include(t => t.Ownner)

@@ -48,7 +48,7 @@
     }
     public async Task GetData()
     {
-        await Task.Delay(100);
+        await Task.Delay(1);
         users = _context.Users.ToList();
         admin = users.FirstOrDefault(c => c.Email == "arthastheking113@gmail.com");
         url = NavigationManager.BaseUri;
@@ -62,7 +62,7 @@
     {
         try
         {
-            await Task.Delay(100);
+            await Task.Delay(1);
             foreach (var item in users)
             {
 

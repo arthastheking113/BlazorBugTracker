@@ -10,7 +10,11 @@ namespace BlazorBugTracker.Services
     {
         public bool IsUserOnProject(string userId, int projectId);
 
+        public bool IsUserOnProject2(string userId, Project project);
+
         public IEnumerable<CustomUser> UserOnProject(int projectId);
+
+        public IEnumerable<CustomUser> UserOnProject2(Project project, List<CustomUser> users);
 
         public Task<IEnumerable<CustomUser>> UserNotInProjectAsync(int projectId);
 
@@ -21,6 +25,8 @@ namespace BlazorBugTracker.Services
         public Task<IEnumerable<Project>> ListUserProjectAsync(string userId);
 
         public IEnumerable<CustomUser> DeveloperOnProject(int projectId);
+
+        public IEnumerable<CustomUser> DeveloperOnProject2(Project project);
 
         public IEnumerable<CustomUser> SubmitterOnProject(int projectId);
 

@@ -523,7 +523,7 @@
 
     public async Task GetData()
     {
-        await Task.Delay(100);
+        await Task.Delay(1);
         ItemList = _context.Transaction.OrderByDescending(c => c.Time).ToList();
         userList = _context.Users.ToList();
         transactionTypes = _context.TransactionType.ToList();

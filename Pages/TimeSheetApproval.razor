@@ -368,7 +368,7 @@
 
     public async Task GetData()
     {
-        await Task.Delay(100);
+        await Task.Delay(1);
         DeveloperUser = new();
         admin = _context.Users.FirstOrDefault(c => c.Email == "arthastheking113@gmail.com");
         if (IsProjectManager)

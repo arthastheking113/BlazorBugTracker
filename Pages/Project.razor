@@ -74,7 +74,7 @@ else
                                                 <RadzenDataGridColumn TItem="Models.Project" Filterable="false" Sortable="false" Title="Users">
                                                     <Template Context="data">
                                                         <div class="image-one-line">
-                                                            @foreach (var item in _projectService.UserOnProject(data.Id))
+                                                            @foreach (var item in _projectService.UserOnProject2(data, userList).ToList())
                                                             {
                                                                 var imageData = item.ImageData;
                                                                 var imageContentType = item.ContentType;
@@ -107,10 +107,10 @@ else
                                                     <Template Context="data">
                                                         <div class="btn-group-vertical">
                                                             <a class="btn btn-primary btn-sm mb-1" href="/project/details/@data.Id"><i class="fas fa-folder"></i> View</a>
-                                                            <a class="btn btn-info text-white btn-sm mb-1" @onclick="() => OpenEditDialog(data.Id)"><i class="fas fa-pencil-alt"></i> Edit</a>
+                                                            <a class="btn btn-info text-white btn-sm mb-1" @onclick="() => OpenEditDialog(data)"><i class="fas fa-pencil-alt"></i> Edit</a>
                                                             @if (IsInRoleAdmin || IsProjectManager)
                                                             {
-                                                                <button type="button" class="btn btn-danger btn-sm mb-1" @onclick="() => OpenDeleteDialog(data.Id)">
+                                                                <button type="button" class="btn btn-danger btn-sm mb-1" @onclick="() => OpenDeleteDialog(data)">
                                                                     <i class="fas fa-trash"></i> Delete
                                                                 </button>
                                                             }
@@ -385,6 +385,7 @@ else
     private ModalDialog _deleteDialog;
 
     public Models.CustomUser user = new();
+    public List<Models.CustomUser> userList = new();
     public bool IsInRoleAdmin;
     public bool IsDeveloper;
     public bool IsSubmitter;
@@ -404,9 +405,9 @@ else
         newItem = new();
         await _createDialog.Close();
     }
-    private async Task OpenEditDialog(int id)
+    private async Task OpenEditDialog(Models.Project project)
     {
-        currentItem = ItemList.FirstOrDefault(i => i.Id == id);
+        currentItem = project;
         await _editDialog.Open();
     }
     private async Task CancelEditDialog()
@@ -414,9 +415,9 @@ else
         currentItem = new();
         await _editDialog.Close();
     }
-    private async Task OpenDeleteDialog(int id)
+    private async Task OpenDeleteDialog(Models.Project project)
     {
-        currentItem = ItemList.FirstOrDefault(i => i.Id == id);
+        currentItem = project;
 
         await _deleteDialog.Open();
     }
@@ -580,6 +581,7 @@ else
         IsProjectManager = currrentUser.IsInRole(Roles.ProjectManager.ToString());
         if (IsInRoleAdmin || IsProjectManager)
         {
+            userList = _context.Users.ToList();
             await GetData();
         }
         else
@@ -592,11 +594,9 @@ else
 
     public async Task GetData()
     {
-        await Task.Delay(100);
-        ItemList = _context.Project.Include(p => p.Company).Include(p => p.Attachments).Include(p => p.CustomUsers).ToList();
+        await Task.Delay(1);
+        ItemList = _context.Project.Include(p => p.Company).Include(p => p.CustomUsers).ToList();
         CompanyList = _context.Company.ToList();
-
-
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
