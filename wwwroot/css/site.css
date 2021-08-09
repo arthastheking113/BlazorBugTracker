@@ -3004,4 +3004,11 @@ body {
 
 .image-one-line {
     white-space: nowrap;
+    position: relative;
+    overflow-x: auto;
+    width: auto;
+}
+.avatar-project {
+    width: 35px;
+    height: auto;
 }
