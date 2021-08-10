@@ -3012,3 +3012,13 @@ body {
     width: 35px;
     height: auto;
 }
+
+.only-mobile {
+    display: none;
+}
+
+@media only screen and (max-width: 768px) {
+    .only-mobile {
+        display: block;
+    }
+}
