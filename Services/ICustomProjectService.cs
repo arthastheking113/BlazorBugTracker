@@ -30,7 +30,12 @@ namespace BlazorBugTracker.Services
 
         public IEnumerable<CustomUser> SubmitterOnProject(int projectId);
 
-
         public CustomUser ProjectManagerOnProject(int projectId);
+
+        public CustomUser ProjectManagerOnProject2(Project project, List<CustomUser> projectManager);
+
+        public IEnumerable<CustomUser> DeveloperOnProject3(Project project, List<CustomUser> developer);
+
+        public IEnumerable<CustomUser> SubmitterOnProject2(Project project, List<CustomUser> submiter);
     }
 }

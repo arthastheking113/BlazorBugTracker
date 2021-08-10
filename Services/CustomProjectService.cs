@@ -101,6 +101,11 @@ namespace BlazorBugTracker.Services
             var developerOnProject = developers.Intersect(onProject).ToList();
             return developerOnProject;
         }
+        public IEnumerable<CustomUser> DeveloperOnProject3(Project project, List<CustomUser> developer)
+        {
+            var onProject = UserOnProject2(project, developer);
+            return onProject;
+        }
 
         public bool IsUserOnProject(string userId, int projectId)
         {
@@ -147,6 +152,19 @@ namespace BlazorBugTracker.Services
             manager = userList.Intersect(onProject.ToList()).FirstOrDefault();
             return manager;
         }
+        public CustomUser ProjectManagerOnProject2(Project project, List<CustomUser> projectManager)
+        {
+            var onProject = UserOnProject2(project, projectManager).ToList();
+            if (onProject.Count != 0)
+            {
+                return onProject.First();
+            }
+            else
+            {
+                return null;
+            }
+
+        }
 
         public void  RemoveUserFromProject(string userId, int projectId)
         {
@@ -187,6 +205,11 @@ namespace BlazorBugTracker.Services
             var onProject = UserOnProject(projectId);
             var submitterOnProject = submitters.Intersect(onProject).ToList();
             return submitterOnProject;
+        }
+        public IEnumerable<CustomUser> SubmitterOnProject2(Project project, List<CustomUser> submiter)
+        {
+            var onProject = UserOnProject2(project, submiter);
+            return onProject;
         }
 
         public async Task<IEnumerable<CustomUser>> UserNotInProjectAsync(int projectId)
