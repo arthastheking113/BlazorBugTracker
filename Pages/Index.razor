@@ -207,7 +207,7 @@ else
                     </div>
 
                     <div class="row">
-                        <div class="col">
+                        <div class="col-md">
                             <div class="card-body">
                                 <div class="info-box mb-3 bg-warning">
                                     <span class="info-box-icon"><i class="fas fa-tasks"></i></span>
@@ -244,7 +244,7 @@ else
                                 <!-- /.info-box -->
                             </div>
                         </div>
-                        <div class="col">
+                        <div class="col-md">
                             <div class="card-body">
                                 <RadzenChart>
                                     <RadzenDonutSeries Data="@TicketTypeChart" Title="Number Of Ticket Type" CategoryProperty="TicketCategory" ValueProperty="NumberOfTicket">
@@ -261,7 +261,7 @@ else
                             </div>
                             <!-- /.card-body -->
                         </div>
-                        <div class="col">
+                        <div class="col-md">
                             <div class="card-body">
                                 <RadzenChart>
                                     <RadzenDonutSeries Data="@TicketStatusChart" Title="Number Of Ticket Status" CategoryProperty="TicketCategory" ValueProperty="NumberOfTicket">
@@ -278,7 +278,7 @@ else
                             </div>
                             <!-- /.card-body -->
                         </div>
-                        <div class="col">
+                        <div class="col-md">
                             <div class="card-body">
                                 <RadzenChart>
                                     <RadzenDonutSeries Data="@TicketPriorityChart" Title="Number Of Ticket Priority" CategoryProperty="TicketCategory" ValueProperty="NumberOfTicket">
@@ -813,7 +813,7 @@ else
         }
         TicketCloseId = _context.Status.FirstOrDefault(t => t.Name == "Closed").Id;
         CompanyList = _context.Company.ToList();
-        RoleList = _context.Roles.ToList();
+        RoleList = _context.Roles.Where(c => !c.Name.Contains("Admin")).ToList();
         AllItemList = _context.Ticket
             .Include(t => t.Attachments)
             .Include(t => t.Comments)
@@ -1098,37 +1098,37 @@ else
             var newUserFind = _context.Users.FirstOrDefault(u => u.Email == newInvite.Email);
             if (newUserFind == null)
             {
-                            var loginUser = user;
-            Models.Company company = new Models.Company();
-            if (IsInRoleAdmin)
-            {
-                company = new Models.Company
+                var loginUser = user;
+                Models.Company company = new Models.Company();
+                if (IsInRoleAdmin)
                 {
-                    Name = newInvite.CompanyName,
-                    Description = $"This is a temporary description for Company: {newInvite.CompanyName}, you can change this description anytime."
-                };
-                _context.Company.Add(company);
-                _context.SaveChanges();
-            }
-            else
-            {
-                company = _context.Company.FirstOrDefault(c => c.Id == loginUser.CompanyId);
-            }
+                    company = new Models.Company
+                    {
+                        Name = newInvite.CompanyName,
+                        Description = $"This is a temporary description for Company: {newInvite.CompanyName}, you can change this description anytime."
+                    };
+                    _context.Company.Add(company);
+                    _context.SaveChanges();
+                }
+                else
+                {
+                    company = _context.Company.FirstOrDefault(c => c.Id == loginUser.CompanyId);
+                }
 
-            newInvite.CompanyToken = Guid.NewGuid();
-            newInvite.CompanyId = company.Id;
-            var number_of_user_on_system = _context.Users.ToList().Count + 1;
-            CustomUser newUser = new CustomUser
-            {
-                FirstName = "Invite",
-                LastName = $"User #{number_of_user_on_system}",
-                UserName = newInvite.Email,
-                Email = newInvite.Email,
-                EmailConfirmed = true,
-                CompanyId = company.Id,
-                UserId = CreateUserId(),
-                DateJoined = DateTime.Now
-            };
+                newInvite.CompanyToken = Guid.NewGuid();
+                newInvite.CompanyId = company.Id;
+                var number_of_user_on_system = _context.Users.ToList().Count + 1;
+                CustomUser newUser = new CustomUser
+                {
+                    FirstName = "Invite",
+                    LastName = $"User #{number_of_user_on_system}",
+                    UserName = newInvite.Email,
+                    Email = newInvite.Email,
+                    EmailConfirmed = true,
+                    CompanyId = company.Id,
+                    UserId = CreateUserId(),
+                    DateJoined = DateTime.Now
+                };
                 var result = await _userManager.CreateAsync(newUser, "Abc123!");
                 if (result.Succeeded)
                 {
