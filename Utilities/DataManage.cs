@@ -18,8 +18,6 @@ namespace BlazorBugTracker.Utilities
     public static class DataManage
     {
         static int company1Id;
-        static int company2Id;
-        static int company3Id;
 
         public static string GetConnectionString(IConfiguration configuration)
         {
@@ -63,14 +61,14 @@ namespace BlazorBugTracker.Utilities
             await SeedRoleAsync(roleManagerSvc, userManageSvc);
             await SeedDefaultCompaniesAsync(dbContextSvc);
             await SeedDefaultUserAsync(userManageSvc, roleManagerSvc, dbContextSvc);
-            await SeedDemoUsersAsync(userManageSvc, roleManagerSvc, dbContextSvc);
+            //await SeedDemoUsersAsync(userManageSvc, roleManagerSvc, dbContextSvc);
             await SeedDefaultTicketType(dbContextSvc);
             await SeedDefaultTicketStatusAsync(dbContextSvc);
             await SeedDefaultTicketPriorityAsync(dbContextSvc);
-            await SeedDefautProjectsAsync(dbContextSvc);
-            await SeedDefautTicketsAsync(dbContextSvc);
-            await SeedDefaultTransactionType(dbContextSvc);
-            await SeedDefaultTransaction(dbContextSvc);
+            //await SeedDefautProjectsAsync(dbContextSvc);
+            //await SeedDefautTicketsAsync(dbContextSvc);
+            //await SeedDefaultTransactionType(dbContextSvc);
+            //await SeedDefaultTransaction(dbContextSvc);
 
         }
 
@@ -99,9 +97,7 @@ namespace BlazorBugTracker.Utilities
             {
                 IList<Company> defaltcompanies = new List<Company>()
                 {
-                    new Company() { Name = "Apple", Description = "This is default Company Apple"},
-                    new Company() { Name = "Tesla", Description = "This is default Company Tesla"},
-                    new Company() { Name = "Netflix", Description = "This is default Company Netflix"},
+                    new Company() { Name = "YGO Việt Nam", Description = "Yugi-Oh Việt Nam"},
                     new Company() { Name = "Temporary Company", Description = "This is Temporary Company for Deleted Company User"}
                 };
                 var dbCompanies = context.Company.Select(c => c.Name).ToList();
@@ -109,9 +105,7 @@ namespace BlazorBugTracker.Utilities
                 context.SaveChanges();
 
                 //get company Id
-                company1Id = context.Company.FirstOrDefault(p => p.Name == "Apple").Id;
-                company2Id = context.Company.FirstOrDefault(p => p.Name == "Tesla").Id;
-                company3Id = context.Company.FirstOrDefault(p => p.Name == "Netflix").Id;
+                company1Id = context.Company.FirstOrDefault(p => p.Name == "YGO Việt Nam").Id;
             }
             catch (Exception ex)
             {
@@ -165,80 +159,80 @@ namespace BlazorBugTracker.Utilities
                 throw;
             }
 
-            //Seed Default ProjectManager1 User
-            defaultUser = new CustomUser
-            {
-                UserName = "mcmacay111@yahoo.com",
-                Email = "mcmacay111@yahoo.com",
-                FirstName = "Henry",
-                LastName = "McCoy",
-                EmailConfirmed = true,
-                CompanyId = company1Id,
-                DateJoined = DateTime.Now,
-                MonthlySalary = 4000,
-                SSN = "1234567899",
-                Address = "123 Abc St",
-                City = "New York",
-                State = "New York",
-                ZipCode = "12345",
-                PhoneNumber = "1234567899",
-                UserId = CreateUserId(context)
-            };
-            try
-            {
-                var user = await userManagerSvc.FindByEmailAsync(defaultUser.Email);
-                if (user == null)
-                {
-                    await userManagerSvc.CreateAsync(defaultUser, "Nhoclanro1!");
-                    await userManagerSvc.AddToRoleAsync(defaultUser, Roles.ProjectManager.ToString());
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("*************  ERROR  *************");
-                Debug.WriteLine("Error Seeding Default ProjectManager1 User.");
-                Debug.WriteLine(ex.Message);
-                Debug.WriteLine("***********************************");
-                throw;
-            }
+            ////Seed Default ProjectManager1 User
+            //defaultUser = new CustomUser
+            //{
+            //    UserName = "mcmacay111@yahoo.com",
+            //    Email = "mcmacay111@yahoo.com",
+            //    FirstName = "Henry",
+            //    LastName = "McCoy",
+            //    EmailConfirmed = true,
+            //    CompanyId = company1Id,
+            //    DateJoined = DateTime.Now,
+            //    MonthlySalary = 4000,
+            //    SSN = "1234567899",
+            //    Address = "123 Abc St",
+            //    City = "New York",
+            //    State = "New York",
+            //    ZipCode = "12345",
+            //    PhoneNumber = "1234567899",
+            //    UserId = CreateUserId(context)
+            //};
+            //try
+            //{
+            //    var user = await userManagerSvc.FindByEmailAsync(defaultUser.Email);
+            //    if (user == null)
+            //    {
+            //        await userManagerSvc.CreateAsync(defaultUser, "Nhoclanro1!");
+            //        await userManagerSvc.AddToRoleAsync(defaultUser, Roles.ProjectManager.ToString());
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    Debug.WriteLine("*************  ERROR  *************");
+            //    Debug.WriteLine("Error Seeding Default ProjectManager1 User.");
+            //    Debug.WriteLine(ex.Message);
+            //    Debug.WriteLine("***********************************");
+            //    throw;
+            //}
 
 
-            //Seed Default ProjectManager2 User
-            defaultUser = new CustomUser
-            {
-                UserName = "mcmacay112@yahoo.com",
-                Email = "mcmacay112@yahoo.com",
-                FirstName = "Peter",
-                LastName = "Quill",
-                EmailConfirmed = true,
-                CompanyId = company1Id,
-                DateJoined = DateTime.Now,
-                MonthlySalary = 3000,
-                SSN = "1234567899",
-                Address = "123 Abc St",
-                City = "New York",
-                State = "New York",
-                ZipCode = "12345",
-                PhoneNumber = "1234567899",
-                UserId = CreateUserId(context)
-            };
-            try
-            {
-                var user = await userManagerSvc.FindByEmailAsync(defaultUser.Email);
-                if (user == null)
-                {
-                    await userManagerSvc.CreateAsync(defaultUser, "Nhoclanro1!");
-                    await userManagerSvc.AddToRoleAsync(defaultUser, Roles.ProjectManager.ToString());
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("*************  ERROR  *************");
-                Debug.WriteLine("Error Seeding Default ProjectManager2 User.");
-                Debug.WriteLine(ex.Message);
-                Debug.WriteLine("***********************************");
-                throw;
-            }
+            ////Seed Default ProjectManager2 User
+            //defaultUser = new CustomUser
+            //{
+            //    UserName = "mcmacay112@yahoo.com",
+            //    Email = "mcmacay112@yahoo.com",
+            //    FirstName = "Peter",
+            //    LastName = "Quill",
+            //    EmailConfirmed = true,
+            //    CompanyId = company1Id,
+            //    DateJoined = DateTime.Now,
+            //    MonthlySalary = 3000,
+            //    SSN = "1234567899",
+            //    Address = "123 Abc St",
+            //    City = "New York",
+            //    State = "New York",
+            //    ZipCode = "12345",
+            //    PhoneNumber = "1234567899",
+            //    UserId = CreateUserId(context)
+            //};
+            //try
+            //{
+            //    var user = await userManagerSvc.FindByEmailAsync(defaultUser.Email);
+            //    if (user == null)
+            //    {
+            //        await userManagerSvc.CreateAsync(defaultUser, "Nhoclanro1!");
+            //        await userManagerSvc.AddToRoleAsync(defaultUser, Roles.ProjectManager.ToString());
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    Debug.WriteLine("*************  ERROR  *************");
+            //    Debug.WriteLine("Error Seeding Default ProjectManager2 User.");
+            //    Debug.WriteLine(ex.Message);
+            //    Debug.WriteLine("***********************************");
+            //    throw;
+            //}
 
 
             //Seed Default Developer1 User
@@ -279,433 +273,433 @@ namespace BlazorBugTracker.Utilities
             }
 
 
-            //Seed Default Developer2 User
-            defaultUser = new CustomUser
-            {
-                UserName = "mcmacay114@yahoo.com",
-                Email = "mcmacay114@yahoo.com",
-                FirstName = "James",
-                LastName = "Howlett",
-                EmailConfirmed = true,
-                CompanyId = company1Id,
-                DateJoined = DateTime.Now,
-                MonthlySalary = 4400,
-                SSN = "1234567899",
-                Address = "123 Abc St",
-                City = "New York",
-                State = "New York",
-                ZipCode = "12345",
-                PhoneNumber = "1234567899",
-                UserId = CreateUserId(context)
-            };
-            try
-            {
-                var user = await userManagerSvc.FindByEmailAsync(defaultUser.Email);
-                if (user == null)
-                {
-                    await userManagerSvc.CreateAsync(defaultUser, "Nhoclanro1!");
-                    await userManagerSvc.AddToRoleAsync(defaultUser, Roles.Developer.ToString());
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("*************  ERROR  *************");
-                Debug.WriteLine("Error Seeding Default Developer2 User.");
-                Debug.WriteLine(ex.Message);
-                Debug.WriteLine("***********************************");
-                throw;
-            }
+            ////Seed Default Developer2 User
+            //defaultUser = new CustomUser
+            //{
+            //    UserName = "mcmacay114@yahoo.com",
+            //    Email = "mcmacay114@yahoo.com",
+            //    FirstName = "James",
+            //    LastName = "Howlett",
+            //    EmailConfirmed = true,
+            //    CompanyId = company1Id,
+            //    DateJoined = DateTime.Now,
+            //    MonthlySalary = 4400,
+            //    SSN = "1234567899",
+            //    Address = "123 Abc St",
+            //    City = "New York",
+            //    State = "New York",
+            //    ZipCode = "12345",
+            //    PhoneNumber = "1234567899",
+            //    UserId = CreateUserId(context)
+            //};
+            //try
+            //{
+            //    var user = await userManagerSvc.FindByEmailAsync(defaultUser.Email);
+            //    if (user == null)
+            //    {
+            //        await userManagerSvc.CreateAsync(defaultUser, "Nhoclanro1!");
+            //        await userManagerSvc.AddToRoleAsync(defaultUser, Roles.Developer.ToString());
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    Debug.WriteLine("*************  ERROR  *************");
+            //    Debug.WriteLine("Error Seeding Default Developer2 User.");
+            //    Debug.WriteLine(ex.Message);
+            //    Debug.WriteLine("***********************************");
+            //    throw;
+            //}
 
 
-            //Seed Default Developer3 User
-            defaultUser = new CustomUser
-            {
-                UserName = "mcmacay115@yahoo.com",
-                Email = "mcmacay115@yahoo.com",
-                FirstName = "Natasha",
-                LastName = "Romanova",
-                EmailConfirmed = true,
-                CompanyId = company1Id,
-                DateJoined = DateTime.Now,
-                MonthlySalary = 3900,
-                SSN = "1234567899",
-                Address = "123 Abc St",
-                City = "New York",
-                State = "New York",
-                ZipCode = "12345",
-                PhoneNumber = "1234567899",
-                UserId = CreateUserId(context)
-            };
-            try
-            {
-                var user = await userManagerSvc.FindByEmailAsync(defaultUser.Email);
-                if (user == null)
-                {
-                    await userManagerSvc.CreateAsync(defaultUser, "Nhoclanro1!");
-                    await userManagerSvc.AddToRoleAsync(defaultUser, Roles.Developer.ToString());
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("*************  ERROR  *************");
-                Debug.WriteLine("Error Seeding Default Developer3 User.");
-                Debug.WriteLine(ex.Message);
-                Debug.WriteLine("***********************************");
-                throw;
-            }
+            ////Seed Default Developer3 User
+            //defaultUser = new CustomUser
+            //{
+            //    UserName = "mcmacay115@yahoo.com",
+            //    Email = "mcmacay115@yahoo.com",
+            //    FirstName = "Natasha",
+            //    LastName = "Romanova",
+            //    EmailConfirmed = true,
+            //    CompanyId = company1Id,
+            //    DateJoined = DateTime.Now,
+            //    MonthlySalary = 3900,
+            //    SSN = "1234567899",
+            //    Address = "123 Abc St",
+            //    City = "New York",
+            //    State = "New York",
+            //    ZipCode = "12345",
+            //    PhoneNumber = "1234567899",
+            //    UserId = CreateUserId(context)
+            //};
+            //try
+            //{
+            //    var user = await userManagerSvc.FindByEmailAsync(defaultUser.Email);
+            //    if (user == null)
+            //    {
+            //        await userManagerSvc.CreateAsync(defaultUser, "Nhoclanro1!");
+            //        await userManagerSvc.AddToRoleAsync(defaultUser, Roles.Developer.ToString());
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    Debug.WriteLine("*************  ERROR  *************");
+            //    Debug.WriteLine("Error Seeding Default Developer3 User.");
+            //    Debug.WriteLine(ex.Message);
+            //    Debug.WriteLine("***********************************");
+            //    throw;
+            //}
 
 
-            //Seed Default Developer4 User
-            defaultUser = new CustomUser
-            {
-                UserName = "mcmacay116@yahoo.com",
-                Email = "mcmacay116@yahoo.com",
-                FirstName = "Carol",
-                LastName = "Danvers",
-                EmailConfirmed = true,
-                CompanyId = company1Id,
-                DateJoined = DateTime.Now,
-                MonthlySalary = 3600,
-                SSN = "1234567899",
-                Address = "123 Abc St",
-                City = "New York",
-                State = "New York",
-                ZipCode = "12345",
-                PhoneNumber = "1234567899",
-                UserId = CreateUserId(context)
-            };
-            try
-            {
-                var user = await userManagerSvc.FindByEmailAsync(defaultUser.Email);
-                if (user == null)
-                {
-                    await userManagerSvc.CreateAsync(defaultUser, "Nhoclanro1!");
-                    await userManagerSvc.AddToRoleAsync(defaultUser, Roles.Developer.ToString());
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("*************  ERROR  *************");
-                Debug.WriteLine("Error Seeding Default Developer4 User.");
-                Debug.WriteLine(ex.Message);
-                Debug.WriteLine("***********************************");
-                throw;
-            }
+            ////Seed Default Developer4 User
+            //defaultUser = new CustomUser
+            //{
+            //    UserName = "mcmacay116@yahoo.com",
+            //    Email = "mcmacay116@yahoo.com",
+            //    FirstName = "Carol",
+            //    LastName = "Danvers",
+            //    EmailConfirmed = true,
+            //    CompanyId = company1Id,
+            //    DateJoined = DateTime.Now,
+            //    MonthlySalary = 3600,
+            //    SSN = "1234567899",
+            //    Address = "123 Abc St",
+            //    City = "New York",
+            //    State = "New York",
+            //    ZipCode = "12345",
+            //    PhoneNumber = "1234567899",
+            //    UserId = CreateUserId(context)
+            //};
+            //try
+            //{
+            //    var user = await userManagerSvc.FindByEmailAsync(defaultUser.Email);
+            //    if (user == null)
+            //    {
+            //        await userManagerSvc.CreateAsync(defaultUser, "Nhoclanro1!");
+            //        await userManagerSvc.AddToRoleAsync(defaultUser, Roles.Developer.ToString());
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    Debug.WriteLine("*************  ERROR  *************");
+            //    Debug.WriteLine("Error Seeding Default Developer4 User.");
+            //    Debug.WriteLine(ex.Message);
+            //    Debug.WriteLine("***********************************");
+            //    throw;
+            //}
 
 
-            //Seed Default Developer5 User
-            defaultUser = new CustomUser
-            {
-                UserName = "mcmacay117@yahoo.com",
-                Email = "mcmacay117@yahoo.com",
-                FirstName = "Tony",
-                LastName = "Stark",
-                EmailConfirmed = true,
-                CompanyId = company1Id,
-                DateJoined = DateTime.Now,
-                MonthlySalary = 5000,
-                SSN = "1234567899",
-                Address = "123 Abc St",
-                City = "New York",
-                State = "New York",
-                ZipCode = "12345",
-                PhoneNumber = "1234567899",
-                UserId = CreateUserId(context)
-            };
-            try
-            {
-                var user = await userManagerSvc.FindByEmailAsync(defaultUser.Email);
-                if (user == null)
-                {
-                    await userManagerSvc.CreateAsync(defaultUser, "Nhoclanro1!");
-                    await userManagerSvc.AddToRoleAsync(defaultUser, Roles.Developer.ToString());
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("*************  ERROR  *************");
-                Debug.WriteLine("Error Seeding Default Developer5 User.");
-                Debug.WriteLine(ex.Message);
-                Debug.WriteLine("***********************************");
-                throw;
-            }
+            ////Seed Default Developer5 User
+            //defaultUser = new CustomUser
+            //{
+            //    UserName = "mcmacay117@yahoo.com",
+            //    Email = "mcmacay117@yahoo.com",
+            //    FirstName = "Tony",
+            //    LastName = "Stark",
+            //    EmailConfirmed = true,
+            //    CompanyId = company1Id,
+            //    DateJoined = DateTime.Now,
+            //    MonthlySalary = 5000,
+            //    SSN = "1234567899",
+            //    Address = "123 Abc St",
+            //    City = "New York",
+            //    State = "New York",
+            //    ZipCode = "12345",
+            //    PhoneNumber = "1234567899",
+            //    UserId = CreateUserId(context)
+            //};
+            //try
+            //{
+            //    var user = await userManagerSvc.FindByEmailAsync(defaultUser.Email);
+            //    if (user == null)
+            //    {
+            //        await userManagerSvc.CreateAsync(defaultUser, "Nhoclanro1!");
+            //        await userManagerSvc.AddToRoleAsync(defaultUser, Roles.Developer.ToString());
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    Debug.WriteLine("*************  ERROR  *************");
+            //    Debug.WriteLine("Error Seeding Default Developer5 User.");
+            //    Debug.WriteLine(ex.Message);
+            //    Debug.WriteLine("***********************************");
+            //    throw;
+            //}
 
 
-            //Seed Default Submitter1 User
-            defaultUser = new CustomUser
-            {
-                UserName = "mcmacay118@yahoo.com",
-                Email = "mcmacay118@yahoo.com",
-                FirstName = "Scott",
-                LastName = "Summers",
-                EmailConfirmed = true,
-                CompanyId = company1Id,
-                DateJoined = DateTime.Now,
-                MonthlySalary = 4000,
-                SSN = "1234567899",
-                Address = "123 Abc St",
-                City = "New York",
-                State = "New York",
-                ZipCode = "12345",
-                PhoneNumber = "1234567899",
-                UserId = CreateUserId(context)
-            };
-            try
-            {
-                var user = await userManagerSvc.FindByEmailAsync(defaultUser.Email);
-                if (user == null)
-                {
-                    await userManagerSvc.CreateAsync(defaultUser, "Nhoclanro1!");
-                    await userManagerSvc.AddToRoleAsync(defaultUser, Roles.Submitter.ToString());
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("*************  ERROR  *************");
-                Debug.WriteLine("Error Seeding Default Submitter1 User.");
-                Debug.WriteLine(ex.Message);
-                Debug.WriteLine("***********************************");
-                throw;
-            }
+            ////Seed Default Submitter1 User
+            //defaultUser = new CustomUser
+            //{
+            //    UserName = "mcmacay118@yahoo.com",
+            //    Email = "mcmacay118@yahoo.com",
+            //    FirstName = "Scott",
+            //    LastName = "Summers",
+            //    EmailConfirmed = true,
+            //    CompanyId = company1Id,
+            //    DateJoined = DateTime.Now,
+            //    MonthlySalary = 4000,
+            //    SSN = "1234567899",
+            //    Address = "123 Abc St",
+            //    City = "New York",
+            //    State = "New York",
+            //    ZipCode = "12345",
+            //    PhoneNumber = "1234567899",
+            //    UserId = CreateUserId(context)
+            //};
+            //try
+            //{
+            //    var user = await userManagerSvc.FindByEmailAsync(defaultUser.Email);
+            //    if (user == null)
+            //    {
+            //        await userManagerSvc.CreateAsync(defaultUser, "Nhoclanro1!");
+            //        await userManagerSvc.AddToRoleAsync(defaultUser, Roles.Submitter.ToString());
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    Debug.WriteLine("*************  ERROR  *************");
+            //    Debug.WriteLine("Error Seeding Default Submitter1 User.");
+            //    Debug.WriteLine(ex.Message);
+            //    Debug.WriteLine("***********************************");
+            //    throw;
+            //}
 
 
-            //Seed Default Submitter2 User
-            defaultUser = new CustomUser
-            {
-                UserName = "mcmacay119@yahoo.com",
-                Email = "mcmacay119@yahoo.com",
-                FirstName = "Sue",
-                LastName = "Storm",
-                EmailConfirmed = true,
-                CompanyId = company1Id,
-                DateJoined = DateTime.Now,
-                MonthlySalary = 6000,
-                SSN = "1234567899",
-                Address = "123 Abc St",
-                City = "New York",
-                State = "New York",
-                ZipCode = "12345",
-                PhoneNumber = "1234567899",
-                UserId = CreateUserId(context)
-            };
-            try
-            {
-                var user = await userManagerSvc.FindByEmailAsync(defaultUser.Email);
-                if (user == null)
-                {
-                    await userManagerSvc.CreateAsync(defaultUser, "Nhoclanro1!");
-                    await userManagerSvc.AddToRoleAsync(defaultUser, Roles.Submitter.ToString());
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("*************  ERROR  *************");
-                Debug.WriteLine("Error Seeding Default Submitter2 User.");
-                Debug.WriteLine(ex.Message);
-                Debug.WriteLine("***********************************");
-                throw;
-            }
+            ////Seed Default Submitter2 User
+            //defaultUser = new CustomUser
+            //{
+            //    UserName = "mcmacay119@yahoo.com",
+            //    Email = "mcmacay119@yahoo.com",
+            //    FirstName = "Sue",
+            //    LastName = "Storm",
+            //    EmailConfirmed = true,
+            //    CompanyId = company1Id,
+            //    DateJoined = DateTime.Now,
+            //    MonthlySalary = 6000,
+            //    SSN = "1234567899",
+            //    Address = "123 Abc St",
+            //    City = "New York",
+            //    State = "New York",
+            //    ZipCode = "12345",
+            //    PhoneNumber = "1234567899",
+            //    UserId = CreateUserId(context)
+            //};
+            //try
+            //{
+            //    var user = await userManagerSvc.FindByEmailAsync(defaultUser.Email);
+            //    if (user == null)
+            //    {
+            //        await userManagerSvc.CreateAsync(defaultUser, "Nhoclanro1!");
+            //        await userManagerSvc.AddToRoleAsync(defaultUser, Roles.Submitter.ToString());
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    Debug.WriteLine("*************  ERROR  *************");
+            //    Debug.WriteLine("Error Seeding Default Submitter2 User.");
+            //    Debug.WriteLine(ex.Message);
+            //    Debug.WriteLine("***********************************");
+            //    throw;
+            //}
 
         }
 
         //Seed Demo User
-        public static async Task SeedDemoUsersAsync(UserManager<CustomUser> userManager, RoleManager<IdentityRole> roleManager, ApplicationDbContext context)
-        {
-            //Seed Demo Admin User
-            var defaultUser = new CustomUser
-            {
-                UserName = "demoadmin@gmail.com",
-                Email = "demoadmin@gmail.com",
-                FirstName = "Demo",
-                LastName = "Admin",
-                EmailConfirmed = true,
-                CompanyId = company2Id,
-                DateJoined = DateTime.Now,
-                MonthlySalary = 10000,
-                SSN = "1234567899",
-                Address = "123 Abc St",
-                City = "New York",
-                State = "New York",
-                ZipCode = "12345",
-                PhoneNumber = "1234567899",
-                UserId = CreateUserId(context)
-            };
-            try
-            {
-                var user = await userManager.FindByEmailAsync(defaultUser.Email);
-                if (user == null)
-                {
-                    await userManager.CreateAsync(defaultUser, "Nhoclanro1!");
-                    await userManager.AddToRoleAsync(defaultUser, Roles.Admin.ToString());
-                    await userManager.AddToRoleAsync(defaultUser, Roles.DemoUser.ToString());
+        //public static async Task SeedDemoUsersAsync(UserManager<CustomUser> userManager, RoleManager<IdentityRole> roleManager, ApplicationDbContext context)
+        //{
+        //    //Seed Demo Admin User
+        //    var defaultUser = new CustomUser
+        //    {
+        //        UserName = "demoadmin@gmail.com",
+        //        Email = "demoadmin@gmail.com",
+        //        FirstName = "Demo",
+        //        LastName = "Admin",
+        //        EmailConfirmed = true,
+        //        CompanyId = company2Id,
+        //        DateJoined = DateTime.Now,
+        //        MonthlySalary = 10000,
+        //        SSN = "1234567899",
+        //        Address = "123 Abc St",
+        //        City = "New York",
+        //        State = "New York",
+        //        ZipCode = "12345",
+        //        PhoneNumber = "1234567899",
+        //        UserId = CreateUserId(context)
+        //    };
+        //    try
+        //    {
+        //        var user = await userManager.FindByEmailAsync(defaultUser.Email);
+        //        if (user == null)
+        //        {
+        //            await userManager.CreateAsync(defaultUser, "Nhoclanro1!");
+        //            await userManager.AddToRoleAsync(defaultUser, Roles.Admin.ToString());
+        //            await userManager.AddToRoleAsync(defaultUser, Roles.DemoUser.ToString());
 
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("*************  ERROR  *************");
-                Debug.WriteLine("Error Seeding Demo Admin User.");
-                Debug.WriteLine(ex.Message);
-                Debug.WriteLine("***********************************");
-                throw;
-            }
-
-
-            //Seed Demo ProjectManager User
-            defaultUser = new CustomUser
-            {
-                UserName = "demopm@gmail.com",
-                Email = "demopm@gmail.com",
-                FirstName = "Demo",
-                LastName = "ProjectManager",
-                EmailConfirmed = true,
-                CompanyId = company2Id,
-                DateJoined = DateTime.Now,
-                MonthlySalary = 5000,
-                SSN = "1234567899",
-                Address = "123 Abc St",
-                City = "New York",
-                State = "New York",
-                ZipCode = "12345",
-                PhoneNumber = "1234567899",
-                UserId = CreateUserId(context)
-            };
-            try
-            {
-                var user = await userManager.FindByEmailAsync(defaultUser.Email);
-                if (user == null)
-                {
-                    await userManager.CreateAsync(defaultUser, "Nhoclanro1!");
-                    await userManager.AddToRoleAsync(defaultUser, Roles.ProjectManager.ToString());
-                    await userManager.AddToRoleAsync(defaultUser, Roles.DemoUser.ToString());
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("*************  ERROR  *************");
-                Debug.WriteLine("Error Seeding Demo ProjectManager1 User.");
-                Debug.WriteLine(ex.Message);
-                Debug.WriteLine("***********************************");
-                throw;
-            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Debug.WriteLine("*************  ERROR  *************");
+        //        Debug.WriteLine("Error Seeding Demo Admin User.");
+        //        Debug.WriteLine(ex.Message);
+        //        Debug.WriteLine("***********************************");
+        //        throw;
+        //    }
 
 
-            //Seed Demo Developer User
-            defaultUser = new CustomUser
-            {
-                UserName = "demodev@gmail.com",
-                Email = "demodev@gmail.com",
-                FirstName = "Demo",
-                LastName = "Developer",
-                EmailConfirmed = true,
-                CompanyId = company2Id,
-                DateJoined = DateTime.Now,
-                MonthlySalary = 4000,
-                SSN = "1234567899",
-                Address = "123 Abc St",
-                City = "New York",
-                State = "New York",
-                ZipCode = "12345",
-                PhoneNumber = "1234567899",
-                UserId = CreateUserId(context)
-            };
-            try
-            {
-                var user = await userManager.FindByEmailAsync(defaultUser.Email);
-                if (user == null)
-                {
-                    await userManager.CreateAsync(defaultUser, "Nhoclanro1!");
-                    await userManager.AddToRoleAsync(defaultUser, Roles.Developer.ToString());
-                    await userManager.AddToRoleAsync(defaultUser, Roles.DemoUser.ToString());
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("*************  ERROR  *************");
-                Debug.WriteLine("Error Seeding Demo Developer1 User.");
-                Debug.WriteLine(ex.Message);
-                Debug.WriteLine("***********************************");
-                throw;
-            }
+        //    //Seed Demo ProjectManager User
+        //    defaultUser = new CustomUser
+        //    {
+        //        UserName = "demopm@gmail.com",
+        //        Email = "demopm@gmail.com",
+        //        FirstName = "Demo",
+        //        LastName = "ProjectManager",
+        //        EmailConfirmed = true,
+        //        CompanyId = company2Id,
+        //        DateJoined = DateTime.Now,
+        //        MonthlySalary = 5000,
+        //        SSN = "1234567899",
+        //        Address = "123 Abc St",
+        //        City = "New York",
+        //        State = "New York",
+        //        ZipCode = "12345",
+        //        PhoneNumber = "1234567899",
+        //        UserId = CreateUserId(context)
+        //    };
+        //    try
+        //    {
+        //        var user = await userManager.FindByEmailAsync(defaultUser.Email);
+        //        if (user == null)
+        //        {
+        //            await userManager.CreateAsync(defaultUser, "Nhoclanro1!");
+        //            await userManager.AddToRoleAsync(defaultUser, Roles.ProjectManager.ToString());
+        //            await userManager.AddToRoleAsync(defaultUser, Roles.DemoUser.ToString());
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Debug.WriteLine("*************  ERROR  *************");
+        //        Debug.WriteLine("Error Seeding Demo ProjectManager1 User.");
+        //        Debug.WriteLine(ex.Message);
+        //        Debug.WriteLine("***********************************");
+        //        throw;
+        //    }
 
 
-            //Seed Demo Submitter User
-            defaultUser = new CustomUser
-            {
-                UserName = "demosub@gmail.com",
-                Email = "demosub@gmail.com",
-                FirstName = "Demo",
-                LastName = "Submitter",
-                EmailConfirmed = true,
-                CompanyId = company2Id,
-                DateJoined = DateTime.Now,
-                MonthlySalary = 3000,
-                SSN = "1234567899",
-                Address = "123 Abc St",
-                City = "New York",
-                State = "New York",
-                ZipCode = "12345",
-                PhoneNumber = "1234567899",
-                UserId = CreateUserId(context)
-            };
-            try
-            {
-                var user = await userManager.FindByEmailAsync(defaultUser.Email);
-                if (user == null)
-                {
-                    await userManager.CreateAsync(defaultUser, "Nhoclanro1!");
-                    await userManager.AddToRoleAsync(defaultUser, Roles.Submitter.ToString());
-                    await userManager.AddToRoleAsync(defaultUser, Roles.DemoUser.ToString());
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("*************  ERROR  *************");
-                Debug.WriteLine("Error Seeding Demo Submitter User.");
-                Debug.WriteLine(ex.Message);
-                Debug.WriteLine("***********************************");
-                throw;
-            }
+        //    //Seed Demo Developer User
+        //    defaultUser = new CustomUser
+        //    {
+        //        UserName = "demodev@gmail.com",
+        //        Email = "demodev@gmail.com",
+        //        FirstName = "Demo",
+        //        LastName = "Developer",
+        //        EmailConfirmed = true,
+        //        CompanyId = company2Id,
+        //        DateJoined = DateTime.Now,
+        //        MonthlySalary = 4000,
+        //        SSN = "1234567899",
+        //        Address = "123 Abc St",
+        //        City = "New York",
+        //        State = "New York",
+        //        ZipCode = "12345",
+        //        PhoneNumber = "1234567899",
+        //        UserId = CreateUserId(context)
+        //    };
+        //    try
+        //    {
+        //        var user = await userManager.FindByEmailAsync(defaultUser.Email);
+        //        if (user == null)
+        //        {
+        //            await userManager.CreateAsync(defaultUser, "Nhoclanro1!");
+        //            await userManager.AddToRoleAsync(defaultUser, Roles.Developer.ToString());
+        //            await userManager.AddToRoleAsync(defaultUser, Roles.DemoUser.ToString());
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Debug.WriteLine("*************  ERROR  *************");
+        //        Debug.WriteLine("Error Seeding Demo Developer1 User.");
+        //        Debug.WriteLine(ex.Message);
+        //        Debug.WriteLine("***********************************");
+        //        throw;
+        //    }
 
 
-            //Seed Demo New User
-            defaultUser = new CustomUser
-            {
-                UserName = "demonew@gmail.com",
-                Email = "demonew@gmail.com",
-                FirstName = "Demo",
-                LastName = "NewUser",
-                EmailConfirmed = true,
-                CompanyId = company2Id,
-                DateJoined = DateTime.Now,
-                MonthlySalary = 2000,
-                SSN = "1234567899",
-                Address = "123 Abc St",
-                City = "New York",
-                State = "New York",
-                ZipCode = "12345",
-                PhoneNumber = "1234567899",
-                UserId = CreateUserId(context)
-            };
-            try
-            {
-                var user = await userManager.FindByEmailAsync(defaultUser.Email);
-                if (user == null)
-                {
-                    await userManager.CreateAsync(defaultUser, "Nhoclanro1!");
-                    await userManager.AddToRoleAsync(defaultUser, Roles.Submitter.ToString());
-                    await userManager.AddToRoleAsync(defaultUser, Roles.DemoUser.ToString());
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("*************  ERROR  *************");
-                Debug.WriteLine("Error Seeding Demo Submitter User.");
-                Debug.WriteLine(ex.Message);
-                Debug.WriteLine("***********************************");
-                throw;
-            }
-        }
+        //    //Seed Demo Submitter User
+        //    defaultUser = new CustomUser
+        //    {
+        //        UserName = "demosub@gmail.com",
+        //        Email = "demosub@gmail.com",
+        //        FirstName = "Demo",
+        //        LastName = "Submitter",
+        //        EmailConfirmed = true,
+        //        CompanyId = company2Id,
+        //        DateJoined = DateTime.Now,
+        //        MonthlySalary = 3000,
+        //        SSN = "1234567899",
+        //        Address = "123 Abc St",
+        //        City = "New York",
+        //        State = "New York",
+        //        ZipCode = "12345",
+        //        PhoneNumber = "1234567899",
+        //        UserId = CreateUserId(context)
+        //    };
+        //    try
+        //    {
+        //        var user = await userManager.FindByEmailAsync(defaultUser.Email);
+        //        if (user == null)
+        //        {
+        //            await userManager.CreateAsync(defaultUser, "Nhoclanro1!");
+        //            await userManager.AddToRoleAsync(defaultUser, Roles.Submitter.ToString());
+        //            await userManager.AddToRoleAsync(defaultUser, Roles.DemoUser.ToString());
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Debug.WriteLine("*************  ERROR  *************");
+        //        Debug.WriteLine("Error Seeding Demo Submitter User.");
+        //        Debug.WriteLine(ex.Message);
+        //        Debug.WriteLine("***********************************");
+        //        throw;
+        //    }
+
+
+        //    //Seed Demo New User
+        //    defaultUser = new CustomUser
+        //    {
+        //        UserName = "demonew@gmail.com",
+        //        Email = "demonew@gmail.com",
+        //        FirstName = "Demo",
+        //        LastName = "NewUser",
+        //        EmailConfirmed = true,
+        //        CompanyId = company2Id,
+        //        DateJoined = DateTime.Now,
+        //        MonthlySalary = 2000,
+        //        SSN = "1234567899",
+        //        Address = "123 Abc St",
+        //        City = "New York",
+        //        State = "New York",
+        //        ZipCode = "12345",
+        //        PhoneNumber = "1234567899",
+        //        UserId = CreateUserId(context)
+        //    };
+        //    try
+        //    {
+        //        var user = await userManager.FindByEmailAsync(defaultUser.Email);
+        //        if (user == null)
+        //        {
+        //            await userManager.CreateAsync(defaultUser, "Nhoclanro1!");
+        //            await userManager.AddToRoleAsync(defaultUser, Roles.Submitter.ToString());
+        //            await userManager.AddToRoleAsync(defaultUser, Roles.DemoUser.ToString());
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Debug.WriteLine("*************  ERROR  *************");
+        //        Debug.WriteLine("Error Seeding Demo Submitter User.");
+        //        Debug.WriteLine(ex.Message);
+        //        Debug.WriteLine("***********************************");
+        //        throw;
+        //    }
+        //}
 
         public static async Task SeedDefaultTicketType(ApplicationDbContext context)
         {
@@ -789,30 +783,30 @@ namespace BlazorBugTracker.Utilities
             }
         }
 
-        public static async Task SeedDefautProjectsAsync(ApplicationDbContext context)
-        {
+        //public static async Task SeedDefautProjectsAsync(ApplicationDbContext context)
+        //{
 
-            try
-            {
-                IList<Project> projects = new List<Project>() {
-                     new Project() { CompanyId = company1Id, Name = "Build a Personal Porfolio", Description="Single page html, css & javascript page.  Serves as a landing page for candidates and contains a bio and links to all applications and challenges.", Created = DateTime.Now },
-                     new Project() { CompanyId = company2Id, Name = "Build a supplemental Blog Web Application", Description="Candidate's custom built web application using .Net Core with MVC, a postgres database and hosted in a heroku container.  The app is designed for the candidate to create, update and maintain a live blog site." , Created = DateTime.Now },
-                     new Project() { CompanyId = company3Id, Name = "Build an Issue Tracking Web Application", Description="A custom designed .Net Core application with postgres database.  The application is a multi tennent application designed to track issue tickets' progress.  Implemented with identity and user roles, Tickets are maintained in projects which are maintained by users in the role of projectmanager.  Each project has a team and team members.", Created = DateTime.Now  }
-                };
+        //    try
+        //    {
+        //        IList<Project> projects = new List<Project>() {
+        //             new Project() { CompanyId = company1Id, Name = "Build a Personal Porfolio", Description="Single page html, css & javascript page.  Serves as a landing page for candidates and contains a bio and links to all applications and challenges.", Created = DateTime.Now },
+        //             new Project() { CompanyId = company2Id, Name = "Build a supplemental Blog Web Application", Description="Candidate's custom built web application using .Net Core with MVC, a postgres database and hosted in a heroku container.  The app is designed for the candidate to create, update and maintain a live blog site." , Created = DateTime.Now },
+        //             new Project() { CompanyId = company3Id, Name = "Build an Issue Tracking Web Application", Description="A custom designed .Net Core application with postgres database.  The application is a multi tennent application designed to track issue tickets' progress.  Implemented with identity and user roles, Tickets are maintained in projects which are maintained by users in the role of projectmanager.  Each project has a team and team members.", Created = DateTime.Now  }
+        //        };
 
-                var dbProjects = context.Project.Select(c => c.Name).ToList();
-                await context.Project.AddRangeAsync(projects.Where(c => !dbProjects.Contains(c.Name)));
-                context.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("*************  ERROR  *************");
-                Debug.WriteLine("Error Seeding Projects.");
-                Debug.WriteLine(ex.Message);
-                Debug.WriteLine("***********************************");
-                throw;
-            }
-        }
+        //        var dbProjects = context.Project.Select(c => c.Name).ToList();
+        //        await context.Project.AddRangeAsync(projects.Where(c => !dbProjects.Contains(c.Name)));
+        //        context.SaveChanges();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Debug.WriteLine("*************  ERROR  *************");
+        //        Debug.WriteLine("Error Seeding Projects.");
+        //        Debug.WriteLine(ex.Message);
+        //        Debug.WriteLine("***********************************");
+        //        throw;
+        //    }
+        //}
 
         public static async Task SeedDefautTicketsAsync(ApplicationDbContext context)
         {
