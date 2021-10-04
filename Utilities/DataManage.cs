@@ -67,7 +67,7 @@ namespace BlazorBugTracker.Utilities
             await SeedDefaultTicketPriorityAsync(dbContextSvc);
             //await SeedDefautProjectsAsync(dbContextSvc);
             //await SeedDefautTicketsAsync(dbContextSvc);
-            //await SeedDefaultTransactionType(dbContextSvc);
+            await SeedDefaultTransactionType(dbContextSvc);
             //await SeedDefaultTransaction(dbContextSvc);
 
         }
