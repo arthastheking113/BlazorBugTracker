@@ -827,7 +827,15 @@ else
         ItemList = AllItemList;
 
         var number_of_close_ticket = AllItemList.Where(t => t.StatusId == TicketCloseId).ToList().Count;
-        PresentOfWork = number_of_close_ticket * 100 / AllItemList.Count;
+        if (AllItemList.Count != 0)
+        {
+            PresentOfWork = number_of_close_ticket * 100 / AllItemList.Count;
+        }
+        else
+        {
+            PresentOfWork = 0;
+        }
+
         NumberOfUnAssignTicket = AllItemList.Where(i => !i.IsAssigned).Count();
         TicketNewInPast7Day = AllItemList.Where(t => t.Created >= currentTime.AddDays(-7)).ToList().Count;
         TicketDoneInPast7Day = AllItemList.Where(t => t.Updated >= currentTime.AddDays(-7) && t.StatusId == TicketCloseId).ToList().Count;
