@@ -297,12 +297,12 @@
     {
         await Task.Delay(1);
         var currrentUser = _httpContextAccessor.HttpContext.User;
-        user = await _userManager.GetUserAsync(currrentUser);
-        IsInRoleAdmin = await _roleService.IsUserInRoleAsync(user, Roles.Admin.ToString());
-        IsDeveloper = await _roleService.IsUserInRoleAsync(user, Roles.Developer.ToString());
-        IsNewUser = await _roleService.IsUserInRoleAsync(user, Roles.NewUser.ToString());
-        IsSubmitter = await _roleService.IsUserInRoleAsync(user, Roles.Submitter.ToString());
-        IsProjectManager = await _roleService.IsUserInRoleAsync(user, Roles.ProjectManager.ToString());
+        user = _context.Users.FirstOrDefault(c => c.Email == currrentUser.Identity.Name);
+        IsInRoleAdmin = _httpContextAccessor.HttpContext.User.IsInRole(Roles.Admin.ToString());
+        IsDeveloper = _httpContextAccessor.HttpContext.User.IsInRole(Roles.Developer.ToString());
+        IsNewUser = _httpContextAccessor.HttpContext.User.IsInRole(Roles.NewUser.ToString());
+        IsSubmitter = _httpContextAccessor.HttpContext.User.IsInRole(Roles.Submitter.ToString());
+        IsProjectManager = _httpContextAccessor.HttpContext.User.IsInRole(Roles.ProjectManager.ToString());
 
         NotificationList = _context.Notification.Include(n => n.Ticket).Include(n => n.Recipient).Include(n => n.Sender).Where(n => n.RecipientId == user.Id).ToList();
         WelcomeNotificationList = _context.WelcomeNotification.Include(n => n.Recipient).Include(n => n.Sender).Where(n => n.RecipientId == user.Id).ToList();
