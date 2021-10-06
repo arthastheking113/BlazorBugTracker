@@ -316,11 +316,26 @@
 
 
         var ProjectManagerRoleId = RoleList.FirstOrDefault(r => r.Name == Roles.ProjectManager.ToString()).Id;
-        var ProjectManagerListId = UserRoleList.Where(r => r.RoleId == ProjectManagerRoleId).ToList();
-        foreach (var item in ProjectManagerListId)
+        if (IsInRoleAdmin)
         {
-            ProjectManagerList.Add(AllUser.FirstOrDefault(r => r.Id == item.UserId));
+            var AdminRoleId = RoleList.FirstOrDefault(r => r.Name == Roles.Admin.ToString()).Id;
+            var ProjectManagerListId = UserRoleList.Where(r => r.RoleId == ProjectManagerRoleId || r.RoleId == AdminRoleId).ToList();
+            foreach (var item in ProjectManagerListId)
+            {
+                ProjectManagerList.Add(AllUser.FirstOrDefault(r => r.Id == item.UserId));
+            }
         }
+        else
+        {
+            var ProjectManagerListId = UserRoleList.Where(r => r.RoleId == ProjectManagerRoleId).ToList();
+            foreach (var item in ProjectManagerListId)
+            {
+                ProjectManagerList.Add(AllUser.FirstOrDefault(r => r.Id == item.UserId));
+            }
+        }
+
+
+
 
 
     }
