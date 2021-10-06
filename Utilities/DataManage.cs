@@ -58,16 +58,16 @@ namespace BlazorBugTracker.Utilities
             //await dbContextSvc.Database.MigrateAsync();
 
             // add role to the system
-            await SeedRoleAsync(roleManagerSvc, userManageSvc);
-            await SeedDefaultCompaniesAsync(dbContextSvc);
-            await SeedDefaultUserAsync(userManageSvc, roleManagerSvc, dbContextSvc);
+            //await SeedRoleAsync(roleManagerSvc, userManageSvc);
+            //await SeedDefaultCompaniesAsync(dbContextSvc);
+            //await SeedDefaultUserAsync(userManageSvc, roleManagerSvc, dbContextSvc);
             //await SeedDemoUsersAsync(userManageSvc, roleManagerSvc, dbContextSvc);
-            await SeedDefaultTicketType(dbContextSvc);
-            await SeedDefaultTicketStatusAsync(dbContextSvc);
-            await SeedDefaultTicketPriorityAsync(dbContextSvc);
+            //await SeedDefaultTicketType(dbContextSvc);
+            //await SeedDefaultTicketStatusAsync(dbContextSvc);
+            //await SeedDefaultTicketPriorityAsync(dbContextSvc);
             //await SeedDefautProjectsAsync(dbContextSvc);
             //await SeedDefautTicketsAsync(dbContextSvc);
-            await SeedDefaultTransactionType(dbContextSvc);
+            //await SeedDefaultTransactionType(dbContextSvc);
             //await SeedDefaultTransaction(dbContextSvc);
 
         }
