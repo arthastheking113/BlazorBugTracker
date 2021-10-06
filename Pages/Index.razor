@@ -246,15 +246,19 @@ else
                         </div>
                         <div class="col-md">
                             <div class="card-body">
-                                <RadzenChart>
-                                    <RadzenDonutSeries Data="@TicketTypeChart" Title="Number Of Ticket Type" CategoryProperty="TicketCategory" ValueProperty="NumberOfTicket">
-                                        <TitleTemplate>
-                                            <div class="rz-donut-content">
+                                @if (AllItemList.Count != 0)
+                                {
+                                    <RadzenChart>
+                                        <RadzenDonutSeries Data="@TicketTypeChart" Title="Number Of Ticket Type" CategoryProperty="TicketCategory" ValueProperty="NumberOfTicket">
+                                            <TitleTemplate>
+                                                <div class="rz-donut-content">
 
-                                            </div>
-                                        </TitleTemplate>
-                                    </RadzenDonutSeries>
-                                </RadzenChart>
+                                                </div>
+                                            </TitleTemplate>
+                                        </RadzenDonutSeries>
+                                    </RadzenChart>
+                                }
+                                
                                 <p class="text-center">
                                     <strong>Tickets By Type</strong>
                                 </p>
@@ -263,15 +267,19 @@ else
                         </div>
                         <div class="col-md">
                             <div class="card-body">
-                                <RadzenChart>
-                                    <RadzenDonutSeries Data="@TicketStatusChart" Title="Number Of Ticket Status" CategoryProperty="TicketCategory" ValueProperty="NumberOfTicket">
-                                        <TitleTemplate>
-                                            <div class="rz-donut-content">
+                                @if (AllItemList.Count != 0)
+                                {
+                                    <RadzenChart>
+                                        <RadzenDonutSeries Data="@TicketStatusChart" Title="Number Of Ticket Status" CategoryProperty="TicketCategory" ValueProperty="NumberOfTicket">
+                                            <TitleTemplate>
+                                                <div class="rz-donut-content">
 
-                                            </div>
-                                        </TitleTemplate>
-                                    </RadzenDonutSeries>
-                                </RadzenChart>
+                                                </div>
+                                            </TitleTemplate>
+                                        </RadzenDonutSeries>
+                                    </RadzenChart>
+                                }
+
                                 <p class="text-center">
                                     <strong>Tickets By Status</strong>
                                 </p>
@@ -280,15 +288,19 @@ else
                         </div>
                         <div class="col-md">
                             <div class="card-body">
-                                <RadzenChart>
-                                    <RadzenDonutSeries Data="@TicketPriorityChart" Title="Number Of Ticket Priority" CategoryProperty="TicketCategory" ValueProperty="NumberOfTicket">
-                                        <TitleTemplate>
-                                            <div class="rz-donut-content">
+                                @if (AllItemList.Count != 0)
+                                {
+                                    <RadzenChart>
+                                        <RadzenDonutSeries Data="@TicketPriorityChart" Title="Number Of Ticket Priority" CategoryProperty="TicketCategory" ValueProperty="NumberOfTicket">
+                                            <TitleTemplate>
+                                                <div class="rz-donut-content">
 
-                                            </div>
-                                        </TitleTemplate>
-                                    </RadzenDonutSeries>
-                                </RadzenChart>
+                                                </div>
+                                            </TitleTemplate>
+                                        </RadzenDonutSeries>
+                                    </RadzenChart>
+                                }
+                                    
                                 <p class="text-center">
                                     <strong>Tickets By Priority</strong>
                                 </p>
@@ -1270,34 +1282,37 @@ else
         TicketTypeChart = new();
         TicketPriorityChart = new();
         TicketStatusChart = new();
+        if (AllItemList.Count != 0)
+        {
+            foreach (var item in TicketTypeList)
+            {
+                ChartModel newTicketType = new ChartModel
+                {
+                    TicketCategory = item.Name,
+                    NumberOfTicket = AllItemList.Where(t => t.TicketTypeId == item.Id).ToList().Count
+                };
+                TicketTypeChart.Add(newTicketType);
+            }
+            foreach (var item in TicketPriorityList)
+            {
+                ChartModel newTicketPriority = new ChartModel
+                {
+                    TicketCategory = item.Name,
+                    NumberOfTicket = AllItemList.Where(t => t.PriorityId == item.Id).ToList().Count
+                };
+                TicketPriorityChart.Add(newTicketPriority);
+            }
+            foreach (var item in TicketStatusList)
+            {
+                ChartModel newTicketStatus = new ChartModel
+                {
+                    TicketCategory = item.Name,
+                    NumberOfTicket = AllItemList.Where(t => t.StatusId == item.Id).ToList().Count
+                };
+                TicketStatusChart.Add(newTicketStatus);
+            }
+        }
 
-        foreach (var item in TicketTypeList)
-        {
-            ChartModel newTicketType = new ChartModel
-            {
-                TicketCategory = item.Name,
-                NumberOfTicket = AllItemList.Where(t => t.TicketTypeId == item.Id).ToList().Count
-            };
-            TicketTypeChart.Add(newTicketType);
-        }
-        foreach (var item in TicketPriorityList)
-        {
-            ChartModel newTicketPriority = new ChartModel
-            {
-                TicketCategory = item.Name,
-                NumberOfTicket = AllItemList.Where(t => t.PriorityId == item.Id).ToList().Count
-            };
-            TicketPriorityChart.Add(newTicketPriority);
-        }
-        foreach (var item in TicketStatusList)
-        {
-            ChartModel newTicketStatus = new ChartModel
-            {
-                TicketCategory = item.Name,
-                NumberOfTicket = AllItemList.Where(t => t.StatusId == item.Id).ToList().Count
-            };
-            TicketStatusChart.Add(newTicketStatus);
-        }
     }
 
 

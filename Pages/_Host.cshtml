@@ -10,7 +10,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Blazor BugTracker</title>
+    <title>YGO Tracker</title>
     <base href="~/" />
     <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
     <link href="css/site.css" rel="stylesheet" />
@@ -76,6 +76,7 @@
             <a class="dismiss">🗙</a>
         </div>*@
 
+
     <script src="_framework/blazor.server.js"></script>
     <script src="~/plugins/jquery/jquery.min.js"></script>
     <!-- jQuery UI 1.11.4 -->
@@ -122,16 +123,13 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
     <script>
-
         var nav = $('nav');
         var navHeight = nav.outerHeight();
-
         $('.navbar-toggler').on('click', function () {
             if (!$('#mainNav').hasClass('navbar-reduce')) {
                 $('#mainNav').addClass('navbar-reduce');
             }
         })
-
         // Preloader
         $(window).on('load', function () {
             if ($('#preloader').length) {
@@ -140,7 +138,6 @@
                 });
             }
         });
-
         // Back to top button
         $(window).scroll(function () {
             if ($(this).scrollTop() > 100) {
@@ -164,7 +161,7 @@
             target: '#mainNav',
             offset: navHeight
         });
-            /*--/ End Scrolling nav /--*/
+                /*--/ End Scrolling nav /--*/
     </script>
 </body>
 </html>
