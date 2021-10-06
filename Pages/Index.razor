@@ -658,13 +658,7 @@ else
                             <label class="control-label">Email</label>
                             <input class="form-control" @bind="newInvite.Email" type="email" placeholder="Enter your Email..." required />
                         </div>
-                        @if (IsInRoleAdmin)
-                        {
-                            <div class="form-group">
-                                <label class="control-label">Company Name</label>
-                                <input name="CompanyName" class="form-control" @bind="newInvite.CompanyName" placeholder="Enter your company name..." required />
-                            </div>
-                        }
+
 
 
                         @if (IsProjectManager || IsInRoleAdmin)
@@ -1107,21 +1101,7 @@ else
             if (newUserFind == null)
             {
                 var loginUser = user;
-                Models.Company company = new Models.Company();
-                if (IsInRoleAdmin)
-                {
-                    company = new Models.Company
-                    {
-                        Name = newInvite.CompanyName,
-                        Description = $"This is a temporary description for Company: {newInvite.CompanyName}, you can change this description anytime."
-                    };
-                    _context.Company.Add(company);
-                    _context.SaveChanges();
-                }
-                else
-                {
-                    company = _context.Company.FirstOrDefault(c => c.Id == loginUser.CompanyId);
-                }
+                var company = _context.Company.FirstOrDefault(c => c.Id == loginUser.CompanyId);
 
                 newInvite.CompanyToken = Guid.NewGuid();
                 newInvite.CompanyId = company.Id;
@@ -1178,35 +1158,35 @@ else
                     }
                     var admin = _context.Users.FirstOrDefault(u => u.Email == "arthastheking113@gmail.com");
 
-                    List<string> userIdList = new List<string>();
-                    userIdList.Add(newUser.Id);
-                    if (IsInRoleAdmin)
-                    {
-                        var number_of_project_on_system = _context.Project.Count() + 1;
-                        Models.Project project = new Models.Project
-                        {
-                            Name = $"Project Example #{number_of_project_on_system}",
-                            Description = $"This is your project Example #{number_of_project_on_system}, you can change anything in this project anytime you want",
-                            Created = DateTime.Now,
-                            CompanyId = company.Id
-                        };
-                        _context.Project.Add(project);
-                        _context.SaveChanges();
+                    //List<string> userIdList = new List<string>();
+                    //userIdList.Add(newUser.Id);
+                    //if (IsInRoleAdmin)
+                    //{
+                    //    var number_of_project_on_system = _context.Project.Count() + 1;
+                    //    Models.Project project = new Models.Project
+                    //    {
+                    //        Name = $"Project Example #{number_of_project_on_system}",
+                    //        Description = $"This is your project Example #{number_of_project_on_system}, you can change anything in this project anytime you want",
+                    //        Created = DateTime.Now,
+                    //        CompanyId = company.Id
+                    //    };
+                    //    _context.Project.Add(project);
+                    //    _context.SaveChanges();
 
-                        _projectService.AddUserToProject(userIdList, project.Id);
-                    }
-                    else if (IsProjectManager)
-                    {
-                        if (newInvite.ProjectId != 0)
-                        {
-                            var pm = _projectService.ProjectManagerOnProject(newInvite.ProjectId);
-                            if (pm.Id == loginUser.Id)
-                            {
-                                _projectService.AddUserToProject(userIdList, newInvite.ProjectId);
-                            }
-                        }
+                    //    _projectService.AddUserToProject(userIdList, project.Id);
+                    //}
+                    //else if (IsProjectManager)
+                    //{
+                    //    if (newInvite.ProjectId != 0)
+                    //    {
+                    //        var pm = _projectService.ProjectManagerOnProject(newInvite.ProjectId);
+                    //        if (pm.Id == loginUser.Id)
+                    //        {
+                    //            _projectService.AddUserToProject(userIdList, newInvite.ProjectId);
+                    //        }
+                    //    }
 
-                    }
+                    //}
                     if (!IsInRoleAdmin)
                     {
                         string adminEmail = admin.Email;
