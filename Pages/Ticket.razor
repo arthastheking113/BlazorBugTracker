@@ -801,6 +801,7 @@ else
             //notification when current user is developer
             else if (IsDeveloper)
             {
+                var projectManagerOnProject = _projectService.ProjectManagerOnProject(newItem.ProjectId);
                 //send notication to project manager on project
                 Models.Notification notification = new Models.Notification
                 {
@@ -809,7 +810,7 @@ else
                     Description = $"New Ticket #{newItem.Id} is Created by Developer in {projectName} and Waiting for being Approve",
                     Created = DateTime.Now,
                     SenderId = newItem.OwnnerId,
-                    RecipientId = (_projectService.ProjectManagerOnProject(newItem.ProjectId)).Id
+                    RecipientId = projectManagerOnProject.Id
                 };
                 _context.Notification.Add(notification);
                 _context.SaveChanges();
@@ -827,7 +828,7 @@ else
                     TicketId = newItem.Id,
                     Description = $"You just create a new ticket #{newItem.Id} in project {projectName} and waiting for being Assigned",
                     Created = DateTime.Now,
-                    SenderId = (_projectService.ProjectManagerOnProject(newItem.ProjectId)).Id,
+                    SenderId = projectManagerOnProject.Id,
                     RecipientId = newItem.OwnnerId
                 };
                 _context.Notification.Add(notification2);
@@ -1039,11 +1040,11 @@ else
         else if (IsSubmitter)
         {
 
-            ItemList = ItemList.Where(u => u.OwnnerId == user.Id).ToList();
+            ItemList = ItemList.Where(u => u.OwnnerId == user.Id || u.OwnnerId == user.Id).ToList();
         }
         else
         {
-            ItemList = ItemList.Where(u => u.DeveloperId == user.Id).ToList();
+            ItemList = ItemList.Where(u => u.DeveloperId == user.Id || u.OwnnerId == user.Id).ToList();
         }
 
     }

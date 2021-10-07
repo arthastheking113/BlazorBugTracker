@@ -140,7 +140,8 @@ namespace BlazorBugTracker.Services
         public CustomUser ProjectManagerOnProject(int projectId)
         {
             var roles = _context.Roles.FirstOrDefault(r => r.Name == Roles.ProjectManager.ToString());
-            var user = _context.UserRoles.Where(u => u.RoleId == roles.Id).Select(u => u.UserId).ToList();
+            var adminRole = _context.Roles.FirstOrDefault(r => r.Name == Roles.Admin.ToString());
+            var user = _context.UserRoles.Where(u => u.RoleId == roles.Id || u.RoleId == adminRole.Id).Select(u => u.UserId).ToList();
             List<CustomUser> userList = new List<CustomUser>();
             foreach (var item in user)
             {

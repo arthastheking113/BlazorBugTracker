@@ -882,11 +882,11 @@ else
         else if (IsSubmitter)
         {
 
-            ItemList = ItemList.Where(u => u.OwnnerId == user.Id).ToList();
+            ItemList = ItemList.Where(u => u.OwnnerId == user.Id || u.OwnnerId == user.Id).ToList();
         }
         else
         {
-            ItemList = ItemList.Where(u => u.DeveloperId == user.Id).ToList();
+            ItemList = ItemList.Where(u => u.DeveloperId == user.Id || u.OwnnerId == user.Id).ToList();
         }
 
     }
