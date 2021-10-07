@@ -963,7 +963,7 @@ else
                     _context.TicketHistory.Remove(history);
                     await _context.SaveChangesAsync();
                 }
-                _context.Ticket.Remove(Ticket);
+                _context.Remove(currentTicket);
                 await _context.SaveChangesAsync();
 
 
