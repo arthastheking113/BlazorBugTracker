@@ -12,6 +12,8 @@
 @inject UserManager<CustomUser> _userManager
 @inject ICustomRoleService _roleService
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
 <LoadingPage OnLoading="@GetData">
     <LoadingContent>
         <div class="loader">Loading...</div>
@@ -42,7 +44,7 @@
                                 <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="help" Click=@(() => OpenViewDialog(data)) Text="View" />
                             </Template>
                         </RadzenDataGridColumn>
-                        <RadzenDataGridColumn TItem="Models.CustomUser" Width="70px" Filterable="false" Sortable="false"   TextAlign="TextAlign.Center">
+                        <RadzenDataGridColumn TItem="Models.CustomUser" Width="70px" Filterable="false" Sortable="false" TextAlign="TextAlign.Center">
                             <Template Context="data">
                                 <img class="rounded-circle img-fluid" src="@(_imageService.DecodeFileAvatar(data.ImageData, data.ContentType))" />
                             </Template>
@@ -132,7 +134,7 @@
                         <div class="row">
                             <div class="col">
                                 <div style="margin-top:5%">Email</div>
-                                <input class="form-control"  type="email" @bind="newItem.Email" />
+                                <input class="form-control" type="email" @bind="newItem.Email" />
                             </div>
                             <div class="col">
                                 <div style="margin-top:5%">Phone Number</div>
@@ -140,7 +142,7 @@
                             </div>
                             <div class="col">
                                 <div style="margin-top:5%">Day of Birth</div>
-                                <RadzenDatePicker @bind-Value=@newItem.DayOfBirth DateFormat="d"  />
+                                <RadzenDatePicker @bind-Value=@newItem.DayOfBirth DateFormat="d" />
                             </div>
                         </div>
                         <div class="row">
@@ -696,13 +698,14 @@
     public IEnumerable<IdentityError> errors = null;
     public List<IdentityRole> RoleList = new();
     public List<string> userRoleList = new();
-
+    public AuthenticationState authentication;
     protected override async Task OnInitializedAsync()
     {
-        var currrentUser = _httpContextAccessor.HttpContext.User;
-        user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
-        IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
-        IsHR = currrentUser.IsInRole(Roles.HR.ToString());
+        //var currrentUser = _httpContextAccessor.HttpContext.User;
+        authentication = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = _context.Users.FirstOrDefault(u => u.Email == authentication.User.Identity.Name);
+        IsInRoleAdmin = authentication.User.IsInRole(Roles.Admin.ToString());
+        IsHR = authentication.User.IsInRole(Roles.HR.ToString());
         if (IsInRoleAdmin || IsHR)
         {
 

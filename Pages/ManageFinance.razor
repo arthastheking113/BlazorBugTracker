@@ -5,19 +5,20 @@
 @inject NavigationManager NavigationManager
 @using Microsoft.AspNetCore.Http
 @inject IHttpContextAccessor _httpContextAccessor
+@inject AuthenticationStateProvider AuthenticationStateProvider
 <div class="container-fluid p-0">
     <div class="row">
         @if (loading is true)
         {
-        <div class="col">
-            <div id="preloader">
-                <div class="center">
-                    <p style="text-align: center;font-size: 14px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; border-radius: 0; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;">
-                        Just A Second, I'm Loading...
-                    </p>
+            <div class="col">
+                <div id="preloader">
+                    <div class="center">
+                        <p style="text-align: center;font-size: 14px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; border-radius: 0; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                            Just A Second, I'm Loading...
+                        </p>
+                    </div>
                 </div>
             </div>
-        </div>
         }
         else
         {
@@ -265,7 +266,7 @@
     public bool IsSeniorAccountant;
     public bool IsNewUser;
 
-
+    public AuthenticationState authentication;
     public async Task GetData()
     {
         await Task.Delay(1);
@@ -367,11 +368,12 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var currrentUser = _httpContextAccessor.HttpContext.User;
-        user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
-        IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
-        IsSeniorAccountant = currrentUser.IsInRole(Roles.SeniorAccountant.ToString());
-        IsAccountant = currrentUser.IsInRole(Roles.Accountant.ToString());
+        //var currrentUser = _httpContextAccessor.HttpContext.User;
+        authentication = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = _context.Users.FirstOrDefault(u => u.Email == authentication.User.Identity.Name);
+        IsInRoleAdmin = authentication.User.IsInRole(Roles.Admin.ToString());
+        IsSeniorAccountant = authentication.User.IsInRole(Roles.SeniorAccountant.ToString());
+        IsAccountant = authentication.User.IsInRole(Roles.Accountant.ToString());
         if (IsInRoleAdmin || IsSeniorAccountant || IsAccountant)
         {
 

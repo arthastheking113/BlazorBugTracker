@@ -6,6 +6,7 @@
 @using Microsoft.AspNetCore.Http
 @inject IHttpContextAccessor _httpContextAccessor
 @inject ICustomRoleService _roleService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 <LoadingPage OnLoading="@GetData">
     <LoadingContent>
         <div class="loader">Loading...</div>
@@ -218,7 +219,7 @@
 
     public Models.TicketType newItem = new();
     public Models.TicketType currentItem = new();
-
+    public AuthenticationState authentication;
     private async Task OpenCreateDialog()
     {
         await _createDialog.Open();
@@ -311,9 +312,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var currrentUser = _httpContextAccessor.HttpContext.User;
-        user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
-        IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
+        //var currrentUser = _httpContextAccessor.HttpContext.User;
+        authentication = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = _context.Users.FirstOrDefault(u => u.Email == authentication.User.Identity.Name);
+        IsInRoleAdmin = authentication.User.IsInRole(Roles.Admin.ToString());
         if (IsInRoleAdmin)
         {
             await GetData();

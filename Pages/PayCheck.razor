@@ -5,6 +5,7 @@
 @inject ApplicationDbContext _context
 @inject IHttpContextAccessor _httpContextAccessor
 @inject IJSRuntime JSRuntime
+@inject AuthenticationStateProvider AuthenticationStateProvider
 <LoadingPage OnLoading="@GetData">
     <LoadingContent>
         <div class="loader">Loading...</div>
@@ -18,16 +19,16 @@
                             FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                             LogicalFilterOperator="LogicalFilterOperator.Or">
                 <Columns>
-                    <RadzenDataGridColumn TItem="Models.TwoWeeksModel"  Title="View">
+                    <RadzenDataGridColumn TItem="Models.TwoWeeksModel" Title="View">
                         <Template Context="data">
 
                             <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="help" Click=@(() => OpenCreateDialog(data)) Text="View" />
                         </Template>
                     </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TItem="Models.TwoWeeksModel" Property="Start" Title="Start"  FormatString="{0:d}"  />
+                    <RadzenDataGridColumn TItem="Models.TwoWeeksModel" Property="Start" Title="Start" FormatString="{0:d}" />
 
-                    <RadzenDataGridColumn TItem="Models.TwoWeeksModel" Property="End" Title="End"  FormatString="{0:d}"  />
-                   
+                    <RadzenDataGridColumn TItem="Models.TwoWeeksModel" Property="End" Title="End" FormatString="{0:d}" />
+
                 </Columns>
             </RadzenDataGrid>
         </div>
@@ -61,7 +62,7 @@
                 </div>
                 <div class="col text-right">
                     Is Submitted?
-                    <RadzenSelectBar  Disabled="true" @bind-Value=@currentPayRollIsSubmitted  TValue="bool">
+                    <RadzenSelectBar Disabled="true" @bind-Value=@currentPayRollIsSubmitted TValue="bool">
                         <Items>
                             <RadzenSelectBarItem Text="Yes" Value="true" />
                             <RadzenSelectBarItem Text="No" Value="false" />
@@ -169,8 +170,8 @@
                     </div>
                     <br />
                     <button class="btn btn-secondary btn-block" @onclick="CancelPayRollDialog">Cancel</button>
-                    </div>
                 </div>
+            </div>
         </div>
     </Content>
 </ModalDialog>
@@ -268,7 +269,7 @@
 
     private ModalDialog _payCheckDialog;
     private ModalDialog _submitPayCheckDialog;
-
+    public AuthenticationState authentication;
 
     public async Task CancelSubmitPayCheckDialog()
     {
@@ -526,7 +527,7 @@
             }
 
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             await JSRuntime.InvokeVoidAsync("error", null);
         }
@@ -560,9 +561,8 @@
     public async Task GetData()
     {
         await Task.Delay(1);
-        var currrentUser = _httpContextAccessor.HttpContext.User;
-        user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
-
+        authentication = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = _context.Users.FirstOrDefault(u => u.Email == authentication.User.Identity.Name);
         ItemList = _context.PayRoll.Include(p => p.CustomUser).Where(p => p.CustomUserId == user.Id).OrderByDescending(c => c.Start).ToList();
         DisableDate = Enumerable.Range(0, 1 + user.DateJoined.AddDays(-1).Subtract(BeginningOfTime).Days)
         .Select(offset => BeginningOfTime.AddDays(offset))

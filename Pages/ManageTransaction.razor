@@ -6,6 +6,7 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject ICustomRoleService _roleService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 <LoadingPage OnLoading="@GetData">
     <LoadingContent>
         <div class="loader">Loading...</div>
@@ -387,7 +388,7 @@
     private ModalDialog _createDialog;
     private ModalDialog _editDialog;
     private ModalDialog _deleteDialog;
-
+    public AuthenticationState authentication;
     private async Task OpenCreateDialog()
     {
         newItem = new();
@@ -505,11 +506,12 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var currrentUser = _httpContextAccessor.HttpContext.User;
-        user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
-        IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
-        IsSeniorAccountant = currrentUser.IsInRole(Roles.SeniorAccountant.ToString());
-        IsAccountant = currrentUser.IsInRole(Roles.Accountant.ToString());
+        //var currrentUser = _httpContextAccessor.HttpContext.User;
+        authentication = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = _context.Users.FirstOrDefault(u => u.Email == authentication.User.Identity.Name);
+        IsInRoleAdmin = authentication.User.IsInRole(Roles.Admin.ToString());
+        IsSeniorAccountant = authentication.User.IsInRole(Roles.SeniorAccountant.ToString());
+        IsAccountant = authentication.User.IsInRole(Roles.Accountant.ToString());
         if (IsInRoleAdmin || IsSeniorAccountant || IsAccountant)
         {
             await GetData();

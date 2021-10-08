@@ -18,6 +18,7 @@
 @inject IEmailSender _emailSender
 @inject ICustomHistoryService _customHistoryService
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @using System.IO
 @if (currentTicket.Name is null || user is null)
 {
@@ -814,18 +815,19 @@ else
     private ModalDialog _TicketAttachmentDialog;
     private ModalDialog _editDialog;
     private ModalDialog _deleteDialog;
-
+    public AuthenticationState authentication;
     protected override async Task OnInitializedAsync()
     {
-        if (!String.IsNullOrEmpty(TicketId))
+        if (!string.IsNullOrEmpty(TicketId))
         {
-            var currrentUser = _httpContextAccessor.HttpContext.User;
-            user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
-            IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
-            IsDeveloper = currrentUser.IsInRole(Roles.Developer.ToString());
-            IsNewUser = currrentUser.IsInRole(Roles.NewUser.ToString());
-            IsSubmitter = currrentUser.IsInRole(Roles.Submitter.ToString());
-            IsProjectManager = currrentUser.IsInRole(Roles.ProjectManager.ToString());
+            authentication = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            //var currrentUser = _httpContextAccessor.HttpContext.User;
+            user = _context.Users.FirstOrDefault(u => u.Email == authentication.User.Identity.Name);
+            IsInRoleAdmin = authentication.User.IsInRole(Roles.Admin.ToString());
+            IsDeveloper = authentication.User.IsInRole(Roles.Developer.ToString());
+            IsNewUser = authentication.User.IsInRole(Roles.NewUser.ToString());
+            IsSubmitter = authentication.User.IsInRole(Roles.Submitter.ToString());
+            IsProjectManager = authentication.User.IsInRole(Roles.ProjectManager.ToString());
 
 
             if (!IsInRoleAdmin && _projectService.ProjectManagerOnProject(currentTicket.ProjectId).Id != user.Id && currentTicket.OwnnerId != user.Id && currentTicket.DeveloperId != user.Id)

@@ -20,7 +20,7 @@
 @inject ISessionStorageService sessionStorage
 @inject IJSRuntime JSRuntime
 @inject IEmailSender _emailSender
-
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @if (currentProject.Id == 0)
 {
     <div id="preloader">
@@ -710,7 +710,7 @@ else
     public DateTime currentTime;
 
     public Models.Ticket newItem = new();
-
+    public AuthenticationState authentication;
     private async Task OpenCreateDialog()
     {
         newItem = new();
@@ -913,13 +913,14 @@ else
     protected override async Task OnInitializedAsync()
     {
 
-        var currrentUser = _httpContextAccessor.HttpContext.User;
-        user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
-        IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
-        IsDeveloper = currrentUser.IsInRole(Roles.Developer.ToString());
-        IsNewUser = currrentUser.IsInRole(Roles.NewUser.ToString());
-        IsSubmitter = currrentUser.IsInRole(Roles.Submitter.ToString());
-        IsProjectManager = currrentUser.IsInRole(Roles.ProjectManager.ToString());
+        authentication = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        //var currrentUser = _httpContextAccessor.HttpContext.User;
+        user = _context.Users.FirstOrDefault(u => u.Email == authentication.User.Identity.Name);
+        IsInRoleAdmin = authentication.User.IsInRole(Roles.Admin.ToString());
+        IsDeveloper = authentication.User.IsInRole(Roles.Developer.ToString());
+        IsNewUser = authentication.User.IsInRole(Roles.NewUser.ToString());
+        IsSubmitter = authentication.User.IsInRole(Roles.Submitter.ToString());
+        IsProjectManager = authentication.User.IsInRole(Roles.ProjectManager.ToString());
         var developerOnProject = _projectService.DeveloperOnProject(Convert.ToInt32(ProjectId));
         if (IsInRoleAdmin || IsProjectManager || developerOnProject.Contains(user))
         {

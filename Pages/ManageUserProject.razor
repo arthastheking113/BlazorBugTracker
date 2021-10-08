@@ -11,7 +11,8 @@
 @inject ICustomRoleService _roleService
 @inject ICustomProjectService _projectService
 @inject IHttpContextAccessor _httpContextAccessor
-@inject NavigationManager NavigationManager 
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 <LoadingPage OnLoading="@GetData">
     <LoadingContent>
         <div class="loader">Loading...</div>
@@ -38,16 +39,16 @@
                                         <div class="col">
                                             <div class="form-group">
                                                 @*<select @bind="ProjectSelected" class="form-control select2" style="width: 100%;">
-            @foreach (var item in ProjectList)
-            {
-                <option value="@item.Id">@item.Name</option>
-            }
-        </select>*@
+                                                        @foreach (var item in ProjectList)
+                                                        {
+                                                            <option value="@item.Id">@item.Name</option>
+                                                        }
+                                                    </select>*@
                                                 <RadzenListBox AllowFiltering="true" AllowClear="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value=@ProjectSelected
                                                                Data=@ProjectList TextProperty="Name" ValueProperty="Id"
                                                                TValue="int" Placeholder="Select Project..." Style="height:300px;width:100%" />
                                                 @*<RadzenDropDown AllowClear="true" TValue="int"  @bind-Value=@ProjectSelected FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width: 100%"
-                                                                Placeholder="Select Project..." Data=@ProjectList TextProperty="Name" ValueProperty="Id" />*@
+                                                    Placeholder="Select Project..." Data=@ProjectList TextProperty="Name" ValueProperty="Id" />*@
 
                                             </div>
                                         </div>
@@ -65,20 +66,20 @@
                                         <div class="col">
                                             <div class="form-group">
                                                 @*<select class="form-control select2" style="width: 100%;">
-            @if (ProjectManagerList.Count != 0)
-            {
-                @foreach (var item in ProjectManagerList)
-                {
-                    <option value="@item.Id">@item.FullName</option>
-                }
-            }
+                                                        @if (ProjectManagerList.Count != 0)
+                                                        {
+                                                            @foreach (var item in ProjectManagerList)
+                                                            {
+                                                                <option value="@item.Id">@item.FullName</option>
+                                                            }
+                                                        }
 
-        </select>*@
+                                                    </select>*@
                                                 <RadzenListBox AllowFiltering="true" AllowClear="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value=@ProjectManagerSelected
                                                                Data=@ProjectManagerList TextProperty="FullName" ValueProperty="Id"
                                                                TValue="string" Placeholder="Select Project Manager..." Style="height:300px;width:100%" />
                                                 @*<RadzenDropDown AllowClear="true" TValue="string" @bind-Value=@ProjectManagerSelected FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowFiltering="true" Style="width: 100%"
-                                                                Placeholder="Select Project Manager..." Data=@ProjectManagerList TextProperty="FullName" ValueProperty="Id" />*@
+                                                    Placeholder="Select Project Manager..." Data=@ProjectManagerList TextProperty="FullName" ValueProperty="Id" />*@
                                             </div>
                                         </div>
                                     </div>
@@ -97,24 +98,24 @@
                                                     <div class="row">
                                                         <div class="col-12">
                                                             @*<select class="select2"  multiple="multiple" data-placeholder="Select developers" style="width: 100%;">
-            @if (DeveloperList.Count != 0)
-            {
-                @foreach (var item in DeveloperList)
-                {
-                    <option value="@item.Id">@item.FullName</option>
-                }
-            }
+                                                                    @if (DeveloperList.Count != 0)
+                                                                    {
+                                                                        @foreach (var item in DeveloperList)
+                                                                        {
+                                                                            <option value="@item.Id">@item.FullName</option>
+                                                                        }
+                                                                    }
 
-        </select>*@
+                                                                </select>*@
 
-                                                            <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value="DeveloperSelected" 
+                                                            <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value="DeveloperSelected"
                                                                            TValue="IEnumerable<string>" Multiple="true" Data=@DeveloperList
                                                                            Placeholder="Select Developer..." TextProperty="FullName" ValueProperty="Id" Style="height:300px;width:100%" />
 
                                                             @*<RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                                                                            @bind-Value=@DeveloperSelected Multiple="true" Placeholder="Select Developers..." Data=@DeveloperList 
-                                                                            TextProperty="FullName" ValueProperty="Id"
-                                                                            Style="width: 100%" />*@
+                                                                @bind-Value=@DeveloperSelected Multiple="true" Placeholder="Select Developers..." Data=@DeveloperList
+                                                                TextProperty="FullName" ValueProperty="Id"
+                                                                Style="width: 100%" />*@
 
                                                             <!-- /.form-group -->
                                                         </div>
@@ -142,25 +143,25 @@
                                                     <div class="row">
                                                         <div class="col-12">
                                                             @*<select class="select2"  multiple="multiple" data-placeholder="Select submitters" style="width: 100%;">
-            @if (SubmitterList.Count != 0)
-            {
+                                                                    @if (SubmitterList.Count != 0)
+                                                                    {
 
-                @foreach (var item in SubmitterList)
-                {
-                    <option value="@item.Id">@item.FullName</option>
-                }
-            }
+                                                                        @foreach (var item in SubmitterList)
+                                                                        {
+                                                                            <option value="@item.Id">@item.FullName</option>
+                                                                        }
+                                                                    }
 
-        </select>*@
+                                                                </select>*@
 
-                                                            <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value="SubmitterSelected" 
+                                                            <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" @bind-Value="SubmitterSelected"
                                                                            TValue="IEnumerable<string>" Multiple="true" Data=@SubmitterList
                                                                            Placeholder="Select Submitter..." TextProperty="FullName" ValueProperty="Id" Style="height:300px;width:100%" />
 
                                                             @*<RadzenDropDown AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                                                                            @bind-Value=@SubmitterSelected Multiple="true" Placeholder="Select Submitter..." Data=@SubmitterList
-                                                                            TextProperty="FullName" ValueProperty="Id"
-                                                                            Style="width: 100%" />*@
+                                                                @bind-Value=@SubmitterSelected Multiple="true" Placeholder="Select Submitter..." Data=@SubmitterList
+                                                                TextProperty="FullName" ValueProperty="Id"
+                                                                Style="width: 100%" />*@
 
 
                                                             <!-- /.form-group -->
@@ -268,14 +269,15 @@
     public int ProjectSelected;
     public int ViewProjectSelected;
     public string ProjectManagerSelected;
+    public AuthenticationState authentication;
 
 
-
-    protected override async Task  OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
-        var currrentUser = _httpContextAccessor.HttpContext.User;
-        IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
-        user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
+        //var currrentUser = _httpContextAccessor.HttpContext.User;
+        authentication = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = _context.Users.FirstOrDefault(u => u.Email == authentication.User.Identity.Name);
+        IsInRoleAdmin = authentication.User.IsInRole(Roles.Admin.ToString());
 
         if (IsInRoleAdmin)
         {

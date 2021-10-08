@@ -18,7 +18,7 @@
 @inject ISessionStorageService sessionStorage
 @inject ICustomHistoryService _customHistoryService
 @inject IImageService _imageService
-
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject LinkGenerator _generator
 @if (ItemList is null || user is null)
 {
@@ -258,7 +258,7 @@ else
                                         </RadzenDonutSeries>
                                     </RadzenChart>
                                 }
-                                
+
                                 <p class="text-center">
                                     <strong>Tickets By Type</strong>
                                 </p>
@@ -300,7 +300,7 @@ else
                                         </RadzenDonutSeries>
                                     </RadzenChart>
                                 }
-                                    
+
                                 <p class="text-center">
                                     <strong>Tickets By Priority</strong>
                                 </p>
@@ -767,10 +767,11 @@ else
     public List<Models.CustomUser> DeveloperList = new();
     public List<Models.CustomUser> OwnerList = new();
     public List<IdentityRole> RoleList = new();
-
+    public AuthenticationState authentication;
     protected override async Task OnInitializedAsync()
     {
-        if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+        authentication = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (authentication.User.Identity.IsAuthenticated)
         {
             await GetData();
         }
@@ -794,13 +795,12 @@ else
     {
         await Task.Delay(1);
         currentTime = DateTime.Now;
-        var currrentUser = _httpContextAccessor.HttpContext.User;
-        user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
-        IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
-        IsDeveloper = currrentUser.IsInRole(Roles.Developer.ToString());
-        IsNewUser = currrentUser.IsInRole(Roles.NewUser.ToString());
-        IsSubmitter = currrentUser.IsInRole(Roles.Submitter.ToString());
-        IsProjectManager = currrentUser.IsInRole(Roles.ProjectManager.ToString());
+        user = _context.Users.FirstOrDefault(u => u.Email == authentication.User.Identity.Name);
+        IsInRoleAdmin = authentication.User.IsInRole(Roles.Admin.ToString());
+        IsDeveloper = authentication.User.IsInRole(Roles.Developer.ToString());
+        IsNewUser = authentication.User.IsInRole(Roles.NewUser.ToString());
+        IsSubmitter = authentication.User.IsInRole(Roles.Submitter.ToString());
+        IsProjectManager = authentication.User.IsInRole(Roles.ProjectManager.ToString());
 
         AllUser = _context.Users.ToList();
         OwnerList = AllUser;

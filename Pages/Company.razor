@@ -11,6 +11,7 @@
 @inject IHttpContextAccessor _httpContextAccessor
 @inject UserManager<CustomUser> _userManager
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 <LoadingPage OnLoading="@GetData">
     <LoadingContent>
         <div class="loader">Loading...</div>
@@ -29,7 +30,7 @@
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">All Company</h3>
-  
+
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -301,17 +302,19 @@
     public bool IsSubmitter;
     public bool IsProjectManager;
     public bool IsNewUser;
+    public AuthenticationState authentication;
     protected override async Task OnInitializedAsync()
     {
-        var currrentUser = _httpContextAccessor.HttpContext.User;
-        if (currrentUser.Identity.IsAuthenticated)
+        authentication = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        //var currrentUser = _httpContextAccessor.HttpContext.User;
+        if (authentication.User.Identity.IsAuthenticated)
         {
-            user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
-            IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
-            IsDeveloper = currrentUser.IsInRole(Roles.Developer.ToString());
-            IsNewUser = currrentUser.IsInRole(Roles.NewUser.ToString());
-            IsSubmitter = currrentUser.IsInRole(Roles.Submitter.ToString());
-            IsProjectManager = currrentUser.IsInRole(Roles.ProjectManager.ToString());
+            user = _context.Users.FirstOrDefault(u => u.Email == authentication.User.Identity.Name);
+            IsInRoleAdmin = authentication.User.IsInRole(Roles.Admin.ToString());
+            IsDeveloper = authentication.User.IsInRole(Roles.Developer.ToString());
+            IsNewUser = authentication.User.IsInRole(Roles.NewUser.ToString());
+            IsSubmitter = authentication.User.IsInRole(Roles.Submitter.ToString());
+            IsProjectManager = authentication.User.IsInRole(Roles.ProjectManager.ToString());
             if (!IsInRoleAdmin)
             {
                 NavigationManager.NavigateTo("/accessdenied");
@@ -372,7 +375,7 @@
             await JSRuntime.InvokeVoidAsync("success", null);
 
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             await JSRuntime.InvokeVoidAsync("error", null);
         }
@@ -484,7 +487,7 @@
         }
     }
 
-    public async Task  GetData()
+    public async Task GetData()
     {
         await Task.Delay(1);
         ItemList = _context.Company.ToList();

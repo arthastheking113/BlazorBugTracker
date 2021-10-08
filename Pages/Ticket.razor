@@ -15,7 +15,7 @@
 @inject ISessionStorageService sessionStorage
 @inject ICustomHistoryService _customHistoryService
 @inject NavigationManager NavigationManager
-
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @if (ItemList is null)
 {
     <div class="loader">Loading...</div>
@@ -663,7 +663,7 @@ else
 
     public Models.Ticket newItem = new();
     public Models.Ticket currentItem = new();
-
+    public AuthenticationState authentication;
     private async Task OpenCreateDialog()
     {
         newItem = new();
@@ -967,13 +967,14 @@ else
     public async Task GetData()
     {
         await Task.Delay(1);
-        var currrentUser = _httpContextAccessor.HttpContext.User;
-        user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
-        IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
-        IsDeveloper = currrentUser.IsInRole(Roles.Developer.ToString());
-        IsNewUser = currrentUser.IsInRole(Roles.NewUser.ToString());
-        IsSubmitter = currrentUser.IsInRole(Roles.Submitter.ToString());
-        IsProjectManager = currrentUser.IsInRole(Roles.ProjectManager.ToString());
+        authentication = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        //var currrentUser = _httpContextAccessor.HttpContext.User;
+        user = _context.Users.FirstOrDefault(u => u.Email == authentication.User.Identity.Name);
+        IsInRoleAdmin = authentication.User.IsInRole(Roles.Admin.ToString());
+        IsDeveloper = authentication.User.IsInRole(Roles.Developer.ToString());
+        IsNewUser = authentication.User.IsInRole(Roles.NewUser.ToString());
+        IsSubmitter = authentication.User.IsInRole(Roles.Submitter.ToString());
+        IsProjectManager = authentication.User.IsInRole(Roles.ProjectManager.ToString());
 
         TicketTypeList = _context.TicketType.ToList();
         TicketPriorityList = _context.Priority.ToList();

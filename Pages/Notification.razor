@@ -14,6 +14,7 @@
 @inject IJSRuntime JSRuntime
 @inject ISessionStorageService sessionStorage
 @inject ICustomHistoryService _customHistoryService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 <LoadingPage OnLoading="@GetData">
     <LoadingContent>
         <div class="loader">Loading...</div>
@@ -27,7 +28,7 @@
         <div class="card">
             <div class="card-header bg-dark">
                 <h3 class="card-title">Notifications</h3>
-  
+
             </div>
             <div class="card-body">
                 <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true"
@@ -39,7 +40,7 @@
                             <Template Context="data">
                                 @if (!data.IsViewed)
                                 {
-                                    <b class="mb-0" >@data.Name</b>
+                                    <b class="mb-0">@data.Name</b>
                                 }
                                 else
                                 {
@@ -83,7 +84,7 @@
                                     }
                                     else
                                     {
-                                         <span class="mb-0">@data.Ticket.Id</span>
+                                        <span class="mb-0">@data.Ticket.Id</span>
                                     }
                                 }
                             </Template>
@@ -252,7 +253,7 @@
     public List<Models.WelcomeNotification> WelcomeNotificationList = new();
     public Models.NotificationListModel currentItem = new();
     private ModalDialog _viewDialog;
-
+    public AuthenticationState authentication;
     private async Task OpenViewDialog(Models.NotificationListModel notifi)
     {
         currentItem = notifi;
@@ -296,13 +297,14 @@
     public async Task GetData()
     {
         await Task.Delay(1);
-        var currrentUser = _httpContextAccessor.HttpContext.User;
-        user = _context.Users.FirstOrDefault(c => c.Email == currrentUser.Identity.Name);
-        IsInRoleAdmin = _httpContextAccessor.HttpContext.User.IsInRole(Roles.Admin.ToString());
-        IsDeveloper = _httpContextAccessor.HttpContext.User.IsInRole(Roles.Developer.ToString());
-        IsNewUser = _httpContextAccessor.HttpContext.User.IsInRole(Roles.NewUser.ToString());
-        IsSubmitter = _httpContextAccessor.HttpContext.User.IsInRole(Roles.Submitter.ToString());
-        IsProjectManager = _httpContextAccessor.HttpContext.User.IsInRole(Roles.ProjectManager.ToString());
+        //var currrentUser = _httpContextAccessor.HttpContext.User;
+        authentication = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = _context.Users.FirstOrDefault(u => u.Email == authentication.User.Identity.Name);
+        IsInRoleAdmin = authentication.User.IsInRole(Roles.Admin.ToString());
+        IsDeveloper = authentication.User.IsInRole(Roles.Developer.ToString());
+        IsNewUser = authentication.User.IsInRole(Roles.NewUser.ToString());
+        IsSubmitter = authentication.User.IsInRole(Roles.Submitter.ToString());
+        IsProjectManager = authentication.User.IsInRole(Roles.ProjectManager.ToString());
 
         NotificationList = _context.Notification.Include(n => n.Ticket).Include(n => n.Recipient).Include(n => n.Sender).Where(n => n.RecipientId == user.Id).ToList();
         WelcomeNotificationList = _context.WelcomeNotification.Include(n => n.Recipient).Include(n => n.Sender).Where(n => n.RecipientId == user.Id).ToList();

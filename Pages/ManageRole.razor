@@ -10,7 +10,7 @@
 @inject IJSRuntime JSRuntime
 @inject IHttpContextAccessor _httpContextAccessor
 @inject NavigationManager NavigationManager
-
+@inject AuthenticationStateProvider AuthenticationStateProvider
 <LoadingPage OnLoading="@GetData">
     <LoadingContent>
         <div class="loader">Loading...</div>
@@ -154,12 +154,14 @@
     public string RoleSelected;
     private bool _isButtonLoading = false;
     public Models.ManageRole manageRole = new();
+    public AuthenticationState authentication;
 
     protected override async Task OnInitializedAsync()
     {
-        var currrentUser = _httpContextAccessor.HttpContext.User;
-        user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
-        IsInRoleAdmin = currrentUser.IsInRole(BlazorBugTracker.Data.Enums.Roles.Admin.ToString());
+        authentication = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        //var currrentUser = _httpContextAccessor.HttpContext.User;
+        user = _context.Users.FirstOrDefault(u => u.Email == authentication.User.Identity.Name);
+        IsInRoleAdmin = authentication.User.IsInRole(Data.Enums.Roles.Admin.ToString());
         if (IsInRoleAdmin)
         {
             await GetData();

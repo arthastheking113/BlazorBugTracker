@@ -11,7 +11,8 @@
 @inject ISessionStorageService sessionStorage
 @inject ICustomRoleService _roleService
 @inject ApplicationDbContext _context
-@inject IJSRuntime JSRuntime 
+@inject IJSRuntime JSRuntime
+@inject AuthenticationStateProvider AuthenticationStateProvider
 <header>
     <nav class="main-header navbar navbar-expand navbar-white navbar-light">
         <!-- Left navbar links -->
@@ -226,8 +227,8 @@
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                 <!-- Add icons to the links using the .nav-icon class
-    with font-awesome or any other icon font library -->
- 
+                with font-awesome or any other icon font library -->
+
                 <li class="nav-item">
                     <a href="/" class="nav-link">
                         <i class="nav-icon fas fa-tachometer-alt"></i>
@@ -425,25 +426,27 @@
     public bool IsHR;
     public bool IsAccountant;
     public bool IsSeniorAccountant;
-
+    public AuthenticationState authentication;
     protected override async Task OnInitializedAsync()
     {
-        if (!_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+        authentication = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (!authentication.User.Identity.IsAuthenticated)
         {
             NavigationManager.NavigateTo("/Identity/Account/Login", true);
         }
         else
         {
-            var currrentUser = _httpContextAccessor.HttpContext.User;
-            user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
-            IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
-            IsDeveloper = currrentUser.IsInRole(Roles.Developer.ToString());
-            IsNewUser = currrentUser.IsInRole(Roles.NewUser.ToString());
-            IsSubmitter = currrentUser.IsInRole(Roles.Submitter.ToString());
-            IsProjectManager = currrentUser.IsInRole(Roles.ProjectManager.ToString());
-            IsHR = currrentUser.IsInRole(Roles.HR.ToString());
-            IsAccountant = currrentUser.IsInRole(Roles.Accountant.ToString());
-            IsSeniorAccountant = currrentUser.IsInRole(Roles.SeniorAccountant.ToString());
+
+            //var currrentUser = _httpContextAccessor.HttpContext.User;
+            user = _context.Users.FirstOrDefault(u => u.Email == authentication.User.Identity.Name);
+            IsInRoleAdmin = authentication.User.IsInRole(Roles.Admin.ToString());
+            IsDeveloper = authentication.User.IsInRole(Roles.Developer.ToString());
+            IsNewUser = authentication.User.IsInRole(Roles.NewUser.ToString());
+            IsSubmitter = authentication.User.IsInRole(Roles.Submitter.ToString());
+            IsProjectManager = authentication.User.IsInRole(Roles.ProjectManager.ToString());
+            IsHR = authentication.User.IsInRole(Roles.HR.ToString());
+            IsAccountant = authentication.User.IsInRole(Roles.Accountant.ToString());
+            IsSeniorAccountant = authentication.User.IsInRole(Roles.SeniorAccountant.ToString());
 
             currentTime = DateTime.Now;
             GetNotificationAndInbox();

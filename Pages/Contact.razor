@@ -4,9 +4,12 @@
 @using Microsoft.AspNetCore.Http
 @inject IHttpContextAccessor _httpContextAccessor
 @using BlazorBugTracker.Data
-@inject ApplicationDbContext _context 
-@inject IJSRuntime JSRuntime 
-<br /><br /><br />
+@inject ApplicationDbContext _context
+@inject IJSRuntime JSRuntime
+@inject AuthenticationStateProvider AuthenticationStateProvider
+<br />
+<br />
+<br />
 <div class="container">
     <div class="shadow-lg p-3 mb-5 bg-white rounded">
         <div class="row">
@@ -110,11 +113,12 @@
     public Models.CustomUser user = new();
     public Models.Contact newMessage = new();
     public bool IsSuccess;
-
+    public AuthenticationState authentication;
     protected override async Task OnInitializedAsync()
     {
         var currrentUser = _httpContextAccessor.HttpContext.User;
-        user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
+        authentication = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = _context.Users.FirstOrDefault(u => u.Email == authentication.User.Identity.Name);
     }
 
     public async Task Send()

@@ -5,12 +5,13 @@
 @using Microsoft.AspNetCore.Identity
 @using BlazorBugTracker.Services
 @using BlazorBugTracker.Data
-@inject ApplicationDbContext _context  
-@inject IImageService _imageService 
+@inject ApplicationDbContext _context
+@inject IImageService _imageService
 @inject IHttpContextAccessor _httpContextAccessor
 @inject HubConnectionBuilder HubConnectionBuilder
 @inject UserManager<CustomUser> _userManager
-@inject IJSRuntime JSRuntime 
+@inject IJSRuntime JSRuntime
+@inject AuthenticationStateProvider AuthenticationStateProvider
 <div class="container-fluid pr-0 pl-0">
     <div class="row">
         <div class="col pr-0">
@@ -24,7 +25,7 @@
                                 <p>@user.FullName</p>
                             </div>
                         </a>
-                      
+
                     </div>
                     <div id="search">
                         <label for=""><i class="fa fa-search" aria-hidden="true"></i></label>
@@ -93,7 +94,7 @@
                                 <i class="fa fa-paperclip attachment" aria-hidden="true"></i>
                                 <button class="submit" type="submit"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
                             </EditForm>
-                           
+
                         </div>
                     </div>
                 </div>
@@ -129,6 +130,7 @@
 
     private string _hubUrl;
     private HubConnection _hubConnection;
+    public AuthenticationState authentication;
     protected override async Task OnInitializedAsync()
     {
         UserList = _context.Users.ToList();
@@ -137,7 +139,8 @@
     public async Task Chat()
     {
         var currrentUser = _httpContextAccessor.HttpContext.User;
-        user = await _userManager.GetUserAsync(currrentUser);
+        authentication = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = _context.Users.FirstOrDefault(u => u.Email == authentication.User.Identity.Name);
         _username = user.FullName;
         // check username is valid
         if (string.IsNullOrWhiteSpace(_username))
@@ -236,7 +239,7 @@
     {
         await JSRuntime.InvokeVoidAsync("focusTo", elementId);
     }
-  
+
 
     private class Message
     {

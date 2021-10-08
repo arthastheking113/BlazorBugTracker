@@ -10,6 +10,7 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject ICustomProjectService _projectService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 <LoadingPage OnLoading="@GetData">
     <LoadingContent>
         <div class="loader">Loading...</div>
@@ -199,7 +200,7 @@
                     }
                     else
                     {
-                        <button type="button" class="btn btn-outline-primary"  @onclick="ConfirmSubmitPayCheck">
+                        <button type="button" class="btn btn-outline-primary" @onclick="ConfirmSubmitPayCheck">
                             <span class="iconify" data-icon="dashicons:yes-alt"></span> Yes, Approve this time sheet
                         </button>
                     }
@@ -248,7 +249,7 @@
     public bool IsProjectManager;
     public bool IsNewUser;
     public double totalWeek;
-
+    public AuthenticationState authentication;
     public async Task OpenViewDialog(Models.PayCheckRecord record)
     {
         currentPayCheckRecord = record;
@@ -337,13 +338,14 @@
     }
     protected override async Task OnInitializedAsync()
     {
-        var currrentUser = _httpContextAccessor.HttpContext.User;
-        user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
-        IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
-        IsDeveloper = currrentUser.IsInRole(Roles.Developer.ToString());
-        IsNewUser = currrentUser.IsInRole(Roles.NewUser.ToString());
-        IsSubmitter = currrentUser.IsInRole(Roles.Submitter.ToString());
-        IsProjectManager = currrentUser.IsInRole(Roles.ProjectManager.ToString());
+        authentication = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        //var currrentUser = _httpContextAccessor.HttpContext.User;
+        user = _context.Users.FirstOrDefault(u => u.Email == authentication.User.Identity.Name);
+        IsInRoleAdmin = authentication.User.IsInRole(Roles.Admin.ToString());
+        IsDeveloper = authentication.User.IsInRole(Roles.Developer.ToString());
+        IsNewUser = authentication.User.IsInRole(Roles.NewUser.ToString());
+        IsSubmitter = authentication.User.IsInRole(Roles.Submitter.ToString());
+        IsProjectManager = authentication.User.IsInRole(Roles.ProjectManager.ToString());
         if (IsInRoleAdmin || IsProjectManager)
         {
             await GetData();

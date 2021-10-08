@@ -8,6 +8,7 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject ICustomProjectService _projectService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 <LoadingPage OnLoading="@GetData">
     <LoadingContent>
         <div class="loader">Loading...</div>
@@ -158,7 +159,7 @@
     public bool IsHR;
 
     public double totalWeek;
-
+    public AuthenticationState authentication;
     public async Task OpenViewDialog(Models.PayCheckRecord record)
     {
         currentPayCheckRecord = record;
@@ -203,14 +204,15 @@
     }
     protected override async Task OnInitializedAsync()
     {
-        var currrentUser = _httpContextAccessor.HttpContext.User;
-        user = _context.Users.FirstOrDefault(u => u.Email == currrentUser.Identity.Name);
-        IsInRoleAdmin = currrentUser.IsInRole(Roles.Admin.ToString());
-        IsDeveloper = currrentUser.IsInRole(Roles.Developer.ToString());
-        IsNewUser = currrentUser.IsInRole(Roles.NewUser.ToString());
-        IsSubmitter = currrentUser.IsInRole(Roles.Submitter.ToString());
-        IsProjectManager = currrentUser.IsInRole(Roles.ProjectManager.ToString());
-        IsHR = currrentUser.IsInRole(Roles.HR.ToString());
+        //var currrentUser = _httpContextAccessor.HttpContext.User;
+        authentication = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = _context.Users.FirstOrDefault(u => u.Email == authentication.User.Identity.Name);
+        IsInRoleAdmin = authentication.User.IsInRole(Roles.Admin.ToString());
+        IsDeveloper = authentication.User.IsInRole(Roles.Developer.ToString());
+        IsNewUser = authentication.User.IsInRole(Roles.NewUser.ToString());
+        IsSubmitter = authentication.User.IsInRole(Roles.Submitter.ToString());
+        IsProjectManager = authentication.User.IsInRole(Roles.ProjectManager.ToString());
+        IsHR = authentication.User.IsInRole(Roles.HR.ToString());
 
         if (IsInRoleAdmin || IsHR)
         {
