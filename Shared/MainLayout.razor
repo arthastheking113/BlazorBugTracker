@@ -467,7 +467,7 @@
 
         while (true)
         {
-            await Task.Delay(1000);
+            await Task.Delay(60000);
             GetTime();
             StateHasChanged();
 
@@ -475,7 +475,7 @@
     }
     public void GetTime()
     {
-        time = DateTime.Now.ToString("dddd, dd MMMM yyyy - HH:mm:ss");
+        time = DateTime.Now.ToString("dddd, dd MMMM yyyy - HH:mm");
     }
 
     public void GetNotificationAndInbox()
