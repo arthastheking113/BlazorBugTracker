@@ -89,8 +89,13 @@ namespace BlazorBugTracker
             services.AddCssEvents();
             services.AddJsInteropExtensions();
             services.AddBlazoredSessionStorage();
+            string azureSignalrConnectionString = Configuration["Azure:ConnectionString"];
             services.AddSignalR(e => {
                 e.MaximumReceiveMessageSize = 1024 * 15 * 15 * 15;
+            }).AddAzureSignalR(options =>
+            {
+                options.ConnectionString = azureSignalrConnectionString;
+                options.ServerStickyMode = Microsoft.Azure.SignalR.ServerStickyMode.Required;
             });
             services.AddResponseCompression(opts =>
             {
